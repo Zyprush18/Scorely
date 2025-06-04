@@ -1,0 +1,25 @@
+package entity
+
+import (
+	"time"
+
+	"github.com/Zyprush18/Scorely/service"
+)
+
+type Exams struct {
+	IdExam uint `json:"id_exam" gorm:"primaryKey;autoIncrement"`
+	Dates time.Time `json:"date" gorm:"type:date"`
+	StartLesson time.Time `json:"start_lesson" gorm:"type:timestamp"`
+	EndLesson time.Time `json:"end_lesson" gorm:"type:timestamp"`
+	IdSubject uint `json:"id_subject"`
+
+	// belongs to subjects table
+	Subject Subjects `gorm:"foreignKey:IdSubject;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+
+	// has many to exam question table
+	ExamQuestion []Exam_Questions `gorm:"foreignKey:IdExam"`
+	// has many to answer question table
+	AnswerQuestion []Answer_Questions `gorm:"foreignKey:IdExam"`
+
+	service.Models
+}

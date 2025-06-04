@@ -1,7 +1,16 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/Zyprush18/Scorely/repository/database"
+)
 
 func main(){
-	fmt.Println("Hello World")
+	// connect database
+	database.Connect()
+
+	fmt.Println("🚀 running on port : 8080")
+	http.ListenAndServe(":8080",nil)
 }
