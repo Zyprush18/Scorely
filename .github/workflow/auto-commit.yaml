@@ -1,0 +1,27 @@
+name: Scorely Auto Commit
+
+on:
+  schedule:
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+      with:
+        ref: auto-commit
+
+    - name: Setup Git Identity
+      run: |
+        git config user.name "Zyprush18"
+        git config user.email "161220746+Zyprush18@users.noreply.github.com" 
+      
+    - name: Auto Commit
+      run: |
+        git add .
+        git commit -m "chore: daily commit - $(date +"%Y-%m-%d %H-%M-%S")" || echo "Nothing to commit"
+        git push origin auto-commit

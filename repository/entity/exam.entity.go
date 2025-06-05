@@ -17,9 +17,9 @@ type Exams struct {
 	Subject Subjects `gorm:"foreignKey:IdSubject;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
 	// has many to exam question table
-	ExamQuestion []Exam_Questions `gorm:"foreignKey:IdExam"`
+	ExamQuestion []*Exam_Questions `gorm:"foreignKey:IdExam;references:IdExam"`
 	// has many to answer question table
-	AnswerQuestion []Answer_Questions `gorm:"foreignKey:IdExam"`
+	AnswerQuestion []*Answer_Questions `gorm:"foreignKey:IdExam;references:IdExam"`
 
 	service.Models
 }
