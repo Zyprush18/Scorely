@@ -11,7 +11,7 @@ type Subjects struct {
 	Teacher []*Teachers `gorm:"many2many:teacher_subjects"`
 
 	// has many to exam table
-	Exam	[]Exams `gorm:"foreignKey:IdSubject"`
+	Exam	[]*Exams `gorm:"foreignKey:IdSubject;references:IdSubject"`
 
 	service.Models
 }

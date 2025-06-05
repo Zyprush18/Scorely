@@ -7,6 +7,6 @@ type Roles struct {
 	IdRole uint `json:"id_role" gorm:"primaryKey;autoIncrement"`
 	NameRole string `json:"name_role" gorm:"not null"`
 	// has many to users table
-	User []Users	`gorm:"foreignKey:IdRole"`
+	User []*Users	`gorm:"foreignKey:IdRole;references:IdRole"`
 	service.Models
 }

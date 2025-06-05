@@ -22,7 +22,7 @@ func Logfile(logs string) {
 
 	defer file.Close()
 
-	if _,err := file.WriteString(logs); err != nil {
+	if _,err := file.WriteString(logs + "\n"); err != nil {
 		log.Fatalln("Failed to Add log")
 	}
 	fmt.Println("Success write log")
