@@ -15,7 +15,7 @@ jobs:
       with:
         ref: auto-commit
 
-    - name: Setup Git Identity
+    - name: Setup Git Identify
       run: |
         git config user.name "Zyprush18"
         git config user.email "161220746+Zyprush18@users.noreply.github.com" 
