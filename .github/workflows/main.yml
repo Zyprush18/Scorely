@@ -2,7 +2,7 @@ name: Scorely Auto Commit
 
 on:
   schedule:
-    - cron: '0 10 * * *'
+    - cron: '0 10 * * *'  # setiap hari jam 10:00 UTC
   workflow_dispatch:
 
 jobs:
@@ -14,14 +14,23 @@ jobs:
       uses: actions/checkout@v3
       with:
         ref: auto-commit
+        token: ${{ secrets.GH_PAT }}
 
-    - name: Setup Git Identify
+    - name: Setup Git Identity
       run: |
         git config user.name "Zyprush18"
-        git config user.email "161220746+Zyprush18@users.noreply.github.com" 
-      
-    - name: Auto Commit
+        git config user.email "161220746+Zyprush18@users.noreply.github.com"
+
+    - name: Show git status for debugging
+      run: |
+        git status
+        git remote -v
+        ls -al
+
+    - name: Auto Commit changes
       run: |
         git add .
         git commit -m "chore: daily commit - $(date +"%Y-%m-%d %H-%M-%S")" || echo "Nothing to commit"
         git push origin auto-commit
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
