@@ -8,6 +8,6 @@ type Majors struct {
 	MajorAbbreviation string `json:"major_abbriviation" gorm:"varchar(20)"`
 
 	// has many to class table
-	Class []*Class `gorm:"foreignKey:IdMajor;references:IdMajor"`
+	Class []Class `gorm:"foreignKey:MajorId;references:IdMajor;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	service.Models
 }

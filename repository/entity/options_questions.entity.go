@@ -7,10 +7,10 @@ type Option_Questions struct {
 	Option string `json:"option" gorm:"type:varchar(1)"`
 	DescriptionOption string `json:"description_option" gorm:"varchar(225)"`
 	IsCorrect bool	`json:"is_correct" gorm:"type:bool;default:false"`
-	IdExamQuestion uint `json:"Id_exam_question"`
+	ExamQuestionId uint `json:"exam_question_id"`
 
 	// belongs to exam table
-	ExamQuestion Exam_Questions `gorm:"foreignKey:IdExamQuestion;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	ExamQuestion Exam_Questions `gorm:"foreignKey:ExamQuestionId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
 	service.Models
 }

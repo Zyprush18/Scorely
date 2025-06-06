@@ -8,10 +8,10 @@ type Subjects struct {
 	Semester string `json:"semester" gorm:"type:varchar(100)"`
 
 	// has many to teacher table (many to many with teacher table)
-	Teacher []*Teachers `gorm:"many2many:teacher_subjects"`
+	Teacher []Teachers `gorm:"many2many:teacher_subjects;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
 	// has many to exam table
-	Exam	[]*Exams `gorm:"foreignKey:IdSubject;references:IdSubject"`
+	Exam	[]Exams `gorm:"foreignKey:SubjectId;references:IdSubject;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
 	service.Models
 }

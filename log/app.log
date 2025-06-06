@@ -1,0 +1,1 @@
+invalid field found for struct github.com/Zyprush18/Scorely/repository/entity.Roles's field User: define a valid foreign key for relations or implement the Valuer/Scanner interface

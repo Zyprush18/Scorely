@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 
+
 	"github.com/Zyprush18/Scorely/repository/entity"
 	"github.com/Zyprush18/Scorely/service"
 	"gorm.io/driver/mysql"
@@ -25,36 +26,24 @@ func Connect() {
 	}
 	fmt.Println("Success Connect")
 
-	errs := Migration(DB,
+	errs := DB.AutoMigrate(
 		&entity.Roles{},
 		&entity.Users{},
 		&entity.Teachers{},
 		&entity.Students{},
+		&entity.Class{},      
 		&entity.Levels{},
 		&entity.Majors{},
-		&entity.Class{},
-		&entity.Subjects{},
-		&entity.Exams{},
 		&entity.Exam_Questions{},
 		&entity.Option_Questions{},
 		&entity.Answer_Questions{},
+		&entity.Exams{},
+		&entity.Subjects{},
 	)
 	if errs != nil {
 		service.Logfile(errs.Error())
 		panic("Failed Migrate Table")
 	}
 
-	
 	fmt.Println("Success Migrate")
-}
-
-
-func Migration(D *gorm.DB, model ...interface{}) error {
-	for _, m := range model {
-		if err := D.AutoMigrate(m); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

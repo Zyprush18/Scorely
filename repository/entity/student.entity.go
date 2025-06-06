@@ -9,13 +9,13 @@ type Students struct {
 	Gender    string `json:"gender" gorm:"type:varchar(10)"`
 	Address string `json:"address" gorm:"type:varchar(50)"`
 	Phone	uint `json:"phone" gorm:"type:bigint;unique"`
-	IdUser uint	`json:"id_user"`
-	IdClass uint `json:"id_class"`
+	UserId uint	`json:"user_id"`
+	ClassId uint `json:"class_id"`
 	// belongs to users table
-	User Users `gorm:"foreignKey:IdUser;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	User Users `gorm:"foreignKey:UserId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	// belongst to class table
-	Class Class `gorm:"foreignKey:IdClass;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Class Class `gorm:"foreignKey:ClassId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	// has many to answer question table
-	AnswerQuestion []*Answer_Questions `gorm:"foreignKey:IdStudent;references:IdStudent"`
+	AnswerQuestion []Answer_Questions `gorm:"foreignKey:StudentId;references:IdStudent;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	service.Models
 }
