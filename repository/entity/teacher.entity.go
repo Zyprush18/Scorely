@@ -10,11 +10,11 @@ type Teachers struct {
 	Gender    string `json:"gender" gorm:"type:varchar(10)"`
 	Address string `json:"address" gorm:"type:varchar(50)"`
 	Phone   uint   `json:"phone" gorm:"type:bigint;unique"`
-	IdUser  uint   `json:"id_user"`
+	UserId  uint   `json:"user_id"`
 
 	// belongs to users table
-	User Users `gorm:"foreignKey:IdUser;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	User Users `gorm:"foreignKey:UserId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	// has many to subjects table (many to many with subjects table)
-	Subject []*Subjects `gorm:"many2many:teacher_subjects"`
+	Subject []*Subjects `gorm:"many2many:teacher_subjects;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	service.Models
 }

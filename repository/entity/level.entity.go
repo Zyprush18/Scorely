@@ -7,6 +7,6 @@ type Levels struct {
 	Level string `json:"level" gorm:"type:varchar(100)"`
 
 	// has many to class table
-	Class []*Class `gorm:"foreignKey:IdLevel;references:IdLevel"`
+	Class []Class `gorm:"foreignKey:LevelId;references:IdLevel;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	service.Models
 }
