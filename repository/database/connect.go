@@ -3,28 +3,25 @@ package database
 import (
 	"fmt"
 
-
 	"github.com/Zyprush18/Scorely/repository/entity"
-	"github.com/Zyprush18/Scorely/service"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	// "gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
 
-func Connect() {
+func Connect() error {
 	var err error
 	dsn := "root:@tcp(127.0.0.1:3306)/scorely?charset=utf8mb4&parseTime=True&loc=Local"
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info), 
+		// Logger: logger.Default.LogMode(logger.Info), 
 	})
 	if err != nil {
-		
-		service.Logfile(err.Error())
-		panic("Failed Connect Database!!")
+		fmt.Println("Failed Connect Database")
+		return err
 	}
-	fmt.Println("Success Connect")
+
 
 	errs := DB.AutoMigrate(
 		&entity.Roles{},
@@ -41,9 +38,12 @@ func Connect() {
 		&entity.Subjects{},
 	)
 	if errs != nil {
-		service.Logfile(errs.Error())
-		panic("Failed Migrate Table")
+		fmt.Println("Failed Migrate Table Tp Database")
+		return err
 	}
 
-	fmt.Println("Success Migrate")
+	
+
+
+	return nil
 }

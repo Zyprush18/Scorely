@@ -1,11 +1,11 @@
 package entity
 
-import "github.com/Zyprush18/Scorely/service"
+import "github.com/Zyprush18/Scorely/utils"
 
 type Exam_Questions struct {
-	IdExamQuestion uint `json:"id_exam_question" gorm:"primaryKey;autoIncrement"`
-	Question string `json:"question" gorm:"type:text"`
-	ExamId uint `json:"exam_id"`
+	IdExamQuestion uint   `json:"id_exam_question" gorm:"primaryKey;autoIncrement"`
+	Question       string `json:"question" gorm:"type:text"`
+	ExamId         uint   `json:"exam_id"`
 
 	// belongs to exam table
 	Exam Exams `gorm:"foreignKey:ExamId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
@@ -14,5 +14,5 @@ type Exam_Questions struct {
 	OptionQuestion []Option_Questions `gorm:"foreignKey:ExamQuestionId;references:IdExamQuestion;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	// has many to answer question table
 	AnswerQuestion []Answer_Questions `gorm:"foreignKey:ExamQuestionId;references:IdExamQuestion;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	service.Models
+	utils.Models
 }
