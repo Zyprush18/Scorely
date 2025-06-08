@@ -40,8 +40,5 @@ func Connect() (*gorm.DB,error) {
 		return nil,err
 	}
 
-	
-
-
 	return db,nil
 }

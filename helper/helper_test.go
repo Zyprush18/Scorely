@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+
 func TestValidate(t *testing.T) {
 	t.Run("Validation_success", func(t *testing.T) {
 		roleReq := &request.Roles{

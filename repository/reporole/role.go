@@ -31,7 +31,6 @@ func (r RoleMysql) CreateRole(data *request.Roles) error  {
 	}
 
 	if err := r.db.Table("roles").Create(&respRole).Error; err != nil {
-		helper.Logfile(err.Error())
 		return err
 	}
 

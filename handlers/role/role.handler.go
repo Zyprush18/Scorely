@@ -11,10 +11,11 @@ import (
 
 type HandlerRole struct {
 	services servicerole.ServiceRole
+	logg helper.Logger
 }
 
-func RoleHandler(s servicerole.ServiceRole) *HandlerRole  {
-	return &HandlerRole{services: s}
+func RoleHandler(s servicerole.ServiceRole, l helper.Logger) *HandlerRole  {
+	return &HandlerRole{services: s, logg: l}
 }
 func (h *HandlerRole) AddRoles(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -49,6 +50,7 @@ func (h *HandlerRole) AddRoles(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.services.Create(roleReq); err != nil {
+		h.logg.Logfile(err.Error())
 		w.WriteHeader(helper.BadRequest)
 		json.NewEncoder(w).Encode(helper.Messages{
 			Message: "Failed Add Role",

@@ -25,6 +25,7 @@ const (
 	Post = http.MethodPost
 )
 
+// struct message
 type Messages struct {
 	Message string `json:"message"`
 	Data    any    `json:"data,omitempty"`
@@ -37,9 +38,17 @@ type Models struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty" gorm:"default:null"`
 }
 
+type Logger struct {
+	path string
+}
+
+func NewLogger(pathfile string) Logger  {
+	return Logger{path: pathfile}
+}
+
 // added log
-func Logfile(logs string) {
-	file, err := os.OpenFile("./log/app.log", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+func (l Logger) Logfile(logs string) {
+	file, err := os.OpenFile(l.path, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatalf("Failed Open file: %v", err)
 	}

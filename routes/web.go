@@ -13,17 +13,19 @@ import (
 )
 
 func RunApp() {
+	pathlog := "./log/app.log"
+	initlog:= helper.NewLogger(pathlog)
 	// connect database
 	initDb,err := database.Connect()
 	if err != nil {
-		helper.Logfile(err.Error())
+		initlog.Logfile(err.Error())
 		log.Fatalln("Connection Refused")
 	}
 
 	// role
 	roleRepo := reporole.RolesMysql(initDb)
 	roleService := servicerole.RoleService(roleRepo)
-	roleHandler := role.RoleHandler(roleService)
+	roleHandler := role.RoleHandler(roleService, initlog)
 
 	// role route
 	http.HandleFunc("/add/role", roleHandler.AddRoles)
