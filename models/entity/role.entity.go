@@ -1,6 +1,6 @@
 package entity
 
-import "github.com/Zyprush18/Scorely/utils"
+import "github.com/Zyprush18/Scorely/helper"
 
 // table role
 type Roles struct {
@@ -8,5 +8,5 @@ type Roles struct {
 	NameRole string `json:"name_role" gorm:"not null"`
 	// has many to users table
 	User []Users `gorm:"foreignKey:RoleId;references:IdRole;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	utils.Models
+	helper.Models
 }

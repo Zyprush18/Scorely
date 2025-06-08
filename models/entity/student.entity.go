@@ -1,6 +1,6 @@
 package entity
 
-import "github.com/Zyprush18/Scorely/utils"
+import "github.com/Zyprush18/Scorely/helper"
 
 type Students struct {
 	IdStudent uint   `json:"id_student" gorm:"primaryKey;autoIncrement"`
@@ -17,5 +17,5 @@ type Students struct {
 	Class Class `gorm:"foreignKey:ClassId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	// has many to answer question table
 	AnswerQuestion []Answer_Questions `gorm:"foreignKey:StudentId;references:IdStudent;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	utils.Models
+	helper.Models
 }

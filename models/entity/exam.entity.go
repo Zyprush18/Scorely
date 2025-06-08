@@ -3,7 +3,7 @@ package entity
 import (
 	"time"
 
-	"github.com/Zyprush18/Scorely/utils"
+	"github.com/Zyprush18/Scorely/helper"
 )
 
 type Exams struct {
@@ -21,5 +21,5 @@ type Exams struct {
 	// has many to answer question table
 	AnswerQuestion []Answer_Questions `gorm:"foreignKey:ExamId;references:IdExam;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
-	utils.Models
+	helper.Models
 }

@@ -1,10 +1,9 @@
-package test
+package helper
 
 import (
 	"testing"
 
 	"github.com/Zyprush18/Scorely/models/request"
-	"github.com/Zyprush18/Scorely/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,7 +12,7 @@ func TestValidate(t *testing.T) {
 		roleReq := &request.Roles{
 			NameRole: "Admin",
 		}
-		err := utils.ValidateForm(roleReq)
+		err := ValidateForm(roleReq)
 
 		assert.NoError(t, err)
 		assert.Nil(t, err)
@@ -23,7 +22,7 @@ func TestValidate(t *testing.T) {
 		roleReq := &request.Roles{
 			NameRole: "",
 		}
-		err := utils.ValidateForm(roleReq)
+		err := ValidateForm(roleReq)
 
 		assert.Error(t, err)
 		assert.NotNil(t, err)

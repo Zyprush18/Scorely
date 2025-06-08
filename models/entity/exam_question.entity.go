@@ -1,6 +1,6 @@
 package entity
 
-import "github.com/Zyprush18/Scorely/utils"
+import "github.com/Zyprush18/Scorely/helper"
 
 type Exam_Questions struct {
 	IdExamQuestion uint   `json:"id_exam_question" gorm:"primaryKey;autoIncrement"`
@@ -14,5 +14,5 @@ type Exam_Questions struct {
 	OptionQuestion []Option_Questions `gorm:"foreignKey:ExamQuestionId;references:IdExamQuestion;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	// has many to answer question table
 	AnswerQuestion []Answer_Questions `gorm:"foreignKey:ExamQuestionId;references:IdExamQuestion;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	utils.Models
+	helper.Models
 }

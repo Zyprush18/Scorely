@@ -5,21 +5,29 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Zyprush18/Scorely/handlers"
-	"github.com/Zyprush18/Scorely/repository/database"
-	"github.com/Zyprush18/Scorely/utils"
+	"github.com/Zyprush18/Scorely/database"
+	"github.com/Zyprush18/Scorely/handlers/role"
+	"github.com/Zyprush18/Scorely/helper"
+	"github.com/Zyprush18/Scorely/repository/reporole"
+	"github.com/Zyprush18/Scorely/service/servicerole"
 )
 
-func RunApp()  {
+func RunApp() {
 	// connect database
-	err := database.Connect()
+	initDb,err := database.Connect()
 	if err != nil {
-		utils.Logfile(err.Error())
-		log.Fatalln(err.Error())
+		helper.Logfile(err.Error())
+		log.Fatalln("Connection Refused")
 	}
 
-	http.HandleFunc("/add/role", handlers.AddRoles)
+	// role
+	roleRepo := reporole.RolesMysql(initDb)
+	roleService := servicerole.RoleService(roleRepo)
+	roleHandler := role.RoleHandler(roleService)
+
+	// role route
+	http.HandleFunc("/add/role", roleHandler.AddRoles)
 
 	fmt.Println("🚀 running on port: 8000")
-	http.ListenAndServe(":8000",nil)
+	http.ListenAndServe(":8000", nil)
 }
