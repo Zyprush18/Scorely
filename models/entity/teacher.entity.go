@@ -1,6 +1,6 @@
 package entity
 
-import "github.com/Zyprush18/Scorely/utils"
+import "github.com/Zyprush18/Scorely/helper"
 
 // table teacher
 type Teachers struct {
@@ -16,5 +16,5 @@ type Teachers struct {
 	User Users `gorm:"foreignKey:UserId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	// has many to subjects table (many to many with subjects table)
 	Subject []*Subjects `gorm:"many2many:teacher_subjects;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	utils.Models
+	helper.Models
 }

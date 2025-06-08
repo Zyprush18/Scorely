@@ -1,6 +1,6 @@
 package entity
 
-import "github.com/Zyprush18/Scorely/utils"
+import "github.com/Zyprush18/Scorely/helper"
 
 type Class struct {
 	IdClass uint   `json:"id_class" gorm:"primaryKey;autoIncrement"`
@@ -15,5 +15,5 @@ type Class struct {
 	// belongs to level table
 	Major Majors `gorm:"foreignKey:MajorId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
-	utils.Models
+	helper.Models
 }

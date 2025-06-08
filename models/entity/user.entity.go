@@ -1,6 +1,6 @@
 package entity
 
-import "github.com/Zyprush18/Scorely/utils"
+import "github.com/Zyprush18/Scorely/helper"
 
 // table users
 type Users struct {
@@ -14,5 +14,5 @@ type Users struct {
 	Teacher []Teachers `gorm:"foreignKey:UserId;references:IdUser"`
 	// has many to student table
 	Student []Students `gorm:"foreignKey:UserId;references:IdUser"`
-	utils.Models
+	helper.Models
 }
