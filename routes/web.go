@@ -24,7 +24,7 @@ func RunApp() {
 
 	// role
 	roleRepo := reporole.RolesMysql(initDb)
-	roleService := servicerole.RoleService(roleRepo)
+	roleService := servicerole.NewRoleService(roleRepo)
 	roleHandler := role.RoleHandler(roleService, initlog)
 
 	// role route

@@ -11,12 +11,13 @@ import (
 
 type HandlerRole struct {
 	services servicerole.ServiceRole
-	logg helper.Logger
+	logg helper.Loggers
 }
 
-func RoleHandler(s servicerole.ServiceRole, l helper.Logger) *HandlerRole  {
+func RoleHandler(s servicerole.ServiceRole, l helper.Loggers) *HandlerRole  {
 	return &HandlerRole{services: s, logg: l}
 }
+
 func (h *HandlerRole) AddRoles(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if r.Method != helper.Post {
