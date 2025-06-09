@@ -10,20 +10,13 @@ type ServiceRole interface {
 }
 
 type RoleRepo struct {
-	// dependency
-	Repo reporole.RoleMysql
+	Repo reporole.RoleService
 }
 
-func RoleService(r reporole.RoleMysql) ServiceRole  {
-	// injcetion
+func NewRoleService(r reporole.RoleService) ServiceRole  {
 	return &RoleRepo{Repo: r}
 }
 
 func (r *RoleRepo) Create(data *request.Roles) error  {
-	err := r.Repo.CreateRole(data)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return r.Repo.CreateRole(data)
 }

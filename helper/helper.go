@@ -38,11 +38,15 @@ type Models struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty" gorm:"default:null"`
 }
 
+type Loggers interface {
+	Logfile(logs string)
+}
+
 type Logger struct {
 	path string
 }
 
-func NewLogger(pathfile string) Logger  {
+func NewLogger(pathfile string) Loggers  {
 	return Logger{path: pathfile}
 }
 
