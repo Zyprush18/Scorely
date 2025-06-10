@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Zyprush18/Scorely/models/request"
+	"github.com/Zyprush18/Scorely/models/response"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -14,6 +15,11 @@ type ServiceRole struct {
 func (s *ServiceRole) Create(data *request.Roles) error  {
 	args := s.Called(data)
 	return args.Error(0)
+}
+
+func (s *ServiceRole) ShowRoleById(id int) (*response.Roles, error)  {
+	args := s.Called(id)
+	return args.Get(0).(*response.Roles), args.Error(1)
 }
 
 type LoggerMock struct {}

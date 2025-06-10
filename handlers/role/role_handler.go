@@ -2,7 +2,10 @@ package role
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/Zyprush18/Scorely/helper"
 	"github.com/Zyprush18/Scorely/models/request"
@@ -64,4 +67,49 @@ func (h *HandlerRole) AddRoles(w http.ResponseWriter, r *http.Request) {
 		Message: "Success Create a New Role",
 	})
 
+}
+
+
+func (h *HandlerRole) Show(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if r.Method != helper.Gets {
+		w.WriteHeader(helper.MethodNotAllowed)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Method Not Allowed",
+		})
+		return
+	}
+
+	// ambil id di path url
+	urlPath :=r.URL.Path
+	urlSplit := strings.Split(urlPath, "/")
+	id, err := strconv.Atoi(urlSplit[2])
+	if err != nil {
+		h.logg.Logfile(err.Error())
+		w.WriteHeader(helper.InternalServError)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Internal Server Error",
+		})
+
+		return
+	}
+
+	// ambil data by id
+	resp,err:= h.services.ShowRoleById(id);
+	if err != nil {
+		h.logg.Logfile(err.Error())
+		w.WriteHeader(helper.Notfound)
+		msg := fmt.Sprintf("Not Found data by id: %v", id)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: msg,
+		})
+		return
+	}
+
+	w.WriteHeader(helper.Success)
+	json.NewEncoder(w).Encode(helper.Messages{
+		Message: "Success",
+		Data: resp,
+	})
+	
 }

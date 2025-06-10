@@ -1,0 +1,5 @@
+record not found
+invalid field found for struct github.com/Zyprush18/Scorely/models/response.Roles's field User: define a valid foreign key for relations or implement the Valuer/Scanner interface
+invalid field found for struct github.com/Zyprush18/Scorely/models/response.Roles's field User: define a valid foreign key for relations or implement the Valuer/Scanner interface
+Users: unsupported relations for schema Roles
+record not found

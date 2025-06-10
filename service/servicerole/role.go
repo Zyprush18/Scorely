@@ -2,11 +2,13 @@ package servicerole
 
 import (
 	"github.com/Zyprush18/Scorely/models/request"
+	"github.com/Zyprush18/Scorely/models/response"
 	"github.com/Zyprush18/Scorely/repository/reporole"
 )
 
 type ServiceRole interface {
 	Create(data *request.Roles) error
+	ShowRoleById(id int) (*response.Roles, error)
 }
 
 type RoleRepo struct {
@@ -19,4 +21,14 @@ func NewRoleService(r reporole.RoleService) ServiceRole  {
 
 func (r *RoleRepo) Create(data *request.Roles) error  {
 	return r.Repo.CreateRole(data)
+}
+
+	
+func (r *RoleRepo) ShowRoleById(id int) (*response.Roles, error) {
+	resp, err := r.Repo.ShowById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
