@@ -13,7 +13,7 @@ import (
 )
 
 func RunApp() {
-	pathlog := "./log/app.log"
+	pathlog := "./../log/app.log"
 	initlog:= helper.NewLogger(pathlog)
 	// connect database
 	initDb,err := database.Connect()
@@ -29,6 +29,7 @@ func RunApp() {
 
 	// role route
 	http.HandleFunc("/add/role", roleHandler.AddRoles)
+	http.HandleFunc("/role/{id}", roleHandler.Show)
 
 	fmt.Println("🚀 running on port: 8000")
 	http.ListenAndServe(":8000", nil)

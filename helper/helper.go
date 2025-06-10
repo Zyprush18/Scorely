@@ -17,7 +17,9 @@ const (
 	Success          = http.StatusOK
 	Created          = http.StatusCreated
 	BadRequest       = http.StatusBadRequest
+	Notfound		= http.StatusNotFound
 	MethodNotAllowed = http.StatusMethodNotAllowed
+	InternalServError = http.StatusInternalServerError
 )
 
 const (
