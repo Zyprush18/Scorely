@@ -8,7 +8,7 @@ type Users struct {
 	Password string `json:"password"`
 	RoleId   uint   `json:"role_id"`
 	// belongs to role table
-	// Role Roles `gorm:"foreignKey:RoleId"`
+	// Role Roles 
 	// has many to teacher table
 	// Teacher []Teachers `gorm:"foreignKey:UserId;references:IdUser"`
 	// // has many to student table

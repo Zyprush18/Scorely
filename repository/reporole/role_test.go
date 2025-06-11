@@ -1,6 +1,7 @@
 package reporole
 
 import (
+	"errors"
 	"regexp"
 
 	"testing"
@@ -9,6 +10,51 @@ import (
 	"github.com/Zyprush18/Scorely/models/request"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestGetAllDAtaRole(t *testing.T)  {
+	db, mock, err := SetupMockDb()
+	assert.NoError(t, err)
+	repo := RolesMysql(db)
+
+	dataRole := sqlmock.NewRows([]string{
+		"id_role",
+		"name_role",
+	}).AddRow(1, "Admin")
+
+		dataUser := sqlmock.NewRows([]string{
+		"id_user",
+		"email",
+		"password",
+		"role_id",
+	}).AddRow(1, "admin@gmail.com", "admin123", 1).
+	AddRow(2, "user@gmail.com", "user1232", 1)
+
+	t.Run("Success Get All Data Role", func(t *testing.T) {
+			mock.ExpectQuery("SELECT (.*)").
+			WillReturnRows(dataRole)
+
+			mock.ExpectQuery("SELECT (.*)").
+			WillReturnRows(dataUser)
+
+			data, err := repo.GetAllDataRole()
+			assert.NoError(t, err)
+			assert.NotNil(t, data)
+
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("Failed Get All Data Role", func(t *testing.T) {
+			mock.ExpectQuery("SELECT (.*)").WillReturnError(errors.New("db error"))
+
+			data, err := repo.GetAllDataRole()
+			assert.Error(t, err)
+			assert.Nil(t, data)
+
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+	
+}
+
 
 func TestCreateRole(t *testing.T) {
 	db, mock, err := SetupMockDb()
@@ -22,7 +68,7 @@ func TestCreateRole(t *testing.T) {
 
 	t.Run("Succes Create Role", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectExec(regexp.QuoteMeta("INSERT INTO `roles` ")).WithArgs(sqlmock.AnyArg(), role.NameRole, sqlmock.AnyArg()).WillReturnResult(sqlmock.NewResult(1, 1))
+		mock.ExpectExec(regexp.QuoteMeta("INSERT INTO `roles` ")).WithArgs(role.NameRole).WillReturnResult(sqlmock.NewResult(1, 1))
 		mock.ExpectCommit()
 
 		err := repo.CreateRole(role)
@@ -34,7 +80,7 @@ func TestCreateRole(t *testing.T) {
 
 	t.Run("Failed Create Role", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectExec(regexp.QuoteMeta("INSERT INTO `roles`")).WithArgs(sqlmock.AnyArg(), role.NameRole, sqlmock.AnyArg()).WillReturnError(sqlmock.ErrCancelled)
+		mock.ExpectExec(regexp.QuoteMeta("INSERT INTO `roles`")).WithArgs(role.NameRole).WillReturnError(sqlmock.ErrCancelled)
 		mock.ExpectRollback()
 
 		err := repo.CreateRole(role)
@@ -55,10 +101,23 @@ func TestShowRoleById(t *testing.T) {
 		"name_role",
 	}).AddRow(1, "Admin")
 
+	dataUser := sqlmock.NewRows([]string{
+		"id_user",
+		"email",
+		"password",
+		"role_id",
+	}).AddRow(1, "admin@gmail.com", "admin123", 1)
+
 	t.Run("Success to Show Role By Id", func(t *testing.T) {
 		id_success := 1
 
-		mock.ExpectQuery("SELECT").WillReturnRows(dataRole)
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `roles` WHERE id_role = ? ORDER BY `roles`.`id_role` LIMIT ?")).
+			WithArgs(id_success,1).
+			WillReturnRows(dataRole)
+
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE `users`.`role_id` = ?")).
+			WithArgs(id_success).
+			WillReturnRows(dataUser)
 
 		data, err := repo.ShowById(id_success)
 		assert.NoError(t, err)
@@ -71,12 +130,18 @@ func TestShowRoleById(t *testing.T) {
 	t.Run("Failed to Show Role by Id", func(t *testing.T) {
 		id_failed := 2
 
-		mock.ExpectQuery("SELECT").WillReturnRows(dataRole)
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `roles` WHERE id_role = ? ORDER BY `roles`.`id_role` LIMIT ?")).
+			WithArgs(id_failed, 2).
+			WillReturnRows(dataRole)
+
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE `users`.`role_id` = ?")).
+			WithArgs(id_failed).
+			WillReturnRows(dataUser)
 
 		data, err := repo.ShowById(id_failed)
 		assert.Error(t, err)
 		assert.Nil(t, data)
 
-		assert.NoError(t, mock.ExpectationsWereMet())
+		assert.Error(t, mock.ExpectationsWereMet())
 	})
 }
