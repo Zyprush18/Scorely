@@ -21,6 +21,34 @@ func RoleHandler(s servicerole.ServiceRole, l helper.Loggers) *HandlerRole  {
 	return &HandlerRole{services: s, logg: l}
 }
 
+
+func (h *HandlerRole) GetRole(w http.ResponseWriter, r *http.Request)  {
+	w.Header().Set("Content-Type", "application/json")
+	if r.Method != helper.Gets {
+		w.WriteHeader(helper.MethodNotAllowed)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Method Not Allowed",
+		})
+		return
+	}
+
+	resp, err := h.services.GetAllData()
+	if err != nil {
+		h.logg.Logfile(err.Error())
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Failed Get All Data Role",
+		})
+		return
+	}
+
+	w.WriteHeader(helper.Success)
+	json.NewEncoder(w).Encode(helper.Messages{
+		Message: "Success",
+		Data: resp,
+	})
+}
+
 func (h *HandlerRole) AddRoles(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if r.Method != helper.Post {

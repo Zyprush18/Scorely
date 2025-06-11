@@ -28,6 +28,7 @@ func RunApp() {
 	roleHandler := role.RoleHandler(roleService, initlog)
 
 	// role route
+	http.HandleFunc("/role", roleHandler.GetRole)
 	http.HandleFunc("/add/role", roleHandler.AddRoles)
 	http.HandleFunc("/role/{id}", roleHandler.Show)
 

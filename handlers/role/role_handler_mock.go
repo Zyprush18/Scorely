@@ -27,3 +27,8 @@ type LoggerMock struct {}
 func (l LoggerMock) Logfile(msg string)  {
 	fmt.Println(msg)
 }
+
+func (s *ServiceRole) GetAllData() ([]response.Roles, error)  {
+	args := s.Called()
+	return args.Get(0).([]response.Roles), args.Error(1)
+}
