@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/Zyprush18/Scorely/helper"
 	"github.com/Zyprush18/Scorely/models/request"
@@ -14,11 +15,96 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-var Mockservice = &ServiceRole{Mock: mock.Mock{}}
-var Mocklogger = &LoggerMock{}
+// var Mockservice = &ServiceRole{Mock: mock.Mock{}}
+// var Mocklogger = &LoggerMock{}
+
+
+func TestHandlerGetAllData(t *testing.T)  {
+		data := []response.Roles{
+			{
+				IdRole:   1,
+				NameRole: "Admin",
+				Users: []response.Users{
+					{
+						IdUser:   1,
+						Email:    "admin@gmail.com",
+						Password: "admin123",
+						RoleId:   1,
+					},
+					{
+						IdUser:   2,
+						Email:    "admin2@gmail.com",
+						Password: "admin123",
+						RoleId:   1,
+					},
+				},
+				Models: helper.Models{
+					CreatedAt: time.Now(),
+				},
+			},
+			{
+				IdRole:   2,
+				NameRole: "User",
+				Users: []response.Users{
+					{
+						IdUser:   3,
+						Email:    "user@gmail.com",
+						Password: "user123",
+						RoleId:   2,
+					},
+					{
+						IdUser:   4,
+						Email:    "user2@gmail.com",
+						Password: "user123",
+						RoleId:   2,
+					},
+				},
+				Models: helper.Models{
+					CreatedAt: time.Now(),
+				},
+			},
+		}
+	t.Run("Success Get All Data", func(t *testing.T) {
+		// di buat di sini biar nggak jadi pararel/menimpa return value subtest di bwah
+		Mockservice := &ServiceRole{Mock: mock.Mock{}}
+		Mocklogger := &LoggerMock{}
+		handler := RoleHandler(Mockservice,Mocklogger)
+		req:= httptest.NewRequest(helper.Gets, "/role", nil)
+		req.Header.Set("Content-Type","application/json")
+
+		w := httptest.NewRecorder()
+
+		Mockservice.Mock.On("GetAllData").Return(data, nil)
+
+		handler.GetRole(w,req)
+
+		assert.Equal(t, helper.Success, w.Code)
+
+		Mockservice.Mock.AssertExpectations(t)
+	})
+
+	t.Run("Failed Get All Data", func(t *testing.T) {
+		Mockservice := &ServiceRole{Mock: mock.Mock{}}
+		Mocklogger := &LoggerMock{}
+		handler := RoleHandler(Mockservice,Mocklogger)
+		req:= httptest.NewRequest(helper.Gets, "/role", nil)
+		req.Header.Set("Content-Type","application/json")
+
+		w := httptest.NewRecorder()
+
+		Mockservice.Mock.On("GetAllData").Return([]response.Roles(nil), errors.New("Database is refused"))
+
+		handler.GetRole(w,req)
+
+		assert.Equal(t, helper.BadRequest, w.Code)
+
+		Mockservice.Mock.AssertExpectations(t)
+	})
+}
 
 func TestHandlerCreate(t *testing.T) {
-
+	Mockservice := &ServiceRole{Mock: mock.Mock{}}
+	Mocklogger := &LoggerMock{}
 	handler := RoleHandler(Mockservice, Mocklogger)
 
 	t.Run("Succes Create a New Role", func(t *testing.T) {
@@ -60,6 +146,8 @@ func TestHandlerCreate(t *testing.T) {
 
 
 func TestHandlerShow(t *testing.T)  {
+	Mockservice := &ServiceRole{Mock: mock.Mock{}}
+	Mocklogger := &LoggerMock{}
 	handler := RoleHandler(Mockservice, Mocklogger)
 
 	data:= &response.Roles{

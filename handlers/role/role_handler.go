@@ -141,3 +141,52 @@ func (h *HandlerRole) Show(w http.ResponseWriter, r *http.Request) {
 	})
 	
 }
+
+func (h *HandlerRole) Update(w http.ResponseWriter, r *http.Request)  {
+	w.Header().Set("Content-Type", "application/json")
+	if r.Method != helper.Put {
+		w.WriteHeader(helper.MethodNotAllowed)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Method Not Allowed",
+		})
+		return
+	}
+	user := &request.Roles{}
+
+	// cek body nya kosong atau tidak
+	if err:=json.NewDecoder(r.Body).Decode(user);err != nil {
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Bad Request",
+		})
+		return
+	}
+
+	// ambil id di path url
+	urlPath :=r.URL.Path
+	urlSplit := strings.Split(urlPath, "/")
+	id, err := strconv.Atoi(urlSplit[2])
+	if err != nil {
+		h.logg.Logfile(err.Error())
+		w.WriteHeader(helper.InternalServError)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Internal Server Error",
+		})
+
+		return
+	}
+
+	if err:=h.services.UpdateRole(id,user);err != nil {
+		h.logg.Logfile(err.Error())
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Failed Update Role",
+		})
+		return
+	}
+
+	w.WriteHeader(helper.Success)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Success Update Role",
+		})
+}

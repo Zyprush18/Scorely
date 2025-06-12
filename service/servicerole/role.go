@@ -1,7 +1,6 @@
 package servicerole
 
 import (
-	"fmt"
 
 	"github.com/Zyprush18/Scorely/models/request"
 	"github.com/Zyprush18/Scorely/models/response"
@@ -12,6 +11,7 @@ type ServiceRole interface {
 	GetAllData() ([]response.Roles, error)
 	Create(data *request.Roles) error
 	ShowRoleById(id int) (*response.Roles, error)
+	UpdateRole(id int, data *request.Roles) error
 }
 
 type RoleRepo struct {
@@ -23,7 +23,6 @@ func NewRoleService(r reporole.RoleService) ServiceRole  {
 }
 
 func (r *RoleRepo) GetAllData() ([]response.Roles, error){
-	fmt.Println("cuyyyy gua di panggil")
 	return r.Repo.GetAllDataRole()
 }
 
@@ -39,4 +38,13 @@ func (r *RoleRepo) ShowRoleById(id int) (*response.Roles, error) {
 	}
 
 	return resp, nil
+}
+
+func (r *RoleRepo) UpdateRole(id int, data *request.Roles) error  {
+	err := r.Repo.UpdateRole(id,data)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

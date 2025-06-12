@@ -1,0 +1,757 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>cmd: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/Zyprush18/Scorely/cmd/main.go (0.0%)</option>
+				
+				<option value="file1">github.com/Zyprush18/Scorely/database/connect.go (0.0%)</option>
+				
+				<option value="file2">github.com/Zyprush18/Scorely/handlers/role/role_handler.go (45.1%)</option>
+				
+				<option value="file3">github.com/Zyprush18/Scorely/handlers/role/role_handler_mock.go (77.8%)</option>
+				
+				<option value="file4">github.com/Zyprush18/Scorely/helper/helper.go (55.0%)</option>
+				
+				<option value="file5">github.com/Zyprush18/Scorely/repository/reporole/role.go (100.0%)</option>
+				
+				<option value="file6">github.com/Zyprush18/Scorely/repository/reporole/role_mock.go (71.4%)</option>
+				
+				<option value="file7">github.com/Zyprush18/Scorely/routes/web.go (0.0%)</option>
+				
+				<option value="file8">github.com/Zyprush18/Scorely/service/servicerole/role.go (63.6%)</option>
+				
+				<option value="file9">github.com/Zyprush18/Scorely/service/servicerole/role_service_mock.go (75.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import "github.com/Zyprush18/Scorely/routes"
+
+func main()<span class="cov0" title="0">{
+        routes.RunApp()
+}</pre>
+		
+		<pre class="file" id="file1" style="display: none">package database
+
+import (
+        "fmt"
+
+        "github.com/Zyprush18/Scorely/models/entity"
+        "gorm.io/driver/mysql"
+        "gorm.io/gorm"
+        // "gorm.io/gorm/logger"
+)
+
+func Connect() (*gorm.DB,error) <span class="cov0" title="0">{
+
+        dsn := "root:@tcp(127.0.0.1:3306)/scorely?charset=utf8mb4&amp;parseTime=True&amp;loc=Local"
+        db, err := gorm.Open(mysql.Open(dsn), &amp;gorm.Config{
+                // Logger: logger.Default.LogMode(logger.Info), 
+        })
+        if err != nil </span><span class="cov0" title="0">{
+                fmt.Println("Failed Connect Database")
+                return nil,err
+        }</span>
+
+
+        <span class="cov0" title="0">errs := db.AutoMigrate(
+                &amp;entity.Roles{},
+                &amp;entity.Users{},
+                &amp;entity.Teachers{},
+                &amp;entity.Students{},
+                &amp;entity.Class{},      
+                &amp;entity.Levels{},
+                &amp;entity.Majors{},
+                &amp;entity.Exam_Questions{},
+                &amp;entity.Option_Questions{},
+                &amp;entity.Answer_Questions{},
+                &amp;entity.Exams{},
+                &amp;entity.Subjects{},
+        )
+        if errs != nil </span><span class="cov0" title="0">{
+                fmt.Println("Failed Migrate Table Tp Database")
+                return nil,err
+        }</span>
+
+        <span class="cov0" title="0">return db,nil</span>
+}</pre>
+		
+		<pre class="file" id="file2" style="display: none">package role
+
+import (
+        "encoding/json"
+        "fmt"
+        "net/http"
+        "strconv"
+        "strings"
+
+        "github.com/Zyprush18/Scorely/helper"
+        "github.com/Zyprush18/Scorely/models/request"
+        "github.com/Zyprush18/Scorely/service/servicerole"
+)
+
+type HandlerRole struct {
+        services servicerole.ServiceRole
+        logg helper.Loggers
+}
+
+func RoleHandler(s servicerole.ServiceRole, l helper.Loggers) *HandlerRole  <span class="cov8" title="1">{
+        return &amp;HandlerRole{services: s, logg: l}
+}</span>
+
+
+func (h *HandlerRole) GetRole(w http.ResponseWriter, r *http.Request)  <span class="cov8" title="1">{
+        w.Header().Set("Content-Type", "application/json")
+        if r.Method != helper.Gets </span><span class="cov0" title="0">{
+                w.WriteHeader(helper.MethodNotAllowed)
+                json.NewEncoder(w).Encode(helper.Messages{
+                        Message: "Method Not Allowed",
+                })
+                return
+        }</span>
+
+        <span class="cov8" title="1">resp, err := h.services.GetAllData()
+        if err != nil </span><span class="cov8" title="1">{
+                h.logg.Logfile(err.Error())
+                w.WriteHeader(helper.BadRequest)
+                json.NewEncoder(w).Encode(helper.Messages{
+                        Message: "Failed Get All Data Role",
+                })
+                return
+        }</span>
+
+        <span class="cov8" title="1">w.WriteHeader(helper.Success)
+        json.NewEncoder(w).Encode(helper.Messages{
+                Message: "Success",
+                Data: resp,
+        })</span>
+}
+
+func (h *HandlerRole) AddRoles(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        w.Header().Set("Content-Type", "application/json")
+        if r.Method != helper.Post </span><span class="cov0" title="0">{
+                w.WriteHeader(helper.MethodNotAllowed)
+                json.NewEncoder(w).Encode(helper.Messages{
+                        Message: "Method Not Allowed",
+                })
+                return
+        }</span>
+
+        <span class="cov8" title="1">roleReq := new(request.Roles)
+
+        //cek body form nya
+        if err := json.NewDecoder(r.Body).Decode(&amp;roleReq); err != nil </span><span class="cov0" title="0">{
+                w.WriteHeader(helper.BadRequest)
+                json.NewEncoder(w).Encode(helper.Messages{
+                        Message: "Bad Request",
+                })
+                return
+        }</span>
+
+        // validasi
+        <span class="cov8" title="1">if err := helper.ValidateForm(roleReq); err != nil </span><span class="cov8" title="1">{
+                w.WriteHeader(helper.BadRequest)
+                json.NewEncoder(w).Encode(helper.Messages{
+                        Message: "Validation Failed",
+                        Errors:  err.Error(),
+                })
+
+                return
+        }</span>
+
+        <span class="cov8" title="1">if err := h.services.Create(roleReq); err != nil </span><span class="cov0" title="0">{
+                h.logg.Logfile(err.Error())
+                w.WriteHeader(helper.BadRequest)
+                json.NewEncoder(w).Encode(helper.Messages{
+                        Message: "Failed Add Role",
+                })
+                return
+        }</span>
+
+        <span class="cov8" title="1">w.WriteHeader(helper.Created)
+        json.NewEncoder(w).Encode(helper.Messages{
+                Message: "Success Create a New Role",
+        })</span>
+
+}
+
+
+func (h *HandlerRole) Show(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        w.Header().Set("Content-Type", "application/json")
+        if r.Method != helper.Gets </span><span class="cov0" title="0">{
+                w.WriteHeader(helper.MethodNotAllowed)
+                json.NewEncoder(w).Encode(helper.Messages{
+                        Message: "Method Not Allowed",
+                })
+                return
+        }</span>
+
+        // ambil id di path url
+        <span class="cov8" title="1">urlPath :=r.URL.Path
+        urlSplit := strings.Split(urlPath, "/")
+        id, err := strconv.Atoi(urlSplit[2])
+        if err != nil </span><span class="cov0" title="0">{
+                h.logg.Logfile(err.Error())
+                w.WriteHeader(helper.InternalServError)
+                json.NewEncoder(w).Encode(helper.Messages{
+                        Message: "Internal Server Error",
+                })
+
+                return
+        }</span>
+
+        // ambil data by id
+        <span class="cov8" title="1">resp,err:= h.services.ShowRoleById(id);
+        if err != nil </span><span class="cov8" title="1">{
+                h.logg.Logfile(err.Error())
+                w.WriteHeader(helper.Notfound)
+                msg := fmt.Sprintf("Not Found data by id: %v", id)
+                json.NewEncoder(w).Encode(helper.Messages{
+                        Message: msg,
+                })
+                return
+        }</span>
+
+        <span class="cov8" title="1">w.WriteHeader(helper.Success)
+        json.NewEncoder(w).Encode(helper.Messages{
+                Message: "Success",
+                Data: resp,
+        })</span>
+        
+}
+
+func (h *HandlerRole) Update(w http.ResponseWriter, r *http.Request)  <span class="cov0" title="0">{
+        w.Header().Set("Content-Type", "application/json")
+        if r.Method != helper.Put </span><span class="cov0" title="0">{
+                w.WriteHeader(helper.MethodNotAllowed)
+                json.NewEncoder(w).Encode(helper.Messages{
+                        Message: "Method Not Allowed",
+                })
+                return
+        }</span>
+        <span class="cov0" title="0">user := &amp;request.Roles{}
+
+        // cek body nya kosong atau tidak
+        if err:=json.NewDecoder(r.Body).Decode(user);err != nil </span><span class="cov0" title="0">{
+                w.WriteHeader(helper.BadRequest)
+                json.NewEncoder(w).Encode(helper.Messages{
+                        Message: "Bad Request",
+                })
+                return
+        }</span>
+
+        // ambil id di path url
+        <span class="cov0" title="0">urlPath :=r.URL.Path
+        urlSplit := strings.Split(urlPath, "/")
+        id, err := strconv.Atoi(urlSplit[2])
+        if err != nil </span><span class="cov0" title="0">{
+                h.logg.Logfile(err.Error())
+                w.WriteHeader(helper.InternalServError)
+                json.NewEncoder(w).Encode(helper.Messages{
+                        Message: "Internal Server Error",
+                })
+
+                return
+        }</span>
+
+        <span class="cov0" title="0">if err:=h.services.UpdateRole(id,user);err != nil </span><span class="cov0" title="0">{
+                h.logg.Logfile(err.Error())
+                w.WriteHeader(helper.BadRequest)
+                json.NewEncoder(w).Encode(helper.Messages{
+                        Message: "Failed Update Role",
+                })
+                return
+        }</span>
+
+        <span class="cov0" title="0">w.WriteHeader(helper.Success)
+                json.NewEncoder(w).Encode(helper.Messages{
+                        Message: "Success Update Role",
+                })</span>
+}</pre>
+		
+		<pre class="file" id="file3" style="display: none">package role
+
+import (
+        "fmt"
+
+        "github.com/Zyprush18/Scorely/models/request"
+        "github.com/Zyprush18/Scorely/models/response"
+        "github.com/stretchr/testify/mock"
+)
+
+type ServiceRole struct {
+        mock.Mock
+}
+
+func (s *ServiceRole) Create(data *request.Roles) error  <span class="cov8" title="1">{
+        args := s.Called(data)
+        return args.Error(0)
+}</span>
+
+func (s *ServiceRole) ShowRoleById(id int) (*response.Roles, error)  <span class="cov8" title="1">{
+        args := s.Called(id)
+        return args.Get(0).(*response.Roles), args.Error(1)
+}</span>
+
+type LoggerMock struct {}
+
+func (l LoggerMock) Logfile(msg string)  <span class="cov8" title="1">{
+        fmt.Println(msg)
+}</span>
+
+func (s *ServiceRole) GetAllData() ([]response.Roles, error)  <span class="cov8" title="1">{
+        args := s.Called()
+        return args.Get(0).([]response.Roles), args.Error(1)
+}</span>
+
+func (s *ServiceRole) UpdateRole(id int, data *request.Roles) error  <span class="cov0" title="0">{
+        args := s.Called(id, data)
+        return args.Error(0)
+}</pre>
+		
+		<pre class="file" id="file4" style="display: none">package helper
+
+import (
+        "errors"
+        "fmt"
+        "log"
+        "net/http"
+        "os"
+        "reflect"
+        "strings"
+        "time"
+
+        "github.com/go-playground/validator/v10"
+)
+
+const (
+        Success          = http.StatusOK
+        Created          = http.StatusCreated
+        BadRequest       = http.StatusBadRequest
+        Notfound                = http.StatusNotFound
+        MethodNotAllowed = http.StatusMethodNotAllowed
+        InternalServError = http.StatusInternalServerError
+)
+
+const (
+        Gets = http.MethodGet
+        Post = http.MethodPost
+        Put        = http.MethodPut
+)
+
+// struct message
+type Messages struct {
+        Message string `json:"message"`
+        Data    any    `json:"data,omitempty"`
+        Errors  any    `json:"error,omitempty"`
+}
+
+// createdat and updatedat struct
+type Models struct {
+        CreatedAt time.Time `json:"created_at"`
+        UpdatedAt time.Time `json:"updated_at,omitempty" gorm:"default:null"`
+}
+
+type Loggers interface {
+        Logfile(logs string)
+}
+
+type Logger struct {
+        path string
+}
+
+func NewLogger(pathfile string) Loggers  <span class="cov0" title="0">{
+        return Logger{path: pathfile}
+}</span>
+
+// added log
+func (l Logger) Logfile(logs string) <span class="cov0" title="0">{
+        file, err := os.OpenFile(l.path, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Failed Open file: %v", err)
+        }</span>
+
+        <span class="cov0" title="0">defer file.Close()
+
+        if _, err := file.WriteString(logs + "\n"); err != nil </span><span class="cov0" title="0">{
+                log.Fatalln("Failed to Add log")
+        }</span>
+        <span class="cov0" title="0">fmt.Println("Success write log")</span>
+}
+
+func ValidateForm(data interface{}) error <span class="cov8" title="1">{
+        validate := validator.New()
+
+        // ambil field berdasarkan format json
+        validate.RegisterTagNameFunc(func(field reflect.StructField) string </span><span class="cov8" title="1">{
+                name := strings.Split(field.Tag.Get("json"), ",")[0]
+                if name == "-" </span><span class="cov0" title="0">{
+                        return ""
+                }</span>
+
+                <span class="cov8" title="1">return name</span>
+        })
+
+        <span class="cov8" title="1">if err := validate.Struct(data); err != nil </span><span class="cov8" title="1">{
+                var validateerr validator.ValidationErrors
+                if errors.As(err, &amp;validateerr) </span><span class="cov8" title="1">{
+                        for _, v := range validateerr </span><span class="cov8" title="1">{
+                                return errors.New(v.Field() + " is " + v.Tag())
+                        }</span>
+                }
+        }
+
+        <span class="cov8" title="1">return nil</span>
+}</pre>
+		
+		<pre class="file" id="file5" style="display: none">package reporole
+
+import (
+
+        "github.com/Zyprush18/Scorely/helper"
+        "github.com/Zyprush18/Scorely/models/entity"
+        "github.com/Zyprush18/Scorely/models/request"
+        "github.com/Zyprush18/Scorely/models/response"
+
+        "gorm.io/gorm"
+)
+
+type RoleService interface {
+        GetAllDataRole() ([]response.Roles, error)
+        CreateRole(data *request.Roles) error
+        ShowById(id int) (*response.Roles, error)
+        UpdateRole(id int, data *request.Roles) error
+}
+
+type RoleMysql struct {
+        db *gorm.DB
+}
+
+func RolesMysql(db *gorm.DB) RoleMysql <span class="cov8" title="1">{
+        return RoleMysql{db: db}
+}</span>
+
+// GetAllData
+func (r RoleMysql) GetAllDataRole() ([]response.Roles, error) <span class="cov8" title="1">{
+        var RoleModel []entity.Roles
+        if err := r.db.Table("roles").Preload("Users").Find(&amp;RoleModel).Error;err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">resp := []response.Roles{}
+
+        for _, r := range RoleModel </span><span class="cov8" title="1">{
+                resp = append(resp, response.Roles{
+                        IdRole: r.IdRole,
+                        NameRole: r.NameRole,
+                        Users: ResponseRole(r.Users),
+                        Models: helper.Models{
+                                CreatedAt: r.CreatedAt,
+                                UpdatedAt: r.UpdatedAt,
+                        },
+                })
+        }</span>
+
+        <span class="cov8" title="1">return resp, nil</span>
+}
+
+// create
+func (r RoleMysql) CreateRole(data *request.Roles) error <span class="cov8" title="1">{
+        if err := r.db.Table("roles").Create(&amp;data).Error; err != nil </span><span class="cov8" title="1">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// show
+func (r RoleMysql) ShowById(id int) (*response.Roles, error) <span class="cov8" title="1">{
+        var rolemodel entity.Roles
+
+        if err := r.db.Model(&amp;rolemodel).Preload("Users").Where("id_role = ?", id).First(&amp;rolemodel).Error; err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">resp := response.Roles{
+                IdRole: rolemodel.IdRole,
+                NameRole: rolemodel.NameRole,
+                Users: ResponseRole(rolemodel.Users),
+                Models: helper.Models{
+                        CreatedAt: rolemodel.CreatedAt,
+                        UpdatedAt: rolemodel.UpdatedAt,
+                },
+        }
+
+        return &amp;resp, nil</span>
+
+}
+
+func (r RoleMysql) UpdateRole(id int, data *request.Roles) error  <span class="cov8" title="1">{
+        if err:= r.db.Table("roles").Where("id_role = ?", id).Updates(&amp;data).Error;err != nil </span><span class="cov8" title="1">{
+                return  err
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+
+func ResponseRole(data []entity.Users) []response.Users <span class="cov8" title="1">{
+        var result []response.Users
+        for _, d := range data </span><span class="cov8" title="1">{
+                        result = append(result, response.Users{
+                                IdUser: d.IdUser,
+                                Email: d.Email,
+                                Password: d.Password,
+                                RoleId: d.RoleId,
+                        })
+        }</span>
+        <span class="cov8" title="1">return result</span>
+}</pre>
+		
+		<pre class="file" id="file6" style="display: none">package reporole
+
+import (
+        "github.com/DATA-DOG/go-sqlmock"
+        "gorm.io/driver/mysql"
+        "gorm.io/gorm"
+)
+
+func SetupMockDb() (*gorm.DB, sqlmock.Sqlmock, error)  <span class="cov8" title="1">{
+        sqlDb, mock,err := sqlmock.New()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, nil,err
+        }</span> 
+        // defer sqlDb.Close()
+
+        <span class="cov8" title="1">db, err := gorm.Open(mysql.New(mysql.Config{
+                Conn: sqlDb,
+                SkipInitializeWithVersion: true,
+        }), &amp;gorm.Config{}) 
+
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, nil,err
+        }</span>
+
+        <span class="cov8" title="1">return db, mock, nil</span>
+}</pre>
+		
+		<pre class="file" id="file7" style="display: none">package routes
+
+import (
+        "fmt"
+        "log"
+        "net/http"
+
+        "github.com/Zyprush18/Scorely/database"
+        "github.com/Zyprush18/Scorely/handlers/role"
+        "github.com/Zyprush18/Scorely/helper"
+        "github.com/Zyprush18/Scorely/repository/reporole"
+        "github.com/Zyprush18/Scorely/service/servicerole"
+)
+
+func RunApp() <span class="cov0" title="0">{
+        pathlog := "./../log/app.log"
+        initlog:= helper.NewLogger(pathlog)
+        // connect database
+        initDb,err := database.Connect()
+        if err != nil </span><span class="cov0" title="0">{
+                initlog.Logfile(err.Error())
+                log.Fatalln("Connection Refused")
+        }</span>
+
+        // role
+        <span class="cov0" title="0">roleRepo := reporole.RolesMysql(initDb)
+        roleService := servicerole.NewRoleService(roleRepo)
+        roleHandler := role.RoleHandler(roleService, initlog)
+
+        // role route
+        http.HandleFunc("/role", roleHandler.GetRole)
+        http.HandleFunc("/add/role", roleHandler.AddRoles)
+        http.HandleFunc("/role/{id}", roleHandler.Show)
+        http.HandleFunc("/role/{id}/update", roleHandler.Update)
+
+        fmt.Println("🚀 running on port: 8000")
+        http.ListenAndServe(":8000", nil)</span>
+}
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package servicerole
+
+import (
+
+        "github.com/Zyprush18/Scorely/models/request"
+        "github.com/Zyprush18/Scorely/models/response"
+        "github.com/Zyprush18/Scorely/repository/reporole"
+)
+
+type ServiceRole interface {
+        GetAllData() ([]response.Roles, error)
+        Create(data *request.Roles) error
+        ShowRoleById(id int) (*response.Roles, error)
+        UpdateRole(id int, data *request.Roles) error
+}
+
+type RoleRepo struct {
+        Repo reporole.RoleService
+}
+
+func NewRoleService(r reporole.RoleService) ServiceRole  <span class="cov8" title="1">{
+        return &amp;RoleRepo{Repo: r}
+}</span>
+
+func (r *RoleRepo) GetAllData() ([]response.Roles, error)<span class="cov8" title="1">{
+        return r.Repo.GetAllDataRole()
+}</span>
+
+func (r *RoleRepo) Create(data *request.Roles) error  <span class="cov8" title="1">{
+        return r.Repo.CreateRole(data)
+}</span>
+
+        
+func (r *RoleRepo) ShowRoleById(id int) (*response.Roles, error) <span class="cov8" title="1">{
+        resp, err := r.Repo.ShowById(id)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return resp, nil</span>
+}
+
+func (r *RoleRepo) UpdateRole(id int, data *request.Roles) error  <span class="cov0" title="0">{
+        err := r.Repo.UpdateRole(id,data)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}</pre>
+		
+		<pre class="file" id="file9" style="display: none">package servicerole
+
+import (
+
+        "github.com/Zyprush18/Scorely/models/request"
+        "github.com/Zyprush18/Scorely/models/response"
+        "github.com/stretchr/testify/mock"
+)
+
+type RepoRoleMock struct {
+        mock.Mock
+}
+
+
+func (m *RepoRoleMock) CreateRole(data *request.Roles) error <span class="cov8" title="1">{
+        args := m.Called(data)
+        return args.Error(0)
+}</span>
+
+func (m *RepoRoleMock) ShowById(id int) (*response.Roles, error)  <span class="cov8" title="1">{
+        args := m.Called(id)
+        return args.Get(0).(*response.Roles), args.Error(1)
+}</span>
+
+func (m *RepoRoleMock) GetAllDataRole() ([]response.Roles, error)  <span class="cov8" title="1">{
+        args := m.Called()
+
+        return args.Get(0).([]response.Roles), args.Error(1)
+}</span>
+
+func (m *RepoRoleMock) UpdateRole(id int, data *request.Roles) error <span class="cov0" title="0">{
+        args := m.Called(id,data)
+        return args.Error(0)
+}</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

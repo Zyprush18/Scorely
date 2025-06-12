@@ -32,3 +32,8 @@ func (s *ServiceRole) GetAllData() ([]response.Roles, error)  {
 	args := s.Called()
 	return args.Get(0).([]response.Roles), args.Error(1)
 }
+
+func (s *ServiceRole) UpdateRole(id int, data *request.Roles) error  {
+	args := s.Called(id, data)
+	return args.Error(0)
+}

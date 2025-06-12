@@ -14,6 +14,7 @@ type RoleService interface {
 	GetAllDataRole() ([]response.Roles, error)
 	CreateRole(data *request.Roles) error
 	ShowById(id int) (*response.Roles, error)
+	UpdateRole(id int, data *request.Roles) error
 }
 
 type RoleMysql struct {
@@ -50,13 +51,6 @@ func (r RoleMysql) GetAllDataRole() ([]response.Roles, error) {
 
 // create
 func (r RoleMysql) CreateRole(data *request.Roles) error {
-	// respRole := &response.Roles{
-	// 	NameRole: data.NameRole,
-	// 	Models: helper.Models{
-	// 		CreatedAt: time.Now(),
-	// 	},
-	// }
-
 	if err := r.db.Table("roles").Create(&data).Error; err != nil {
 		return err
 	}
@@ -85,6 +79,15 @@ func (r RoleMysql) ShowById(id int) (*response.Roles, error) {
 	return &resp, nil
 
 }
+
+func (r RoleMysql) UpdateRole(id int, data *request.Roles) error  {
+	if err:= r.db.Table("roles").Where("id_role = ?", id).Updates(&data).Error;err != nil {
+		return  err
+	}
+
+	return nil
+}
+
 
 func ResponseRole(data []entity.Users) []response.Users {
 	var result []response.Users
