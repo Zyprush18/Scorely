@@ -25,6 +25,7 @@ const (
 const (
 	Gets = http.MethodGet
 	Post = http.MethodPost
+	Put	= http.MethodPut
 )
 
 // struct message

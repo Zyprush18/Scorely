@@ -2,7 +2,6 @@ package servicerole
 
 import (
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
@@ -10,10 +9,8 @@ import (
 	"github.com/Zyprush18/Scorely/models/request"
 	"github.com/Zyprush18/Scorely/models/response"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
-var Mockservice = RepoRoleMock{Mock: mock.Mock{}}
 
 func TestGetAllData(t *testing.T) {
 	t.Run("Success Get All Data Role", func(t *testing.T) {
@@ -70,37 +67,36 @@ func TestGetAllData(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, resp)
 
-		Mockservice.AssertExpectations(t)
+		mock.AssertExpectations(t)
 	})
 
 	t.Run("Failed Get All Data Role", func(t *testing.T) {
-		service := NewRoleService(&Mockservice)
+		mock := new(RepoRoleMock)
+		service := NewRoleService(mock)
 
-		Mockservice.On("GetAllDataRole").Return(nil, errors.New("Database is refused"))
+		mock.On("GetAllDataRole").Return([]response.Roles(nil), errors.New("Database is refused"))
 
 		resperr, err := service.GetAllData()
-		fmt.Println(resperr)
-		fmt.Println(err)
-
 		assert.Error(t, err)
 		assert.Nil(t, resperr)
 
-		Mockservice.AssertExpectations(t)
+		mock.AssertExpectations(t)
 	})
 
 }
 
 func TestCreateServiceRole(t *testing.T) {
-	service := NewRoleService(&Mockservice)
+	mock := new(RepoRoleMock)
+	service := NewRoleService(mock)
 	t.Run("Service Success Create a New Role", func(t *testing.T) {
 		rolePass := &request.Roles{
 			NameRole: "Admin",
 		}
-		Mockservice.On("CreateRole", rolePass).Return(nil)
+		mock.On("CreateRole", rolePass).Return(nil)
 
 		err := service.Create(rolePass)
 		assert.NoError(t, err)
-		Mockservice.AssertExpectations(t)
+		mock.AssertExpectations(t)
 
 	})
 
@@ -108,42 +104,47 @@ func TestCreateServiceRole(t *testing.T) {
 		roleFails := &request.Roles{
 			NameRole: "",
 		}
-		Mockservice.On("CreateRole", roleFails).Return(errors.New("failed"))
+		mock.On("CreateRole", roleFails).Return(errors.New("failed"))
 		errs := service.Create(roleFails)
 
 		assert.Error(t, errs)
-		Mockservice.AssertExpectations(t)
+		mock.AssertExpectations(t)
 	})
 
 }
 
 func TestShowRoleById(t *testing.T) {
-	servicerole := NewRoleService(&Mockservice)
+	mock := new(RepoRoleMock)
+	servicerole := NewRoleService(mock)
 	data := &response.Roles{
 		IdRole:   1,
 		NameRole: "Admin",
 	}
 	t.Run("Success Show Role by id", func(t *testing.T) {
 
-		Mockservice.On("ShowById", 1).Return(data, nil)
+		mock.On("ShowById", 1).Return(data, nil)
 
 		resp, err := servicerole.ShowRoleById(1)
 		assert.NoError(t, err)
 		assert.Equal(t, uint(1), resp.IdRole)
 		assert.Equal(t, "Admin", resp.NameRole)
 
-		Mockservice.AssertExpectations(t)
+		mock.AssertExpectations(t)
 	})
 
 	t.Run("Failed Show Role by id", func(t *testing.T) {
 
-		Mockservice.On("ShowById", 2).Return(data, errors.New("Not Found role id: 2"))
+		mock.On("ShowById", 2).Return(data, errors.New("Not Found role id: 2"))
 
 		resp, err := servicerole.ShowRoleById(2)
 
 		assert.Error(t, err)
 		assert.Nil(t, resp)
 
-		Mockservice.AssertExpectations(t)
+		mock.AssertExpectations(t)
 	})
+}
+
+func TestUpdateRole(t *testing.T)  {
+	
 }

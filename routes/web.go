@@ -31,6 +31,7 @@ func RunApp() {
 	http.HandleFunc("/role", roleHandler.GetRole)
 	http.HandleFunc("/add/role", roleHandler.AddRoles)
 	http.HandleFunc("/role/{id}", roleHandler.Show)
+	http.HandleFunc("/role/{id}/update", roleHandler.Update)
 
 	fmt.Println("🚀 running on port: 8000")
 	http.ListenAndServe(":8000", nil)
