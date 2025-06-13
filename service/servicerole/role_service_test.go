@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
 func TestGetAllData(t *testing.T) {
 	t.Run("Success Get All Data Role", func(t *testing.T) {
 		mock := new(RepoRoleMock)
@@ -145,6 +144,52 @@ func TestShowRoleById(t *testing.T) {
 	})
 }
 
-func TestUpdateRole(t *testing.T)  {
-	
+func TestUpdateRole(t *testing.T) {
+	mock := new(RepoRoleMock)
+	servicerole := NewRoleService(mock)
+
+	data := &request.Roles{
+		NameRole: "Admin",
+	}
+	t.Run("Success Update Role", func(t *testing.T) {
+		mock.On("UpdateRole", 1, data).Return(nil)
+
+		err := servicerole.UpdateRole(1, data)
+		assert.NoError(t, err)
+
+		mock.AssertExpectations(t)
+	})
+
+	t.Run("Failed Delete Role", func(t *testing.T) {
+		mock.On("UpdateRole", 90,data).Return(errors.New("Not Found Role Id: 90"))
+
+		err := servicerole.UpdateRole(90, data)
+
+		assert.Error(t, err)
+
+		mock.AssertExpectations(t)
+	})
+}
+
+func TestDeleteRole(t *testing.T)  {
+	mock := new(RepoRoleMock)
+	servicerepo := NewRoleService(mock)
+
+	t.Run("Success Delete Role", func(t *testing.T) {
+		mock.On("DeleteRole", 1).Return(nil)
+
+		err:=servicerepo.DeleteRole(1)
+		assert.NoError(t, err)
+
+		mock.AssertExpectations(t)
+	})
+
+	t.Run("Failed Delete Role", func(t *testing.T) {
+		mock.On("DeleteRole", 3).Return(errors.New("Not Found Id_Role: 3"))
+
+		err:=servicerepo.DeleteRole(3)
+		assert.Error(t, err)
+
+		mock.AssertExpectations(t)
+	})
 }

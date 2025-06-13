@@ -15,6 +15,7 @@ type RoleService interface {
 	CreateRole(data *request.Roles) error
 	ShowById(id int) (*response.Roles, error)
 	UpdateRole(id int, data *request.Roles) error
+	DeleteRole(id int) error
 }
 
 type RoleMysql struct {
@@ -87,6 +88,16 @@ func (r RoleMysql) UpdateRole(id int, data *request.Roles) error  {
 
 	return nil
 }
+
+func (r RoleMysql) DeleteRole(id int) error {
+	var modelrole entity.Roles
+	if err:= r.db.Delete(&modelrole, id).Error;err != nil {
+		return  err
+	}
+
+	return nil
+}
+
 
 
 func ResponseRole(data []entity.Users) []response.Users {

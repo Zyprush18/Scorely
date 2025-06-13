@@ -26,6 +26,7 @@ const (
 	Gets = http.MethodGet
 	Post = http.MethodPost
 	Put	= http.MethodPut
+	Delete = http.MethodDelete
 )
 
 // struct message

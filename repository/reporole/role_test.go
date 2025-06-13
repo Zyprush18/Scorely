@@ -189,3 +189,37 @@ func TestUpdateRole(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }
+
+func TestDeleteRole(t *testing.T)  {
+	db, mock, err := SetupMockDb()
+	assert.NoError(t, err)
+
+	repo := RolesMysql(db)
+	t.Run("Success Delete Role", func(t *testing.T) {
+		
+		id_succes := 1
+
+		mock.ExpectBegin()
+		mock.ExpectExec(regexp.QuoteMeta("DELETE FROM `roles` ")).
+			WithArgs(id_succes).WillReturnResult(sqlmock.NewResult(0, 1))
+		mock.ExpectCommit()
+
+		err := repo.DeleteRole(id_succes)
+		assert.NoError(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("Failed Delete Role", func(t *testing.T) {
+		
+		id_succes := 1
+
+		mock.ExpectBegin()
+		mock.ExpectExec(regexp.QuoteMeta("DELETE FROM `roles` ")).
+			WithArgs(id_succes).WillReturnError(sqlmock.ErrCancelled)
+		mock.ExpectRollback()
+
+		err := repo.DeleteRole(id_succes)
+		assert.Error(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+}

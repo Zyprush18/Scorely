@@ -32,3 +32,8 @@ func (m *RepoRoleMock) UpdateRole(id int, data *request.Roles) error {
 	args := m.Called(id,data)
 	return args.Error(0)
 }
+
+func (m *RepoRoleMock) DeleteRole(id int) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
