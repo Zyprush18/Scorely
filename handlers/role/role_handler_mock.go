@@ -37,3 +37,8 @@ func (s *ServiceRole) UpdateRole(id int, data *request.Roles) error  {
 	args := s.Called(id, data)
 	return args.Error(0)
 }
+
+func (s *ServiceRole) DeleteRole(id int) error  {
+	args := s.Called(id)
+	return args.Error(0)
+}

@@ -27,12 +27,15 @@ func RunApp() {
 	roleService := servicerole.NewRoleService(roleRepo)
 	roleHandler := role.RoleHandler(roleService, initlog)
 
-	// role route
-	http.HandleFunc("/role", roleHandler.GetRole)
-	http.HandleFunc("/add/role", roleHandler.AddRoles)
-	http.HandleFunc("/role/{id}", roleHandler.Show)
-	http.HandleFunc("/role/{id}/update", roleHandler.Update)
+	adminMux := http.NewServeMux()
 
-	fmt.Println("🚀 running on port: 8000")
-	http.ListenAndServe(":8000", nil)
+	// role route
+	adminMux.HandleFunc("/role", roleHandler.GetRole)
+	adminMux.HandleFunc("/add/role", roleHandler.AddRoles)
+	adminMux.HandleFunc("/role/{id}", roleHandler.Show)
+	adminMux.HandleFunc("/role/{id}/update", roleHandler.Update)
+	adminMux.HandleFunc("/role/{id}/delete", roleHandler.Delete)
+
+	fmt.Println("🚀 running on: http://localhost:8000")
+	http.ListenAndServe(":8000", adminMux)
 }

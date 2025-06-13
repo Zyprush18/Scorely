@@ -59,9 +59,9 @@
 				
 				<option value="file1">github.com/Zyprush18/Scorely/database/connect.go (0.0%)</option>
 				
-				<option value="file2">github.com/Zyprush18/Scorely/handlers/role/role_handler.go (45.1%)</option>
+				<option value="file2">github.com/Zyprush18/Scorely/handlers/role/role_handler.go (100.0%)</option>
 				
-				<option value="file3">github.com/Zyprush18/Scorely/handlers/role/role_handler_mock.go (77.8%)</option>
+				<option value="file3">github.com/Zyprush18/Scorely/handlers/role/role_handler_mock.go (100.0%)</option>
 				
 				<option value="file4">github.com/Zyprush18/Scorely/helper/helper.go (55.0%)</option>
 				
@@ -71,9 +71,9 @@
 				
 				<option value="file7">github.com/Zyprush18/Scorely/routes/web.go (0.0%)</option>
 				
-				<option value="file8">github.com/Zyprush18/Scorely/service/servicerole/role.go (63.6%)</option>
+				<option value="file8">github.com/Zyprush18/Scorely/service/servicerole/role.go (100.0%)</option>
 				
-				<option value="file9">github.com/Zyprush18/Scorely/service/servicerole/role_service_mock.go (75.0%)</option>
+				<option value="file9">github.com/Zyprush18/Scorely/service/servicerole/role_service_mock.go (100.0%)</option>
 				
 				</select>
 			</div>
@@ -147,7 +147,6 @@ import (
         "fmt"
         "net/http"
         "strconv"
-        "strings"
 
         "github.com/Zyprush18/Scorely/helper"
         "github.com/Zyprush18/Scorely/models/request"
@@ -166,7 +165,7 @@ func RoleHandler(s servicerole.ServiceRole, l helper.Loggers) *HandlerRole  <spa
 
 func (h *HandlerRole) GetRole(w http.ResponseWriter, r *http.Request)  <span class="cov8" title="1">{
         w.Header().Set("Content-Type", "application/json")
-        if r.Method != helper.Gets </span><span class="cov0" title="0">{
+        if r.Method != helper.Gets </span><span class="cov8" title="1">{
                 w.WriteHeader(helper.MethodNotAllowed)
                 json.NewEncoder(w).Encode(helper.Messages{
                         Message: "Method Not Allowed",
@@ -193,7 +192,7 @@ func (h *HandlerRole) GetRole(w http.ResponseWriter, r *http.Request)  <span cla
 
 func (h *HandlerRole) AddRoles(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         w.Header().Set("Content-Type", "application/json")
-        if r.Method != helper.Post </span><span class="cov0" title="0">{
+        if r.Method != helper.Post </span><span class="cov8" title="1">{
                 w.WriteHeader(helper.MethodNotAllowed)
                 json.NewEncoder(w).Encode(helper.Messages{
                         Message: "Method Not Allowed",
@@ -204,7 +203,7 @@ func (h *HandlerRole) AddRoles(w http.ResponseWriter, r *http.Request) <span cla
         <span class="cov8" title="1">roleReq := new(request.Roles)
 
         //cek body form nya
-        if err := json.NewDecoder(r.Body).Decode(&amp;roleReq); err != nil </span><span class="cov0" title="0">{
+        if err := json.NewDecoder(r.Body).Decode(&amp;roleReq); err != nil </span><span class="cov8" title="1">{
                 w.WriteHeader(helper.BadRequest)
                 json.NewEncoder(w).Encode(helper.Messages{
                         Message: "Bad Request",
@@ -223,7 +222,7 @@ func (h *HandlerRole) AddRoles(w http.ResponseWriter, r *http.Request) <span cla
                 return
         }</span>
 
-        <span class="cov8" title="1">if err := h.services.Create(roleReq); err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if err := h.services.Create(roleReq); err != nil </span><span class="cov8" title="1">{
                 h.logg.Logfile(err.Error())
                 w.WriteHeader(helper.BadRequest)
                 json.NewEncoder(w).Encode(helper.Messages{
@@ -242,7 +241,7 @@ func (h *HandlerRole) AddRoles(w http.ResponseWriter, r *http.Request) <span cla
 
 func (h *HandlerRole) Show(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         w.Header().Set("Content-Type", "application/json")
-        if r.Method != helper.Gets </span><span class="cov0" title="0">{
+        if r.Method != helper.Gets </span><span class="cov8" title="1">{
                 w.WriteHeader(helper.MethodNotAllowed)
                 json.NewEncoder(w).Encode(helper.Messages{
                         Message: "Method Not Allowed",
@@ -251,10 +250,8 @@ func (h *HandlerRole) Show(w http.ResponseWriter, r *http.Request) <span class="
         }</span>
 
         // ambil id di path url
-        <span class="cov8" title="1">urlPath :=r.URL.Path
-        urlSplit := strings.Split(urlPath, "/")
-        id, err := strconv.Atoi(urlSplit[2])
-        if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">id, err := strconv.Atoi(r.PathValue("id"))
+        if err != nil </span><span class="cov8" title="1">{
                 h.logg.Logfile(err.Error())
                 w.WriteHeader(helper.InternalServError)
                 json.NewEncoder(w).Encode(helper.Messages{
@@ -284,19 +281,19 @@ func (h *HandlerRole) Show(w http.ResponseWriter, r *http.Request) <span class="
         
 }
 
-func (h *HandlerRole) Update(w http.ResponseWriter, r *http.Request)  <span class="cov0" title="0">{
+func (h *HandlerRole) Update(w http.ResponseWriter, r *http.Request)  <span class="cov8" title="1">{
         w.Header().Set("Content-Type", "application/json")
-        if r.Method != helper.Put </span><span class="cov0" title="0">{
+        if r.Method != helper.Put </span><span class="cov8" title="1">{
                 w.WriteHeader(helper.MethodNotAllowed)
                 json.NewEncoder(w).Encode(helper.Messages{
                         Message: "Method Not Allowed",
                 })
                 return
         }</span>
-        <span class="cov0" title="0">user := &amp;request.Roles{}
+        <span class="cov8" title="1">user := &amp;request.Roles{}
 
         // cek body nya kosong atau tidak
-        if err:=json.NewDecoder(r.Body).Decode(user);err != nil </span><span class="cov0" title="0">{
+        if err:=json.NewDecoder(r.Body).Decode(user);err != nil </span><span class="cov8" title="1">{
                 w.WriteHeader(helper.BadRequest)
                 json.NewEncoder(w).Encode(helper.Messages{
                         Message: "Bad Request",
@@ -305,10 +302,8 @@ func (h *HandlerRole) Update(w http.ResponseWriter, r *http.Request)  <span clas
         }</span>
 
         // ambil id di path url
-        <span class="cov0" title="0">urlPath :=r.URL.Path
-        urlSplit := strings.Split(urlPath, "/")
-        id, err := strconv.Atoi(urlSplit[2])
-        if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">id, err := strconv.Atoi(r.PathValue("id"))
+        if err != nil </span><span class="cov8" title="1">{
                 h.logg.Logfile(err.Error())
                 w.WriteHeader(helper.InternalServError)
                 json.NewEncoder(w).Encode(helper.Messages{
@@ -318,7 +313,7 @@ func (h *HandlerRole) Update(w http.ResponseWriter, r *http.Request)  <span clas
                 return
         }</span>
 
-        <span class="cov0" title="0">if err:=h.services.UpdateRole(id,user);err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if err:=h.services.UpdateRole(id,user);err != nil </span><span class="cov8" title="1">{
                 h.logg.Logfile(err.Error())
                 w.WriteHeader(helper.BadRequest)
                 json.NewEncoder(w).Encode(helper.Messages{
@@ -327,10 +322,44 @@ func (h *HandlerRole) Update(w http.ResponseWriter, r *http.Request)  <span clas
                 return
         }</span>
 
-        <span class="cov0" title="0">w.WriteHeader(helper.Success)
+        <span class="cov8" title="1">w.WriteHeader(helper.Success)
                 json.NewEncoder(w).Encode(helper.Messages{
                         Message: "Success Update Role",
                 })</span>
+}
+
+func (h *HandlerRole) Delete(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        w.Header().Set("Content-Type","applivation/json")
+        if r.Method != helper.Delete </span><span class="cov8" title="1">{
+                w.WriteHeader(helper.MethodNotAllowed)
+                json.NewEncoder(w).Encode(helper.Messages{
+                        Message: "Method Not Allowed",
+                })
+                return 
+        }</span>
+
+        <span class="cov8" title="1">id, err := strconv.Atoi(r.PathValue("id"))
+        if err != nil </span><span class="cov8" title="1">{
+                w.WriteHeader(helper.InternalServError)
+                json.NewEncoder(w).Encode(helper.Messages{
+                        Message: "Internal Server Error",
+                })
+                return 
+        }</span>
+
+        <span class="cov8" title="1">if err:= h.services.DeleteRole(id);err != nil </span><span class="cov8" title="1">{
+                w.WriteHeader(helper.Notfound)
+                json.NewEncoder(w).Encode(helper.Messages{
+                        Message: "Failed Delete Role",
+                })
+                return
+        }</span>
+
+        <span class="cov8" title="1">w.WriteHeader(helper.Success)
+        json.NewEncoder(w).Encode(helper.Messages{
+                Message: "Success Delete Role",
+        })</span>
+
 }</pre>
 		
 		<pre class="file" id="file3" style="display: none">package role
@@ -368,8 +397,13 @@ func (s *ServiceRole) GetAllData() ([]response.Roles, error)  <span class="cov8"
         return args.Get(0).([]response.Roles), args.Error(1)
 }</span>
 
-func (s *ServiceRole) UpdateRole(id int, data *request.Roles) error  <span class="cov0" title="0">{
+func (s *ServiceRole) UpdateRole(id int, data *request.Roles) error  <span class="cov8" title="1">{
         args := s.Called(id, data)
+        return args.Error(0)
+}</span>
+
+func (s *ServiceRole) DeleteRole(id int) error  <span class="cov8" title="1">{
+        args := s.Called(id)
         return args.Error(0)
 }</pre>
 		
@@ -401,6 +435,7 @@ const (
         Gets = http.MethodGet
         Post = http.MethodPost
         Put        = http.MethodPut
+        Delete = http.MethodDelete
 )
 
 // struct message
@@ -485,6 +520,7 @@ type RoleService interface {
         CreateRole(data *request.Roles) error
         ShowById(id int) (*response.Roles, error)
         UpdateRole(id int, data *request.Roles) error
+        DeleteRole(id int) error
 }
 
 type RoleMysql struct {
@@ -558,6 +594,16 @@ func (r RoleMysql) UpdateRole(id int, data *request.Roles) error  <span class="c
         <span class="cov8" title="1">return nil</span>
 }
 
+func (r RoleMysql) DeleteRole(id int) error <span class="cov8" title="1">{
+        var modelrole entity.Roles
+        if err:= r.db.Delete(&amp;modelrole, id).Error;err != nil </span><span class="cov8" title="1">{
+                return  err
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+
 
 func ResponseRole(data []entity.Users) []response.Users <span class="cov8" title="1">{
         var result []response.Users
@@ -628,14 +674,17 @@ func RunApp() <span class="cov0" title="0">{
         roleService := servicerole.NewRoleService(roleRepo)
         roleHandler := role.RoleHandler(roleService, initlog)
 
-        // role route
-        http.HandleFunc("/role", roleHandler.GetRole)
-        http.HandleFunc("/add/role", roleHandler.AddRoles)
-        http.HandleFunc("/role/{id}", roleHandler.Show)
-        http.HandleFunc("/role/{id}/update", roleHandler.Update)
+        adminMux := http.NewServeMux()
 
-        fmt.Println("🚀 running on port: 8000")
-        http.ListenAndServe(":8000", nil)</span>
+        // role route
+        adminMux.HandleFunc("/role", roleHandler.GetRole)
+        adminMux.HandleFunc("/add/role", roleHandler.AddRoles)
+        adminMux.HandleFunc("/role/{id}", roleHandler.Show)
+        adminMux.HandleFunc("/role/{id}/update", roleHandler.Update)
+        adminMux.HandleFunc("/role/{id}/delete", roleHandler.Delete)
+
+        fmt.Println("🚀 running on: http://localhost:8000")
+        http.ListenAndServe(":8000", adminMux)</span>
 }
 </pre>
 		
@@ -653,6 +702,7 @@ type ServiceRole interface {
         Create(data *request.Roles) error
         ShowRoleById(id int) (*response.Roles, error)
         UpdateRole(id int, data *request.Roles) error
+        DeleteRole(id int) error
 }
 
 type RoleRepo struct {
@@ -681,13 +731,22 @@ func (r *RoleRepo) ShowRoleById(id int) (*response.Roles, error) <span class="co
         <span class="cov8" title="1">return resp, nil</span>
 }
 
-func (r *RoleRepo) UpdateRole(id int, data *request.Roles) error  <span class="cov0" title="0">{
+func (r *RoleRepo) UpdateRole(id int, data *request.Roles) error  <span class="cov8" title="1">{
         err := r.Repo.UpdateRole(id,data)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return err
         }</span>
 
-        <span class="cov0" title="0">return nil</span>
+        <span class="cov8" title="1">return nil</span>
+}
+
+func (r *RoleRepo) DeleteRole(id int) error <span class="cov8" title="1">{
+        err:= r.Repo.DeleteRole(id)
+        if err != nil </span><span class="cov8" title="1">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
 }</pre>
 		
 		<pre class="file" id="file9" style="display: none">package servicerole
@@ -720,8 +779,13 @@ func (m *RepoRoleMock) GetAllDataRole() ([]response.Roles, error)  <span class="
         return args.Get(0).([]response.Roles), args.Error(1)
 }</span>
 
-func (m *RepoRoleMock) UpdateRole(id int, data *request.Roles) error <span class="cov0" title="0">{
+func (m *RepoRoleMock) UpdateRole(id int, data *request.Roles) error <span class="cov8" title="1">{
         args := m.Called(id,data)
+        return args.Error(0)
+}</span>
+
+func (m *RepoRoleMock) DeleteRole(id int) error <span class="cov8" title="1">{
+        args := m.Called(id)
         return args.Error(0)
 }</pre>
 		

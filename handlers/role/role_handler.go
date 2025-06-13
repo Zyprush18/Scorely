@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/Zyprush18/Scorely/helper"
 	"github.com/Zyprush18/Scorely/models/request"
@@ -109,9 +108,7 @@ func (h *HandlerRole) Show(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// ambil id di path url
-	urlPath :=r.URL.Path
-	urlSplit := strings.Split(urlPath, "/")
-	id, err := strconv.Atoi(urlSplit[2])
+	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		h.logg.Logfile(err.Error())
 		w.WriteHeader(helper.InternalServError)
@@ -163,9 +160,7 @@ func (h *HandlerRole) Update(w http.ResponseWriter, r *http.Request)  {
 	}
 
 	// ambil id di path url
-	urlPath :=r.URL.Path
-	urlSplit := strings.Split(urlPath, "/")
-	id, err := strconv.Atoi(urlSplit[2])
+	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		h.logg.Logfile(err.Error())
 		w.WriteHeader(helper.InternalServError)
@@ -189,4 +184,38 @@ func (h *HandlerRole) Update(w http.ResponseWriter, r *http.Request)  {
 		json.NewEncoder(w).Encode(helper.Messages{
 			Message: "Success Update Role",
 		})
+}
+
+func (h *HandlerRole) Delete(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type","applivation/json")
+	if r.Method != helper.Delete {
+		w.WriteHeader(helper.MethodNotAllowed)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Method Not Allowed",
+		})
+		return 
+	}
+
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		w.WriteHeader(helper.InternalServError)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Internal Server Error",
+		})
+		return 
+	}
+
+	if err:= h.services.DeleteRole(id);err != nil {
+		w.WriteHeader(helper.Notfound)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Failed Delete Role",
+		})
+		return
+	}
+
+	w.WriteHeader(helper.Success)
+	json.NewEncoder(w).Encode(helper.Messages{
+		Message: "Success Delete Role",
+	})
+
 }
