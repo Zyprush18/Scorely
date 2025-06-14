@@ -26,7 +26,8 @@ func (h *HandlerRole) GetRole(w http.ResponseWriter, r *http.Request)  {
 	if r.Method != helper.Gets {
 		w.WriteHeader(helper.MethodNotAllowed)
 		json.NewEncoder(w).Encode(helper.Messages{
-			Message: "Method Not Allowed",
+			Message: "Only Get Method Is Allowed",
+			Errors: "Method Not Allowed",
 		})
 		return
 	}
@@ -53,7 +54,8 @@ func (h *HandlerRole) AddRoles(w http.ResponseWriter, r *http.Request) {
 	if r.Method != helper.Post {
 		w.WriteHeader(helper.MethodNotAllowed)
 		json.NewEncoder(w).Encode(helper.Messages{
-			Message: "Method Not Allowed",
+			Message: "Only Post Method Is Allowed",
+			Errors: "Method Not Allowed",
 		})
 		return
 	}
@@ -64,17 +66,18 @@ func (h *HandlerRole) AddRoles(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&roleReq); err != nil {
 		w.WriteHeader(helper.BadRequest)
 		json.NewEncoder(w).Encode(helper.Messages{
-			Message: "Bad Request",
+			Message: "Request Body Is Missing",
+			Errors: "Bad Request",
 		})
 		return
 	}
 
 	// validasi
 	if err := helper.ValidateForm(roleReq); err != nil {
-		w.WriteHeader(helper.BadRequest)
+		w.WriteHeader(helper.UnprocessbleEntity)
 		json.NewEncoder(w).Encode(helper.Messages{
-			Message: "Validation Failed",
-			Errors:  err.Error(),
+			Errors: "Validation Failed",
+			Fields:  err.Error(),
 		})
 
 		return
@@ -102,7 +105,8 @@ func (h *HandlerRole) Show(w http.ResponseWriter, r *http.Request) {
 	if r.Method != helper.Gets {
 		w.WriteHeader(helper.MethodNotAllowed)
 		json.NewEncoder(w).Encode(helper.Messages{
-			Message: "Method Not Allowed",
+			Message: "Only Get Method Is Allowed",
+			Errors: "Method Not Allowed",
 		})
 		return
 	}
@@ -144,7 +148,8 @@ func (h *HandlerRole) Update(w http.ResponseWriter, r *http.Request)  {
 	if r.Method != helper.Put {
 		w.WriteHeader(helper.MethodNotAllowed)
 		json.NewEncoder(w).Encode(helper.Messages{
-			Message: "Method Not Allowed",
+			Message: "Only Put Method Is Allowed",
+			Errors: "Method Not Allowed",
 		})
 		return
 	}
@@ -191,7 +196,8 @@ func (h *HandlerRole) Delete(w http.ResponseWriter, r *http.Request) {
 	if r.Method != helper.Delete {
 		w.WriteHeader(helper.MethodNotAllowed)
 		json.NewEncoder(w).Encode(helper.Messages{
-			Message: "Method Not Allowed",
+			Message: "Only Delete Method Is Allowed",
+			Errors: "Method Not Allowed",
 		})
 		return 
 	}

@@ -190,7 +190,7 @@ func TestHandlerCreate(t *testing.T) {
 
 		handler.AddRoles(w, req)
 
-		assert.Equal(t, helper.BadRequest, w.Code)
+		assert.Equal(t, helper.UnprocessbleEntity, w.Code)
 	})
 
 	// method not Allowed Create a new role
