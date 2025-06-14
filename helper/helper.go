@@ -18,6 +18,7 @@ const (
 	Created          = http.StatusCreated
 	BadRequest       = http.StatusBadRequest
 	Notfound		= http.StatusNotFound
+	UnprocessbleEntity	= http.StatusUnprocessableEntity
 	MethodNotAllowed = http.StatusMethodNotAllowed
 	InternalServError = http.StatusInternalServerError
 )
@@ -31,9 +32,11 @@ const (
 
 // struct message
 type Messages struct {
-	Message string `json:"message"`
+	Message string `json:"message,omitempty"`
 	Data    any    `json:"data,omitempty"`
 	Errors  any    `json:"error,omitempty"`
+	Fields  any    `json:"field,omitempty"`
+
 }
 
 // createdat and updatedat struct
@@ -86,7 +89,7 @@ func ValidateForm(data interface{}) error {
 		var validateerr validator.ValidationErrors
 		if errors.As(err, &validateerr) {
 			for _, v := range validateerr {
-				return errors.New(v.Field() + " is " + v.Tag())
+				return errors.New(v.Field() + " is " + v.Tag() + " " + v.Param())
 			}
 		}
 	}
