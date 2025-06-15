@@ -2,11 +2,13 @@ package userservice
 
 import (
 	"github.com/Zyprush18/Scorely/models/request"
+	"github.com/Zyprush18/Scorely/models/response"
 	"github.com/Zyprush18/Scorely/repository/repouser"
 )
 
 type ServiceUser interface {
 	CreateUser(data *request.User) error
+	ShowUser(id int) (*response.Users, error)
 }
 
 type UserRepo struct {
@@ -23,4 +25,13 @@ func (u *UserRepo) CreateUser(data *request.User) error {
 	}
 
 	return nil
+}
+
+func (u *UserRepo) ShowUser(id int) (*response.Users, error) {
+	data, err:= u.repo.Show(id);
+	if err != nil {
+		return nil, err
+	}
+
+	return data,nil
 }

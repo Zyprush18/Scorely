@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/go-sql-driver/mysql"
 )
 
 const (
@@ -18,6 +19,7 @@ const (
 	Created          = http.StatusCreated
 	BadRequest       = http.StatusBadRequest
 	Notfound		= http.StatusNotFound
+	Conflict	= http.StatusConflict
 	UnprocessbleEntity	= http.StatusUnprocessableEntity
 	MethodNotAllowed = http.StatusMethodNotAllowed
 	InternalServError = http.StatusInternalServerError
@@ -29,6 +31,8 @@ const (
 	Put	= http.MethodPut
 	Delete = http.MethodDelete
 )
+
+
 
 // struct message
 type Messages struct {
@@ -95,4 +99,15 @@ func ValidateForm(data interface{}) error {
 	}
 
 	return nil
+}
+
+
+func IsDuplicateEntryError(err error) bool {
+    var mysqlErr *mysql.MySQLError
+    if errors.As(err, &mysqlErr) {
+        if mysqlErr.Number == 1062 {
+            return true
+        }
+    }
+    return false
 }

@@ -12,8 +12,10 @@ import (
 	"github.com/Zyprush18/Scorely/helper"
 	"github.com/Zyprush18/Scorely/models/request"
 	"github.com/Zyprush18/Scorely/models/response"
+	"github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"gorm.io/gorm"
 )
 
 // var Mockservice = &ServiceRole{Mock: mock.Mock{}}
@@ -100,7 +102,7 @@ func TestHandlerGetAllData(t *testing.T)  {
 
 		handler.GetRole(w,req)
 
-		assert.Equal(t, helper.BadRequest, w.Code)
+		assert.Equal(t, helper.InternalServError, w.Code)
 
 		Mockservice.Mock.AssertExpectations(t)
 	})
@@ -146,8 +148,8 @@ func TestHandlerCreate(t *testing.T) {
 		Mockservice.AssertExpectations(t)
 	})
 
-	// failed Create new role
-	t.Run("Failed Create a New Role", func(t *testing.T) {
+	// failed Create new role (database refused)
+	t.Run("Failed Create a New Role (database refused)", func(t *testing.T) {
 		bodyFail := &request.Roles{
 			NameRole: "AdminUpdate",
 		}
@@ -157,10 +159,32 @@ func TestHandlerCreate(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		Mockservice.On("Create", bodyFail).Return(errors.New("Failed Create a New Role"))
+		Mockservice.On("Create", bodyFail).Return(errors.New("Some Thing Wrong"))
 		handler.AddRoles(w, req)
 
-		assert.Equal(t, helper.BadRequest, w.Code)
+		assert.Equal(t, helper.InternalServError, w.Code)
+		Mockservice.AssertExpectations(t)
+	})
+
+	// failed Create new role (name role exists)
+	t.Run("Failed Create a New Role (name role exist)", func(t *testing.T) {
+		bodyFail := &request.Roles{
+			NameRole: "AdminUpdate11",
+		}
+		jsonBody, _ := json.Marshal(bodyFail)
+		req := httptest.NewRequest(helper.Post, "/add/role", bytes.NewReader(jsonBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		dupErr := &mysql.MySQLError{
+			Number:  1062,
+			Message: "Duplicate entry",
+		}
+
+		Mockservice.On("Create", bodyFail).Return(dupErr)
+		handler.AddRoles(w, req)
+
+		assert.Equal(t, helper.Conflict, w.Code)
 		Mockservice.AssertExpectations(t)
 	})
 
@@ -251,7 +275,27 @@ func TestHandlerShow(t *testing.T)  {
 
 		w := httptest.NewRecorder()
 
-		Mockservice.On("ShowRoleById", 2).Return(data,errors.New("Not Found Role id 2"))
+		Mockservice.On("ShowRoleById", 2).Return(data,gorm.ErrRecordNotFound)
+		mux := http.NewServeMux()
+		mux.HandleFunc("/role/{id}", handler.Show)
+		mux.ServeHTTP(w, req)
+
+
+		assert.Equal(t, helper.Notfound, w.Code)
+		Mockservice.AssertExpectations(t)
+	})
+
+	// failed show data (database refused)
+	t.Run("Failed show role (database refused)", func(t *testing.T) {
+		jsonmars, _ := json.Marshal(data)
+
+		req := httptest.NewRequest(helper.Gets, "/role/2", bytes.NewReader(jsonmars))
+
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+
+		Mockservice.On("ShowRoleById", 2).Return(data,errors.New("Some Thong Wrong"))
 		mux := http.NewServeMux()
 		mux.HandleFunc("/role/{id}", handler.Show)
 		mux.ServeHTTP(w, req)
@@ -288,7 +332,7 @@ func TestHandlerShow(t *testing.T)  {
 		mux.ServeHTTP(w, req)
 
 
-		assert.Equal(t, helper.InternalServError, w.Code)
+		assert.Equal(t, helper.BadRequest, w.Code)
 	})
 
 }
@@ -319,18 +363,55 @@ func TestHandlerUpdate(t *testing.T)  {
 		mockservice.AssertExpectations(t)
 	})
 
-	// failed update role
-	t.Run("Failed Update Role", func(t *testing.T) {
+	// failed update role id not found
+	t.Run("Failed Update Role id not found", func(t *testing.T) {
 		jsom, _ := json.Marshal(reqdata)
 		req := httptest.NewRequest(helper.Put, "/role/90/update", bytes.NewReader(jsom))
 		w := httptest.NewRecorder() 
 
-		mockservice.On("UpdateRole", 90, reqdata).Return(errors.New("Not Found ID: 90"))
+		mockservice.On("UpdateRole", 90, reqdata).Return(gorm.ErrRecordNotFound)
 		mux := http.NewServeMux()
 		mux.HandleFunc("/role/{id}/update", handler.Update)
 		mux.ServeHTTP(w, req)
 
-		assert.Equal(t, helper.BadRequest, w.Code)
+		assert.Equal(t, helper.Notfound, w.Code)
+
+		mockservice.AssertExpectations(t)
+	})
+
+	// failed update name role exist
+	t.Run("Failed Update Role name role is exist", func(t *testing.T) {
+		jsom, _ := json.Marshal(reqdata)
+		req := httptest.NewRequest(helper.Put, "/role/4/update", bytes.NewReader(jsom))
+		w := httptest.NewRecorder() 
+
+		errDub := &mysql.MySQLError{
+			Number: 1062,
+			Message: "Duplicate entry",
+		}
+
+		mockservice.On("UpdateRole", 4, reqdata).Return(errDub)
+		mux := http.NewServeMux()
+		mux.HandleFunc("/role/{id}/update", handler.Update)
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.Conflict, w.Code)
+
+		mockservice.AssertExpectations(t)
+	})
+
+	// failed update database refused
+	t.Run("Failed Update Role database refused", func(t *testing.T) {
+		jsom, _ := json.Marshal(reqdata)
+		req := httptest.NewRequest(helper.Put, "/role/6/update", bytes.NewReader(jsom))
+		w := httptest.NewRecorder() 
+
+		mockservice.On("UpdateRole", 6, reqdata).Return(errors.New("Something went wrong"))
+		mux := http.NewServeMux()
+		mux.HandleFunc("/role/{id}/update", handler.Update)
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.InternalServError, w.Code)
 
 		mockservice.AssertExpectations(t)
 	})
@@ -377,7 +458,7 @@ func TestHandlerUpdate(t *testing.T)  {
 		mux.ServeHTTP(w, req)
 
 
-		assert.Equal(t, helper.InternalServError, w.Code)
+		assert.Equal(t, helper.BadRequest, w.Code)
 	})
 
 }
@@ -402,16 +483,30 @@ func TestHandlerDelete(t *testing.T)  {
 		mockservice.AssertExpectations(t)
 	})
 
-	t.Run("Failed Delete Role", func(t *testing.T) {
-		req := httptest.NewRequest(helper.Delete, "/role/90/delete", nil)
+	t.Run("Failed Delete Role (not found id)", func(t *testing.T) {
+		req := httptest.NewRequest(helper.Delete, "/role/9/delete", nil)
 		w := httptest.NewRecorder() 
 
-		mockservice.On("DeleteRole", 90).Return(errors.New("Not Found ID: 90"))
+		mockservice.On("DeleteRole", 9).Return(gorm.ErrRecordNotFound)
 		mux := http.NewServeMux()
 		mux.HandleFunc("/role/{id}/delete", handler.Delete)
 		mux.ServeHTTP(w, req)
 
 		assert.Equal(t, helper.Notfound, w.Code)
+		mockservice.AssertExpectations(t)
+
+	})
+
+	t.Run("Failed Delete Role (database refused)", func(t *testing.T) {
+		req := httptest.NewRequest(helper.Delete, "/role/90/delete", nil)
+		w := httptest.NewRecorder() 
+
+		mockservice.On("DeleteRole", 90).Return(errors.New("something went wrong"))
+		mux := http.NewServeMux()
+		mux.HandleFunc("/role/{id}/delete", handler.Delete)
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.InternalServError, w.Code)
 		mockservice.AssertExpectations(t)
 
 	})
@@ -427,7 +522,7 @@ func TestHandlerDelete(t *testing.T)  {
 		mux.ServeHTTP(w, req)
 
 
-		assert.Equal(t, helper.InternalServError, w.Code)
+		assert.Equal(t, helper.BadRequest, w.Code)
 	})
 
 	t.Run("Method Not Allowed", func(t *testing.T) {
