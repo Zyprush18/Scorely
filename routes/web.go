@@ -46,6 +46,7 @@ func RunApp() {
 
 	// user route
 	adminMux.HandleFunc("/add/user", userhandler.Create)
+	adminMux.HandleFunc("/user/{id}", userhandler.Show)
 
 	fmt.Println("🚀 running on: http://localhost:8000")
 	http.ListenAndServe(":8000", adminMux)
