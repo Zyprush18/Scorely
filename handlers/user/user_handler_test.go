@@ -4,14 +4,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/Zyprush18/Scorely/helper"
 	"github.com/Zyprush18/Scorely/models/request"
+	"github.com/Zyprush18/Scorely/models/response"
 	"github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"gorm.io/gorm"
 )
 
 func TestCreateUser(t *testing.T) {
@@ -117,5 +120,95 @@ func TestCreateUser(t *testing.T) {
 		userHandler.Create(w, req)
 		assert.Equal(t, helper.Created, w.Code)
 		mockUser.AssertExpectations(t)
+	})
+}
+
+func TestHandlerShow(t *testing.T)  {
+	mockuser := MockUserServices{}
+	loggeruser := LoggerMock{}
+	handler := NewHandlerUser(&mockuser, loggeruser)
+	
+	t.Run("Method Not Allowed", func(t *testing.T) {
+		req := httptest.NewRequest(helper.Post, "/user/1", nil)
+		req.Header.Set("Content-Type","application/json")
+		w := httptest.NewRecorder()
+
+		mux := http.NewServeMux()
+		mux.HandleFunc("/user/{id}", handler.Show)
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.MethodNotAllowed, w.Code)
+	})
+
+	t.Run("Invalid User id format", func(t *testing.T) {
+		req := httptest.NewRequest(helper.Gets, "/user/abc", nil)
+		req.Header.Set("Content-Type","application/json")
+		w := httptest.NewRecorder()
+
+		mux := http.NewServeMux()
+		mux.HandleFunc("/user/{id}", handler.Show)
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.BadRequest, w.Code)
+	})
+
+	t.Run("Failed: Not Found Id user", func(t *testing.T) {
+		dataUser := &response.Users{
+			IdUser: 1,
+			Email: "Admin@gmail.com",
+			Password: "admin123",
+			RoleId: 1,
+		}
+		req := httptest.NewRequest(helper.Gets, "/user/67", nil)
+		req.Header.Set("Content-Type","application/json")
+		w := httptest.NewRecorder()
+
+		mockuser.On("ShowUser", 67).Return(dataUser, gorm.ErrRecordNotFound)
+		mux := http.NewServeMux()
+		mux.HandleFunc("/user/{id}", handler.Show)
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.Notfound, w.Code)
+		mockuser.AssertExpectations(t)
+	})
+
+	t.Run("Failed: Database Refused", func(t *testing.T) {
+		dataUser := &response.Users{
+			IdUser: 1,
+			Email: "Admin@gmail.com",
+			Password: "admin123",
+			RoleId: 1,
+		}
+		req := httptest.NewRequest(helper.Gets, "/user/1", nil)
+		req.Header.Set("Content-Type","application/json")
+		w := httptest.NewRecorder()
+
+		mockuser.On("ShowUser", 1).Return(dataUser, errors.New("Database Is Refused"))
+		mux := http.NewServeMux()
+		mux.HandleFunc("/user/{id}", handler.Show)
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.InternalServError, w.Code)
+		mockuser.AssertExpectations(t)
+	})
+
+	t.Run("Success Show User By id", func(t *testing.T) {
+		dataUser := &response.Users{
+			IdUser: 1,
+			Email: "Admin@gmail.com",
+			Password: "admin123",
+			RoleId: 1,
+		}
+		req := httptest.NewRequest(helper.Gets, "/user/1", nil)
+		req.Header.Set("Content-Type","application/json")
+		w := httptest.NewRecorder()
+
+		mockuser.On("ShowUser", 1).Return(dataUser,nil)
+		mux := http.NewServeMux()
+		mux.HandleFunc("/user/{id}", handler.Show)
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.InternalServError, w.Code)
+		mockuser.AssertExpectations(t)
 	})
 }

@@ -202,7 +202,7 @@ func (h *HandlerRole) Update(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			w.WriteHeader(helper.Notfound)
 			json.NewEncoder(w).Encode(helper.Messages{
-				Message: fmt.Sprintf("Not Found Id User: %d", id),
+				Message: fmt.Sprintf("Not Found Id Role: %d", id),
 				Errors:  "Bad Request",
 			})
 			return
@@ -255,6 +255,7 @@ func (h *HandlerRole) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.services.DeleteRole(id); err != nil {
+		
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			w.WriteHeader(helper.Notfound)
 			json.NewEncoder(w).Encode(helper.Messages{
@@ -263,6 +264,8 @@ func (h *HandlerRole) Delete(w http.ResponseWriter, r *http.Request) {
 			})
 			return
 		}
+
+
 		w.WriteHeader(helper.InternalServError)
 		json.NewEncoder(w).Encode(helper.Messages{
 			Message: "Something Went Wrong",
