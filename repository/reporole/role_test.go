@@ -155,16 +155,25 @@ func TestUpdateRole(t *testing.T) {
 
 	repo := RolesMysql(db)
 
+
+	dataRole := sqlmock.NewRows([]string{
+		"id_role",
+		"name_role",
+	}).AddRow(1, "Admin")
 	t.Run("Success Update Role", func(t *testing.T) {
+
 		rolereq := &request.Roles{
 			NameRole: "AdminUpdate",
 		}
 		id_succes := 1
 
-		mock.ExpectBegin()
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `roles` WHERE id_role = ? ORDER BY `roles`.`id_role` LIMIT ?")).
+			WithArgs(id_succes, 1).
+			WillReturnRows(dataRole)
 
+		mock.ExpectBegin()
 		mock.ExpectExec(regexp.QuoteMeta("UPDATE `roles` ")).
-			WithArgs(rolereq.NameRole, id_succes).WillReturnResult(sqlmock.NewResult(0, 1))
+			WithArgs(rolereq.NameRole,id_succes).WillReturnResult(sqlmock.NewResult(0, 1))
 		mock.ExpectCommit()
 
 		err := repo.UpdateRole(id_succes, rolereq)
@@ -174,19 +183,24 @@ func TestUpdateRole(t *testing.T) {
 
 	t.Run("Failed Update Role", func(t *testing.T) {
 		rolereq := &request.Roles{
-			NameRole: "AdminUpdate",
+			NameRole: "AdminUpdate1",
 		}
 		id_failed := 2
 
 		mock.ExpectBegin()
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `roles` WHERE id_role = ? ORDER BY `roles`.`id_role` LIMIT ?")).
+			WithArgs(id_failed, 2).
+			WillReturnRows(dataRole)
+		mock.ExpectCommit()
 
+		mock.ExpectBegin()
 		mock.ExpectExec(regexp.QuoteMeta("UPDATE `roles` ")).
 			WithArgs(rolereq.NameRole, id_failed).WillReturnError(sqlmock.ErrCancelled)
 		mock.ExpectRollback()
 
 		err := repo.UpdateRole(id_failed, rolereq)
 		assert.Error(t, err)
-		assert.NoError(t, mock.ExpectationsWereMet())
+		assert.Error(t, mock.ExpectationsWereMet())
 	})
 }
 
@@ -195,9 +209,19 @@ func TestDeleteRole(t *testing.T)  {
 	assert.NoError(t, err)
 
 	repo := RolesMysql(db)
+
+	dataRole := sqlmock.NewRows([]string{
+		"id_role",
+		"name_role",
+	}).AddRow(1, "Admin")
+
 	t.Run("Success Delete Role", func(t *testing.T) {
 		
 		id_succes := 1
+
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `roles` WHERE id_role = ? ORDER BY `roles`.`id_role` LIMIT ?")).
+			WithArgs(id_succes, 1).
+			WillReturnRows(dataRole)
 
 		mock.ExpectBegin()
 		mock.ExpectExec(regexp.QuoteMeta("DELETE FROM `roles` ")).
@@ -211,15 +235,21 @@ func TestDeleteRole(t *testing.T)  {
 
 	t.Run("Failed Delete Role", func(t *testing.T) {
 		
-		id_succes := 1
+		id_failed := 2
+
+		mock.ExpectBegin()
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `roles` WHERE id_role = ? ORDER BY `roles`.`id_role` LIMIT ?")).
+			WithArgs(id_failed, 2).
+			WillReturnRows(dataRole)
+		mock.ExpectCommit()
 
 		mock.ExpectBegin()
 		mock.ExpectExec(regexp.QuoteMeta("DELETE FROM `roles` ")).
-			WithArgs(id_succes).WillReturnError(sqlmock.ErrCancelled)
+			WithArgs(id_failed).WillReturnError(sqlmock.ErrCancelled)
 		mock.ExpectRollback()
 
-		err := repo.DeleteRole(id_succes)
+		err := repo.DeleteRole(id_failed)
 		assert.Error(t, err)
-		assert.NoError(t, mock.ExpectationsWereMet())
+		assert.Error(t, mock.ExpectationsWereMet())
 	})
 }

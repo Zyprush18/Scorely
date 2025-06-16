@@ -82,8 +82,13 @@ func (r RoleMysql) ShowById(id int) (*response.Roles, error) {
 }
 
 func (r RoleMysql) UpdateRole(id int, data *request.Roles) error  {
-	if err:= r.db.Table("roles").Where("id_role = ?", id).Updates(&data).Error;err != nil {
+	var rolemodel entity.Roles
+	if err := r.db.Model(&rolemodel).Where("id_role = ?", id).First(&rolemodel).Error; err != nil {
 		return  err
+	}
+
+	if err:= r.db.Table("roles").Where("id_role = ?", id).Updates(data).Error;err != nil {
+		return err
 	}
 
 	return nil
@@ -91,8 +96,12 @@ func (r RoleMysql) UpdateRole(id int, data *request.Roles) error  {
 
 func (r RoleMysql) DeleteRole(id int) error {
 	var modelrole entity.Roles
-	if err:= r.db.Delete(&modelrole, id).Error;err != nil {
-		return  err
+	if err:= r.db.Model(&modelrole).Where("id_role = ?", id).First(&modelrole).Error;err != nil {
+		return err
+	}
+
+	if err:= r.db.Delete(&modelrole).Error;err != nil {
+		return err
 	}
 
 	return nil
