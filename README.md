@@ -1,1 +1,1 @@
-# ScoreLy
+# Scorely
