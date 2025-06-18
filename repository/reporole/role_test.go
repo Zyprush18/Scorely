@@ -1,7 +1,6 @@
 package reporole
 
 import (
-	"errors"
 
 	"regexp"
 
@@ -45,7 +44,7 @@ func TestGetAllDAtaRole(t *testing.T) {
 	})
 
 	t.Run("Failed Get All Data Role", func(t *testing.T) {
-		mock.ExpectQuery("SELECT (.*)").WillReturnError(errors.New("db error"))
+		mock.ExpectQuery("SELECT (.*)").WillReturnError(db.Error)
 
 		data, err := repo.GetAllDataRole()
 		assert.Error(t, err)

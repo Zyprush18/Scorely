@@ -22,6 +22,35 @@ func NewHandlerUser(service userservice.ServiceUser, log helper.Loggers) UserSer
 	return UserService{service: service, logg: log}
 }
 
+func (h *UserService) GetAllUser(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if r.Method != helper.Gets {
+		w.WriteHeader(helper.MethodNotAllowed)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Only Get Method Is Allowed",
+			Errors: "Method Not Allowed",
+		})
+		return
+	}
+
+	resp, err := h.service.AllUser()
+	if err != nil {
+		w.WriteHeader(helper.InternalServError)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Something Went Wrong",
+			Errors: "Internal Server Error",
+		})
+		return
+	}
+
+	w.WriteHeader(helper.Success)
+	json.NewEncoder(w).Encode(helper.Messages{
+		Message: "Success",
+		Data: resp,
+	})
+
+}
+
 func (h *UserService) Create(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if r.Method != helper.Post {
@@ -56,6 +85,7 @@ func (h *UserService) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// userreq.Models.CreatedAt = time.Now()
 	// create new user
 	err := h.service.CreateUser(&userreq)
 	// pengecekan error dari create

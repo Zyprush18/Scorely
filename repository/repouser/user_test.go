@@ -10,19 +10,52 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestGetAll(t *testing.T) {
+	database, mocks, err := SetupDBForUser()
+	assert.NoError(t, err)
+	repousers := NewUserDatabase(database)
+
+	userRow := sqlmock.NewRows([]string{
+		"id_user",
+		"email",
+		"password",
+		"role_id",
+	}).AddRow(1,"Admin@gmail.com","Admin124", 1)
+
+	t.Run("Success Get All User", func(t *testing.T) {
+		mocks.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users`")).WillReturnRows(userRow)
+
+		data, err := repousers.GetAll()
+		assert.NoError(t, err)
+		assert.NotNil(t, data)
+
+		assert.NoError(t, mocks.ExpectationsWereMet())
+	})
+
+	t.Run("Failed Get All User", func(t *testing.T) {
+		mocks.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users`")).WillReturnError(database.Error)
+
+		data, err := repousers.GetAll()
+		assert.Error(t, err)
+		assert.Nil(t, data)
+
+		assert.NoError(t, mocks.ExpectationsWereMet())
+	})
+}
+
 func TestCreateUser(t *testing.T) {
-	databases, mocks, err := SetipDBForUser()
+	databases, mocks, err := SetupDBForUser()
 	assert.NoError(t, err)
 	repouser := NewUserDatabase(databases)
 
 	t.Run("Success Create a New User", func(t *testing.T) {
 		reqUser := &request.User{
-			Email:    "Admin@gmail.com",
+			Email:    "Admin11@gmail.com",
 			Password: "admin123",
-			RoleId:   1,
+			RoleId:   3,
 		}
 		mocks.ExpectBegin()
-		mocks.ExpectExec(regexp.QuoteMeta("INSERT INTO `users` ")).WithArgs(reqUser.Email, reqUser.Password, reqUser.RoleId).WillReturnResult(sqlmock.NewResult(1, 1))
+		mocks.ExpectExec(regexp.QuoteMeta("INSERT INTO `users` ")).WithArgs(reqUser.Email, reqUser.Password, reqUser.RoleId, sqlmock.AnyArg()).WillReturnResult(sqlmock.NewResult(1, 1))
 		mocks.ExpectCommit()
 
 		err := repouser.Create(reqUser)
@@ -42,13 +75,13 @@ func TestCreateUser(t *testing.T) {
 
 		err := repouser.Create(reqUser)
 		assert.Error(t, err)
-		assert.NoError(t, mocks.ExpectationsWereMet())
+		assert.Error(t, mocks.ExpectationsWereMet())
 	})
 
 }
 
 func TestShowuserById(t *testing.T) {
-	databases, mocks, err := SetipDBForUser()
+	databases, mocks, err := SetupDBForUser()
 	assert.NoError(t, err)
 	repouser := NewUserDatabase(databases)
 

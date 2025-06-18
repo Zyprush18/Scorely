@@ -7,6 +7,7 @@ import (
 )
 
 type ServiceUser interface {
+	AllUser()([]response.Users, error)
 	CreateUser(data *request.User) error
 	ShowUser(id int) (*response.Users, error)
 }
@@ -17,6 +18,15 @@ type UserRepo struct {
 
 func NewUserService(r repouser.UserRepo) ServiceUser  {
 	return &UserRepo{repo: r}
+}
+
+func (u *UserRepo) AllUser()([]response.Users, error) {
+	data, err := u.repo.GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
 
 func (u *UserRepo) CreateUser(data *request.User) error {
