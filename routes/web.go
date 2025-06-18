@@ -45,6 +45,7 @@ func RunApp() {
 	userhandler := user.NewHandlerUser(userService, initlog)
 
 	// user route
+	adminMux.HandleFunc("/user", userhandler.GetAllUser)
 	adminMux.HandleFunc("/add/user", userhandler.Create)
 	adminMux.HandleFunc("/user/{id}", userhandler.Show)
 

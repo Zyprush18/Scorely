@@ -6,20 +6,20 @@ import (
 	"gorm.io/gorm"
 )
 
-func SetipDBForUser() (*gorm.DB, sqlmock.Sqlmock, error)  {
-	sqlDb, mock,err := sqlmock.New()
+func SetupDBForUser() (*gorm.DB, sqlmock.Sqlmock, error) {
+	sqlDb, mock, err := sqlmock.New()
 	if err != nil {
-		return nil, nil,err
-	} 
+		return nil, nil, err
+	}
 	// defer sqlDb.Close()
 
 	db, err := gorm.Open(mysql.New(mysql.Config{
-		Conn: sqlDb,
+		Conn:                      sqlDb,
 		SkipInitializeWithVersion: true,
-	}), &gorm.Config{}) 
+	}), &gorm.Config{})
 
 	if err != nil {
-		return nil, nil,err
+		return nil, nil, err
 	}
 
 	return db, mock, nil

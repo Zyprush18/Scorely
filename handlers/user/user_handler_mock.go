@@ -18,6 +18,11 @@ func (l LoggerMock) Logfile(msg string)  {
 	fmt.Println(msg)
 }
 
+func (m *MockUserServices) AllUser() ([]response.Users, error) {
+	args := m.Called()
+	return args.Get(0).([]response.Users), args.Error(1)
+}
+
 func (m *MockUserServices) CreateUser(data *request.User) error {
 	args := m.Called(data)
 	return args.Error(0)
