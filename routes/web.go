@@ -16,7 +16,7 @@ import (
 )
 
 func RunApp() {
-	pathlog := "./../log/app.log"
+	pathlog := "./log/app.log"
 	initlog:= helper.NewLogger(pathlog)
 	// connect database
 	initDb,err := database.Connect()
@@ -48,6 +48,7 @@ func RunApp() {
 	adminMux.HandleFunc("/user", userhandler.GetAllUser)
 	adminMux.HandleFunc("/add/user", userhandler.Create)
 	adminMux.HandleFunc("/user/{id}", userhandler.Show)
+	adminMux.HandleFunc("/user/{id}/update", userhandler.Update)
 
 	fmt.Println("🚀 running on: http://localhost:8000")
 	http.ListenAndServe(":8000", adminMux)

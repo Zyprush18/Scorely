@@ -163,3 +163,73 @@ func (h *UserService) Show(w http.ResponseWriter, r *http.Request) {
 		Data:    data,
 	})
 }
+
+func (h *UserService) Update(w http.ResponseWriter, r *http.Request)  {
+	w.Header().Set("Content-Type","application/json")
+	if r.Method != helper.Put {
+		w.WriteHeader(helper.MethodNotAllowed)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Only Put Method Is Allowed",
+			Errors: "Method Not Allowed",
+		})
+
+		return
+	}
+
+	userreq := new(request.User)
+	if err:= json.NewDecoder(r.Body).Decode(&userreq);err != nil {
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Request Body Is Missing",
+			Errors:  "Bad Request",
+		})
+
+		return
+	}
+
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Invalid user ID format",
+			Errors: "Bad Request",
+		})
+
+		return
+	} 
+
+	if err:= h.service.UpdateUser(id, userreq);err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			w.WriteHeader(helper.Notfound)
+			json.NewEncoder(w).Encode(helper.Messages{
+				Message: fmt.Sprintf("Not Found Id: %d", id),
+				Errors: "Not Found",
+			})
+
+			return
+		}
+
+		if helper.IsDuplicateEntryError(err) {
+			w.WriteHeader(helper.Conflict)
+			json.NewEncoder(w).Encode(helper.Messages{
+				Message: "Email Already Exists",
+				Errors:  "Conflict",
+			})
+
+			return
+		}
+
+		h.logg.Logfile(err.Error())
+		w.WriteHeader(helper.InternalServError)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Something Went Wrong",
+			Errors: "Internal Server Error",
+		})
+		return
+	}
+
+	w.WriteHeader(helper.Success)
+	json.NewEncoder(w).Encode(helper.Messages{
+		Message: "Success Update Data",
+	})
+}

@@ -24,3 +24,7 @@ func (u *UserRepository) Show(id int) (*response.Users, error)  {
 	return args.Get(0).(*response.Users), args.Error(1)
 }
 
+func (u *UserRepository) Update(id int, data *request.User) error  {
+	args := u.Called(id, data)
+	return args.Error(0)
+}

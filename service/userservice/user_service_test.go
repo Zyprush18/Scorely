@@ -131,3 +131,34 @@ func TestShowuserserviceById(t *testing.T) {
 		mockuser.AssertExpectations(t)
 	})
 }
+
+func TestUpdateuserService(t *testing.T)  {
+	mockrepousers := UserRepository{mock.Mock{}}
+	service := NewUserService(&mockrepousers)
+
+	t.Run("Success Update User", func(t *testing.T) {
+		id_success := 1
+		datareq := &request.User{
+			Email: "Admin@gmail.com",
+		}
+
+		mockrepousers.On("Update", id_success, datareq).Return(nil)
+
+		err := service.UpdateUser(id_success, datareq)
+		assert.NoError(t, err)
+		mockrepousers.AssertExpectations(t)
+	})
+
+	t.Run("Failed Update User", func(t *testing.T) {
+		id_failed := 2
+		datareq := &request.User{
+			Email: "Admin123@gmail.com",
+		}
+
+		mockrepousers.On("Update", id_failed, datareq).Return(errors.New("not found id: 2"))
+
+		err := service.UpdateUser(id_failed, datareq)
+		assert.Error(t, err)
+		mockrepousers.AssertExpectations(t)
+	})
+}

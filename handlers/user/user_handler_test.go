@@ -145,7 +145,7 @@ func TestCreateUser(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 
-		mockUser.On("CreateUser", data).Return(errors.New("Cannot Add or Update child row"))
+		mockUser.On("CreateUser", data).Return(errors.New("Cannot Add child row"))
 		userHandler.Create(w, req)
 		assert.Equal(t, helper.InternalServError, w.Code)
 		mockUser.AssertExpectations(t)
@@ -280,5 +280,132 @@ func TestHandlerShow(t *testing.T) {
 
 		assert.Equal(t, helper.Success, w.Code)
 		mockuser.AssertExpectations(t)
+	})
+}
+
+func TestHandlerUpdate(t *testing.T)  {
+	mockUser := MockUserServices{Mock: mock.Mock{}}
+	logger := LoggerMock{}
+	userHandler := NewHandlerUser(&mockUser, logger)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/user/{id}/update", userHandler.Update)
+
+	t.Run("Method Not Allowed", func(t *testing.T) {
+		datareq := &request.User{
+			Email: "admin@gmail.com",
+		}
+
+		jsom , err := json.Marshal(datareq)
+		assert.NoError(t, err)
+		req := httptest.NewRequest(helper.Gets, "/user/4/update", bytes.NewReader(jsom))
+		req.Header.Set("Content-Type","application/json")
+		w := httptest.NewRecorder()
+
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.MethodNotAllowed, w.Code)
+	})
+
+	t.Run("Body Is Missing", func(t *testing.T) {
+		req := httptest.NewRequest(helper.Put, "/user/4/update", nil)
+		req.Header.Set("Content-Type","application/json")
+		w := httptest.NewRecorder()
+
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.BadRequest, w.Code)
+	})
+	
+	t.Run("Invalid Format Id", func(t *testing.T) {
+		datareq := &request.User{
+			Email: "admin11@gmail.com",
+		}
+
+		jsom , err := json.Marshal(datareq)
+		assert.NoError(t, err)
+		req := httptest.NewRequest(helper.Put, "/user/abc/update", bytes.NewReader(jsom))
+		req.Header.Set("Content-Type","application/json")
+		w := httptest.NewRecorder()
+
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.BadRequest, w.Code)
+	})
+
+	t.Run("Failed Update: Not Found Id",func(t *testing.T) {
+		datareq := &request.User{
+			Email: "admin12@gmail.com",
+		}
+
+		jsom , err := json.Marshal(datareq)
+		assert.NoError(t, err)
+		req := httptest.NewRequest(helper.Put, "/user/90/update", bytes.NewReader(jsom))
+		req.Header.Set("Content-Type","application/json")
+		w := httptest.NewRecorder()
+		mockUser.On("UpdateUser", 90, datareq).Return(gorm.ErrRecordNotFound)
+
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.Notfound, w.Code)
+		mockUser.AssertExpectations(t)
+	})
+
+	t.Run("Failed Update: Email is Exist", func(t *testing.T) {
+		datareq := &request.User{
+			Email: "admin125@gmail.com",
+		}
+
+		dupErr := &mysql.MySQLError{
+			Number:  1062,
+			Message: "Duplicate entry",
+		}
+
+		jsom , err := json.Marshal(datareq)
+		assert.NoError(t, err)
+		req := httptest.NewRequest(helper.Put, "/user/1/update", bytes.NewReader(jsom))
+		req.Header.Set("Content-Type","application/json")
+		w := httptest.NewRecorder()
+		mockUser.On("UpdateUser", 1, datareq).Return(dupErr)
+
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.Conflict, w.Code)
+		mockUser.AssertExpectations(t)
+	})
+
+	t.Run("Failed Update: Internal Server Error", func(t *testing.T) {
+		datareq := &request.User{
+			Email: "admin13@gmail.com",
+		}
+
+		jsom , err := json.Marshal(datareq)
+		assert.NoError(t, err)
+		req := httptest.NewRequest(helper.Put, "/user/9/update", bytes.NewReader(jsom))
+		req.Header.Set("Content-Type","application/json")
+		w := httptest.NewRecorder()
+		mockUser.On("UpdateUser", 9, datareq).Return(errors.New("Cannot Update Child Row"))
+
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.InternalServError, w.Code)
+		mockUser.AssertExpectations(t)
+	})
+
+	t.Run("Success Update User",func(t *testing.T) {
+		datareq := &request.User{
+			Email: "admin123@gmail.com",
+		}
+
+		jsom , err := json.Marshal(datareq)
+		assert.NoError(t, err)
+		req := httptest.NewRequest(helper.Put, "/user/1/update", bytes.NewReader(jsom))
+		req.Header.Set("Content-Type","application/json")
+		w := httptest.NewRecorder()
+		mockUser.On("UpdateUser", 1, datareq).Return(nil)
+
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.Success, w.Code)
+		mockUser.AssertExpectations(t)
 	})
 }

@@ -32,3 +32,8 @@ func (m *MockUserServices) ShowUser(id int) (*response.Users, error)  {
 	args := m.Called(id)
 	return args.Get(0).(*response.Users), args.Error(1)
 }
+
+func (m *MockUserServices) UpdateUser(id int, data *request.User) error  {
+	args := m.Called(id, data)
+	return args.Error(0)
+}
