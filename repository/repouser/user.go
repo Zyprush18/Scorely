@@ -14,6 +14,7 @@ type UserRepo interface {
 	GetAll() ([]response.Users, error)
 	Create(data *request.User) error
 	Show(id int) (*response.Users, error)
+	Update(id int, data *request.User) error
 }
 
 type UserMysql struct {
@@ -85,4 +86,15 @@ func (u *UserMysql) Show(id int) (*response.Users, error) {
 
 }
 
+func(u *UserMysql) Update(id int, data *request.User) error{
+	var user_model entity.Users
+	if err:= u.db.Model(&user_model).Where("id_user = ?", id).First(&user_model).Error;err != nil {
+		return err
+	}
 
+	if err:= u.db.Table("users").Where("id_user = ?", id).Updates(&data).Error;err != nil {
+		return err
+	}
+
+	return nil
+}

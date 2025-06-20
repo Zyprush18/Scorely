@@ -10,6 +10,7 @@ type ServiceUser interface {
 	AllUser()([]response.Users, error)
 	CreateUser(data *request.User) error
 	ShowUser(id int) (*response.Users, error)
+	UpdateUser(id int, data *request.User) error
 }
 
 type UserRepo struct {
@@ -44,4 +45,12 @@ func (u *UserRepo) ShowUser(id int) (*response.Users, error) {
 	}
 
 	return data,nil
+}
+
+func (u *UserRepo) UpdateUser(id int, data *request.User) error  {
+	if err:= u.repo.Update(id, data);err != nil {
+		return err
+	}
+
+	return nil
 }

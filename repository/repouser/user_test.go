@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"testing"
 
+
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/Zyprush18/Scorely/models/request"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +21,7 @@ func TestGetAll(t *testing.T) {
 		"email",
 		"password",
 		"role_id",
-	}).AddRow(1,"Admin@gmail.com","Admin124", 1)
+	}).AddRow(1, "Admin@gmail.com", "Admin124", 1)
 
 	t.Run("Success Get All User", func(t *testing.T) {
 		mocks.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users`")).WillReturnRows(userRow)
@@ -124,5 +125,52 @@ func TestShowuserById(t *testing.T) {
 		assert.Nil(t, data)
 
 		assert.Error(t, mocks.ExpectationsWereMet())
+	})
+}
+
+func TestUpdateUser(t *testing.T) {
+	database, mock, err := SetupDBForUser()
+	assert.NoError(t, err)
+
+	dataUser := sqlmock.NewRows([]string{
+		"id_user",
+		"email",
+		"password",
+		"role_id",
+	}).AddRow(1, "Admin@gmail.com", "admin123", 1)
+
+	repouser := NewUserDatabase(database)
+	t.Run("Success Update User", func(t *testing.T) {
+		id_success := 1
+		datareq := &request.User{
+			Email: "Admin@gmail.com",
+		}
+
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE id_user = ? ORDER BY `users`.`id_user` LIMIT ?")).WithArgs(id_success, 1).WillReturnRows(dataUser)
+
+		mock.ExpectBegin()
+		mock.ExpectExec(regexp.QuoteMeta("UPDATE `users`")).WithArgs(datareq.Email, sqlmock.AnyArg(), id_success).WillReturnResult(sqlmock.NewResult(0,1))
+		mock.ExpectCommit()
+
+		err := repouser.Update(id_success, datareq)
+		assert.NoError(t, err)
+
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("Failed Update User", func(t *testing.T) {
+		id_failed := 2
+		datareq := &request.User{
+			Email: "Users@gmail.com",
+		}
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE id_user = ? ORDER BY `users`.`id_user` LIMIT ?")).WithArgs(id_failed, 2).WillReturnRows(dataUser)
+
+		mock.ExpectBegin()
+		mock.ExpectExec(regexp.QuoteMeta("UPDATE `users`")).WithArgs(datareq.Email, sqlmock.AnyArg(), id_failed).WillReturnError(sqlmock.ErrCancelled)
+		mock.ExpectRollback()
+
+		err := repouser.Update(id_failed, datareq)
+		assert.Error(t, err)
+		assert.Error(t, mock.ExpectationsWereMet())
 	})
 }
