@@ -409,3 +409,63 @@ func TestHandlerUpdate(t *testing.T)  {
 		mockUser.AssertExpectations(t)
 	})
 }
+
+func TestHandlerDelete(t *testing.T)  {
+	serviceuser := MockUserServices{Mock: mock.Mock{}}
+	logg := LoggerMock{}
+	handler := NewHandlerUser(&serviceuser, logg)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/user/{id}/delete", handler.Delete)
+
+	t.Run("Mthod Not Allowed", func (t *testing.T)  {
+		req := httptest.NewRequest(helper.Gets,"/user/1/delete", nil)
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.MethodNotAllowed, w.Code)
+	})
+
+	t.Run("Invalid Id User format", func (t *testing.T)  {
+		req := httptest.NewRequest(helper.Delete,"/user/abc/delete", nil)
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.BadRequest, w.Code)
+	})
+
+	t.Run("Failed delete user: Not Found Id", func (t *testing.T)  {
+		req := httptest.NewRequest(helper.Delete,"/user/4/delete", nil)
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		serviceuser.On("DeleteUser", 4).Return(gorm.ErrRecordNotFound)
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.Notfound, w.Code)
+		serviceuser.AssertExpectations(t)
+	})
+
+	t.Run("Failed delete user: Database Refused", func (t *testing.T)  {
+		req := httptest.NewRequest(helper.Delete,"/user/2/delete", nil)
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		serviceuser.On("DeleteUser", 2).Return(errors.New("Something Went Wrong"))
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.InternalServError, w.Code)
+		serviceuser.AssertExpectations(t)
+	})
+
+	t.Run("Success Delete User", func (t *testing.T)  {
+		req := httptest.NewRequest(helper.Delete,"/user/1/delete", nil)
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		serviceuser.On("DeleteUser", 1).Return(nil)
+		mux.ServeHTTP(w, req)
+
+		assert.Equal(t, helper.Success, w.Code)
+		serviceuser.AssertExpectations(t)
+	})
+
+}

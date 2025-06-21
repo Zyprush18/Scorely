@@ -28,3 +28,9 @@ func (u *UserRepository) Update(id int, data *request.User) error  {
 	args := u.Called(id, data)
 	return args.Error(0)
 }
+
+	
+func (u *UserRepository) Delete(id int) error {
+	args := u.Called(id)
+	return args.Error(0)
+}

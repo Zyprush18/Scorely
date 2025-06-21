@@ -49,6 +49,7 @@ func RunApp() {
 	adminMux.HandleFunc("/add/user", userhandler.Create)
 	adminMux.HandleFunc("/user/{id}", userhandler.Show)
 	adminMux.HandleFunc("/user/{id}/update", userhandler.Update)
+	adminMux.HandleFunc("/user/{id}/delete", userhandler.Delete)
 
 	fmt.Println("🚀 running on: http://localhost:8000")
 	http.ListenAndServe(":8000", adminMux)

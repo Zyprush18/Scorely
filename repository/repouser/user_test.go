@@ -174,3 +174,44 @@ func TestUpdateUser(t *testing.T) {
 		assert.Error(t, mock.ExpectationsWereMet())
 	})
 }
+
+func TestDeleteUser(t *testing.T)  {
+	database, mock, err := SetupDBForUser()
+	userrep := NewUserDatabase(database)
+	assert.NoError(t, err)
+
+	dataUser := sqlmock.NewRows([]string{
+		"id_user",
+		"email",
+		"password",
+		"role_id",
+	}).AddRow(1, "Admin@gmail.com", "admin123", 1)
+	t.Run("Success Delete User", func(t *testing.T) {
+		id_success := 1 
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE id_user = ? ORDER BY `users`.`id_user` LIMIT ?")).WithArgs(id_success, 1).WillReturnRows(dataUser)
+
+		mock.ExpectBegin()
+		mock.ExpectExec(regexp.QuoteMeta("DELETE FROM `users` ")).WithArgs(id_success).WillReturnResult(sqlmock.NewResult(0,1))
+		mock.ExpectCommit()
+
+		err := userrep.Delete(id_success)
+		assert.NoError(t, err)
+
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("Failed Delete User", func(t *testing.T) {
+		id_success := 2 
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE id_user = ? ORDER BY `users`.`id_user` LIMIT ?")).WithArgs(id_success, 1).WillReturnRows(dataUser)
+
+		mock.ExpectBegin()
+		mock.ExpectExec(regexp.QuoteMeta("DELETE FROM `users` ")).WithArgs(id_success).WillReturnError(sqlmock.ErrCancelled)
+		mock.ExpectCommit()
+
+		err := userrep.Delete(id_success)
+		assert.Error(t, err)
+
+		assert.Error(t, mock.ExpectationsWereMet())
+	})
+	
+}

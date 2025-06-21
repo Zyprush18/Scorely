@@ -11,8 +11,8 @@ type Users struct {
 	// belongs to role table
 	Role Roles `gorm:"foreignKey:RoleId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	// has many to teacher table
-	Teacher []Teachers `gorm:"foreignKey:UserId;references:IdUser"`
+	Teacher Teachers `gorm:"foreignKey:UserId;references:IdUser"`
 	// has many to student table
-	Student []Students `gorm:"foreignKey:UserId;references:IdUser"`
+	Student Students `gorm:"foreignKey:UserId;references:IdUser"`
 	helper.Models
 }
