@@ -162,3 +162,26 @@ func TestUpdateuserService(t *testing.T)  {
 		mockrepousers.AssertExpectations(t)
 	})
 }
+
+func TestDeleteUser(t *testing.T)  {
+	usermock := UserRepository{Mock: mock.Mock{}}
+	servceuser := NewUserService(&usermock)
+
+	t.Run("Success Delete User", func(t *testing.T) {
+		id_sucess := 1
+		usermock.On("Delete", id_sucess).Return(nil)
+		err := servceuser.DeleteUser(id_sucess)
+		assert.NoError(t, err)
+
+		usermock.AssertExpectations(t)
+	})
+
+	t.Run("Failed Delete User", func(t *testing.T) {
+		id_failed := 2
+		usermock.On("Delete", id_failed).Return(errors.New("Not Found id: 2"))
+		err := servceuser.DeleteUser(id_failed)
+		assert.Error(t, err)
+
+		usermock.AssertExpectations(t)
+	})
+}

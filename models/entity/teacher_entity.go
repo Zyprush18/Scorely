@@ -12,8 +12,11 @@ type Teachers struct {
 	Phone     uint   `json:"phone" gorm:"type:bigint;unique"`
 	UserId    uint   `json:"user_id"`
 
+	// di ubah jadi relasi one to one
 	// belongs to users table
-	User Users `gorm:"foreignKey:UserId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	// User Users `gorm:"foreignKey:UserId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+
+
 	// has many to subjects table (many to many with subjects table)
 	Subject []*Subjects `gorm:"many2many:teacher_subjects;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	helper.Models

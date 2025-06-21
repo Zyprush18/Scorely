@@ -15,6 +15,7 @@ type UserRepo interface {
 	Create(data *request.User) error
 	Show(id int) (*response.Users, error)
 	Update(id int, data *request.User) error
+	Delete(id int) error
 }
 
 type UserMysql struct {
@@ -97,4 +98,18 @@ func(u *UserMysql) Update(id int, data *request.User) error{
 	}
 
 	return nil
+}
+
+func (u *UserMysql) Delete(id int) error {
+	var model_user entity.Users
+	if err:= u.db.Model(&model_user).Where("id_user = ?",id).First(&model_user).Error;err != nil {
+		return err
+	}
+
+	if err:= u.db.Delete(&model_user).Error;err != nil {
+		return err
+	}
+
+	return  nil
+
 }
