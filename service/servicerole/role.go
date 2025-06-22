@@ -33,28 +33,13 @@ func (r *RoleRepo) Create(data *request.Roles) error  {
 
 	
 func (r *RoleRepo) ShowRoleById(id int) (*response.Roles, error) {
-	resp, err := r.Repo.ShowById(id)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
+	return r.Repo.ShowById(id)
 }
 
 func (r *RoleRepo) UpdateRole(id int, data *request.Roles) error  {
-	err := r.Repo.UpdateRole(id,data)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return r.Repo.UpdateRole(id,data)
 }
 
 func (r *RoleRepo) DeleteRole(id int) error {
-	err:= r.Repo.DeleteRole(id)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return r.Repo.DeleteRole(id)
 }
