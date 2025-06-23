@@ -11,76 +11,164 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetAllData(t *testing.T) {
-	t.Run("Success Get All Data Role", func(t *testing.T) {
-		mock := new(RepoRoleMock)
-		service := NewRoleService(mock)
-		data := []response.Roles{
-			{
-				IdRole:   1,
-				NameRole: "Admin",
-				Users: []response.Users{
-					{
-						IdUser:   1,
-						Email:    "admin@gmail.com",
-						Password: "admin123",
-						RoleId:   1,
+type StructTest struct {
+	Name        string
+	Data        []response.Roles
+	Mocks       func(m RepoRoleMock) ([]response.Roles, error)
+	ExpectedErr error
+}
+
+// func TestGetAllData(t *testing.T) {
+// 	t.Run("Success Get All Data Role", func(t *testing.T) {
+// 		mock := new(RepoRoleMock)
+// 		service := NewRoleService(mock)
+// 		data := []response.Roles{
+// 			{
+// 				IdRole:   1,
+// 				NameRole: "Admin",
+// 				Users: []response.Users{
+// 					{
+// 						IdUser:   1,
+// 						Email:    "admin@gmail.com",
+// 						Password: "admin123",
+// 						RoleId:   1,
+// 					},
+// 					{
+// 						IdUser:   2,
+// 						Email:    "admin2@gmail.com",
+// 						Password: "admin123",
+// 						RoleId:   1,
+// 					},
+// 				},
+// 				Models: helper.Models{
+// 					CreatedAt: time.Now(),
+// 				},
+// 			},
+// 			{
+// 				IdRole:   2,
+// 				NameRole: "User",
+// 				Users: []response.Users{
+// 					{
+// 						IdUser:   3,
+// 						Email:    "user@gmail.com",
+// 						Password: "user123",
+// 						RoleId:   2,
+// 					},
+// 					{
+// 						IdUser:   4,
+// 						Email:    "user2@gmail.com",
+// 						Password: "user123",
+// 						RoleId:   2,
+// 					},
+// 				},
+// 				Models: helper.Models{
+// 					CreatedAt: time.Now(),
+// 				},
+// 			},
+// 		}
+
+// 		mock.On("GetAllDataRole").Return(data, nil)
+
+// 		resp, err := service.GetAllData()
+// 		assert.NoError(t, err)
+// 		assert.NotNil(t, resp)
+
+// 		mock.AssertExpectations(t)
+// 	})
+
+// 	t.Run("Failed Get All Data Role", func(t *testing.T) {
+// 		mock := new(RepoRoleMock)
+// 		service := NewRoleService(mock)
+
+// 		mock.On("GetAllDataRole").Return([]response.Roles(nil), errors.New("Database is refused"))
+
+// 		resperr, err := service.GetAllData()
+// 		assert.Error(t, err)
+// 		assert.Nil(t, resperr)
+
+// 		mock.AssertExpectations(t)
+// 	})
+
+// }
+
+func TestGetAlldatasRole(t *testing.T) {
+	mock := new(RepoRoleMock)
+	service := NewRoleService(mock)
+	data := []StructTest{
+		{
+			Name: "Success Get Data Role",
+			Data: []response.Roles{
+				{
+					IdRole:   1,
+					NameRole: "Admin",
+					Users: []response.Users{
+						{
+							IdUser:   1,
+							Email:    "admin@gmail.com",
+							Password: "admin123",
+							RoleId:   1,
+						},
+						{
+							IdUser:   2,
+							Email:    "admin2@gmail.com",
+							Password: "admin123",
+							RoleId:   1,
+						},
 					},
-					{
-						IdUser:   2,
-						Email:    "admin2@gmail.com",
-						Password: "admin123",
-						RoleId:   1,
+					Models: helper.Models{
+						CreatedAt: time.Now(),
 					},
 				},
-				Models: helper.Models{
-					CreatedAt: time.Now(),
+				{
+					IdRole:   2,
+					NameRole: "User",
+					Users: []response.Users{
+						{
+							IdUser:   3,
+							Email:    "user@gmail.com",
+							Password: "user123",
+							RoleId:   2,
+						},
+						{
+							IdUser:   4,
+							Email:    "user2@gmail.com",
+							Password: "user123",
+							RoleId:   2,
+						},
+					},
+					Models: helper.Models{
+						CreatedAt: time.Now(),
+					},
 				},
 			},
-			{
-				IdRole:   2,
-				NameRole: "User",
-				Users: []response.Users{
-					{
-						IdUser:   3,
-						Email:    "user@gmail.com",
-						Password: "user123",
-						RoleId:   2,
-					},
-					{
-						IdUser:   4,
-						Email:    "user2@gmail.com",
-						Password: "user123",
-						RoleId:   2,
-					},
-				},
-				Models: helper.Models{
-					CreatedAt: time.Now(),
-				},
-			},
-		}
+			ExpectedErr: nil,
+		},
+		{
+			Name:        "Failed Get Data Role",
+			Data:        []response.Roles(nil),
+			ExpectedErr: errors.New("Database is refused"),
+		},
+	}
 
-		mock.On("GetAllDataRole").Return(data, nil)
+	for _, v := range data {
+		val := v
+		t.Run(val.Name, func(t *testing.T) {
 
-		resp, err := service.GetAllData()
-		assert.NoError(t, err)
-		assert.NotNil(t, resp)
-
-		mock.AssertExpectations(t)
-	})
-
-	t.Run("Failed Get All Data Role", func(t *testing.T) {
-		mock := new(RepoRoleMock)
-		service := NewRoleService(mock)
-
-		mock.On("GetAllDataRole").Return([]response.Roles(nil), errors.New("Database is refused"))
-
-		resperr, err := service.GetAllData()
-		assert.Error(t, err)
-		assert.Nil(t, resperr)
-
-		mock.AssertExpectations(t)
-	})
+			mock.ExpectedCalls = nil
+			mock.Calls = nil
+			mock.On("GetAllDataRole").Return(val.Data, val.ExpectedErr)
+			resp, err := service.GetAllData()
+			if val.ExpectedErr != nil {
+				assert.Error(t, err)
+				assert.Nil(t, resp)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, resp)
+				assert.Equal(t, val.Data, resp)
+			}
+			mock.AssertExpectations(t)
+		})
+	}
 
 }
 
@@ -133,7 +221,7 @@ func TestShowRoleById(t *testing.T) {
 
 	t.Run("Failed Show Role by id", func(t *testing.T) {
 
-		mock.On("ShowById", 2).Return(data, errors.New("Not Found role id: 2"))
+		mock.On("ShowById", 2).Return((*response.Roles)(nil), errors.New("Not Found role id: 2"))
 
 		resp, err := servicerole.ShowRoleById(2)
 
@@ -161,7 +249,7 @@ func TestUpdateRole(t *testing.T) {
 	})
 
 	t.Run("Failed Delete Role", func(t *testing.T) {
-		mock.On("UpdateRole", 90,data).Return(errors.New("Not Found Role Id: 90"))
+		mock.On("UpdateRole", 90, data).Return(errors.New("Not Found Role Id: 90"))
 
 		err := servicerole.UpdateRole(90, data)
 
@@ -171,14 +259,14 @@ func TestUpdateRole(t *testing.T) {
 	})
 }
 
-func TestDeleteRole(t *testing.T)  {
+func TestDeleteRole(t *testing.T) {
 	mock := new(RepoRoleMock)
 	servicerepo := NewRoleService(mock)
 
 	t.Run("Success Delete Role", func(t *testing.T) {
 		mock.On("DeleteRole", 1).Return(nil)
 
-		err:=servicerepo.DeleteRole(1)
+		err := servicerepo.DeleteRole(1)
 		assert.NoError(t, err)
 
 		mock.AssertExpectations(t)
@@ -187,9 +275,11 @@ func TestDeleteRole(t *testing.T)  {
 	t.Run("Failed Delete Role", func(t *testing.T) {
 		mock.On("DeleteRole", 3).Return(errors.New("Not Found Id_Role: 3"))
 
-		err:=servicerepo.DeleteRole(3)
+		err := servicerepo.DeleteRole(3)
 		assert.Error(t, err)
 
 		mock.AssertExpectations(t)
 	})
 }
+
+

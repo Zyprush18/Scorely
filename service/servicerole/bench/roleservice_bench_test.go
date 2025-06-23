@@ -75,14 +75,14 @@ func BenchmarkCreateUser(b *testing.B) {
 	rolePass := &request.Roles{
 		NameRole: "Admin",
 	}
-	// mock.On("CreateRole", rolePass).Return(nil)
+	mock.On("CreateRole", rolePass).Return(nil)
 	b.ResetTimer()
 	b.ReportAllocs()
 	for b.Loop() {
 		_ = service.Create(rolePass)
 	}
 	b.StopTimer()
-	// mock.AssertExpectations(b)
+	mock.AssertExpectations(b)
 }
 
 func BenchmarkShowByIdUser(b *testing.B)  {
