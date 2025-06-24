@@ -38,9 +38,15 @@ const (
 type Messages struct {
 	Message string `json:"message,omitempty"`
 	Data    any    `json:"data,omitempty"`
-	Errors  any    `json:"error,omitempty"`
+	Errors  string    `json:"error,omitempty"`
 	Fields  any    `json:"field,omitempty"`
 
+}
+
+type Pagination struct {
+	Page int	`json:"page"`
+	Size int	`json:"size"`
+	TotalPage int	`json:"total_page"`
 }
 
 // createdat and updatedat struct

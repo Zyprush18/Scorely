@@ -8,7 +8,7 @@ import (
 )
 
 type ServiceRole interface {
-	GetAllData() ([]response.Roles, error)
+	GetAllData(search,sort string) ([]response.Roles, error)
 	Create(data *request.Roles) error
 	ShowRoleById(id int) (*response.Roles, error)
 	UpdateRole(id int, data *request.Roles) error
@@ -23,8 +23,8 @@ func NewRoleService(r reporole.RoleService) ServiceRole  {
 	return &RoleRepo{Repo: r}
 }
 
-func (r *RoleRepo) GetAllData() ([]response.Roles, error){
-	return r.Repo.GetAllDataRole()
+func (r *RoleRepo) GetAllData(search,sort string) ([]response.Roles, error){
+	return r.Repo.GetAllDataRole(search,sort)
 }
 
 func (r *RoleRepo) Create(data *request.Roles) error  {

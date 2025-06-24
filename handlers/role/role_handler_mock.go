@@ -28,8 +28,8 @@ func (l LoggerMock) Logfile(msg string)  {
 	fmt.Println(msg)
 }
 
-func (s *ServiceRole) GetAllData() ([]response.Roles, error)  {
-	args := s.Called()
+func (s *ServiceRole) GetAllData(search,sort string) ([]response.Roles, error)  {
+	args := s.Called(search,sort)
 	return args.Get(0).([]response.Roles), args.Error(1)
 }
 

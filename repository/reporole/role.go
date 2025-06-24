@@ -1,6 +1,8 @@
 package reporole
 
 import (
+	"fmt"
+	"time"
 
 	"github.com/Zyprush18/Scorely/helper"
 	"github.com/Zyprush18/Scorely/models/entity"
@@ -11,7 +13,7 @@ import (
 )
 
 type RoleService interface {
-	GetAllDataRole() ([]response.Roles, error)
+	GetAllDataRole(search,sort string) ([]response.Roles, error)
 	CreateRole(data *request.Roles) error
 	ShowById(id int) (*response.Roles, error)
 	UpdateRole(id int, data *request.Roles) error
@@ -27,10 +29,25 @@ func RolesMysql(db *gorm.DB) RoleMysql {
 }
 
 // GetAllData
-func (r RoleMysql) GetAllDataRole() ([]response.Roles, error) {
+func (r RoleMysql) GetAllDataRole(search,sort string) ([]response.Roles, error) {
 	var RoleModel []entity.Roles
-	if err := r.db.Table("roles").Preload("Users").Find(&RoleModel).Error;err != nil {
-		return nil, err
+	data := r.db.Table("roles").Preload("Users")
+
+	// search
+	if search != "" {
+		data.Where("name_role LIKE ?", "%"+search+"%").Find(&RoleModel)
+	}
+
+	// sort by created_at
+	if sort != "" {
+		order := fmt.Sprintf("created_at %s", sort)
+		data.Order(order)
+	}
+
+	// pagination
+
+	if data.Find(&RoleModel).Error != nil {
+		return nil, data.Error
 	}
 
 	resp := []response.Roles{}
@@ -52,7 +69,13 @@ func (r RoleMysql) GetAllDataRole() ([]response.Roles, error) {
 
 // create
 func (r RoleMysql) CreateRole(data *request.Roles) error {
-	if err := r.db.Table("roles").Create(&data).Error; err != nil {
+	role:= &request.Roles{
+		NameRole: data.NameRole,
+		Models: helper.Models{
+			CreatedAt: time.Now(),
+		},
+	}
+	if err := r.db.Table("roles").Create(&role).Error; err != nil {
 		return err
 	}
 
