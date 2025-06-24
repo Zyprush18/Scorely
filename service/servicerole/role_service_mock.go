@@ -22,8 +22,8 @@ func (m *RepoRoleMock) ShowById(id int) (*response.Roles, error)  {
 	return args.Get(0).(*response.Roles), args.Error(1)
 }
 
-func (m *RepoRoleMock) GetAllDataRole() ([]response.Roles, error)  {
-	args := m.Called()
+func (m *RepoRoleMock) GetAllDataRole(search,sort string) ([]response.Roles, error)  {
+	args := m.Called(search,sort)
 
 	return args.Get(0).([]response.Roles), args.Error(1)
 }

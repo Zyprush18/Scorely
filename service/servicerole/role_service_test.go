@@ -18,79 +18,6 @@ type StructTest struct {
 	ExpectedErr error
 }
 
-// func TestGetAllData(t *testing.T) {
-// 	t.Run("Success Get All Data Role", func(t *testing.T) {
-// 		mock := new(RepoRoleMock)
-// 		service := NewRoleService(mock)
-// 		data := []response.Roles{
-// 			{
-// 				IdRole:   1,
-// 				NameRole: "Admin",
-// 				Users: []response.Users{
-// 					{
-// 						IdUser:   1,
-// 						Email:    "admin@gmail.com",
-// 						Password: "admin123",
-// 						RoleId:   1,
-// 					},
-// 					{
-// 						IdUser:   2,
-// 						Email:    "admin2@gmail.com",
-// 						Password: "admin123",
-// 						RoleId:   1,
-// 					},
-// 				},
-// 				Models: helper.Models{
-// 					CreatedAt: time.Now(),
-// 				},
-// 			},
-// 			{
-// 				IdRole:   2,
-// 				NameRole: "User",
-// 				Users: []response.Users{
-// 					{
-// 						IdUser:   3,
-// 						Email:    "user@gmail.com",
-// 						Password: "user123",
-// 						RoleId:   2,
-// 					},
-// 					{
-// 						IdUser:   4,
-// 						Email:    "user2@gmail.com",
-// 						Password: "user123",
-// 						RoleId:   2,
-// 					},
-// 				},
-// 				Models: helper.Models{
-// 					CreatedAt: time.Now(),
-// 				},
-// 			},
-// 		}
-
-// 		mock.On("GetAllDataRole").Return(data, nil)
-
-// 		resp, err := service.GetAllData()
-// 		assert.NoError(t, err)
-// 		assert.NotNil(t, resp)
-
-// 		mock.AssertExpectations(t)
-// 	})
-
-// 	t.Run("Failed Get All Data Role", func(t *testing.T) {
-// 		mock := new(RepoRoleMock)
-// 		service := NewRoleService(mock)
-
-// 		mock.On("GetAllDataRole").Return([]response.Roles(nil), errors.New("Database is refused"))
-
-// 		resperr, err := service.GetAllData()
-// 		assert.Error(t, err)
-// 		assert.Nil(t, resperr)
-
-// 		mock.AssertExpectations(t)
-// 	})
-
-// }
-
 func TestGetAlldatasRole(t *testing.T) {
 	mock := new(RepoRoleMock)
 	service := NewRoleService(mock)
@@ -157,7 +84,7 @@ func TestGetAlldatasRole(t *testing.T) {
 			mock.ExpectedCalls = nil
 			mock.Calls = nil
 			mock.On("GetAllDataRole").Return(val.Data, val.ExpectedErr)
-			resp, err := service.GetAllData()
+			resp, err := service.GetAllData("","")
 			if val.ExpectedErr != nil {
 				assert.Error(t, err)
 				assert.Nil(t, resp)

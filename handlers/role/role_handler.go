@@ -33,7 +33,10 @@ func (h *HandlerRole) GetRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := h.services.GetAllData()
+	search := r.URL.Query().Get("search")
+	sort := r.URL.Query().Get("sort")
+
+	resp, err := h.services.GetAllData(search,sort)
 	if err != nil {
 		h.logg.Logfile(err.Error())
 		w.WriteHeader(helper.InternalServError)

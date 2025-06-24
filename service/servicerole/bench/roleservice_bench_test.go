@@ -63,7 +63,7 @@ func BenchmarkGetAllData(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	for b.Loop() {
-		_, _ = service.GetAllData()
+		_, _ = service.GetAllData("","")
 	}
 	b.StopTimer()
 	mock.AssertExpectations(b)
