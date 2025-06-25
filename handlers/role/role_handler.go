@@ -33,10 +33,18 @@ func (h *HandlerRole) GetRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	search := r.URL.Query().Get("search")
-	sort := r.URL.Query().Get("sort")
+	page,perpage,sort,search,err := helper.QueryParam(r, 10)
+	if err != nil {
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Invalid page format",
+			Errors:  "Bad Request",
+		})
 
-	resp, err := h.services.GetAllData(search,sort)
+		return
+	}
+
+	resp,count, err := h.services.GetAllData(search,sort,page,perpage)
 	if err != nil {
 		h.logg.Logfile(err.Error())
 		w.WriteHeader(helper.InternalServError)
@@ -51,6 +59,7 @@ func (h *HandlerRole) GetRole(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(helper.Messages{
 		Message: "Success",
 		Data:    resp,
+		Pagination: helper.Paginations(page,perpage,int(count)),
 	})
 }
 

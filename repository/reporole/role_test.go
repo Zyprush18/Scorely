@@ -36,7 +36,7 @@ func TestGetAllDAtaRole(t *testing.T) {
 		mock.ExpectQuery("SELECT (.*)").
 			WillReturnRows(dataUser)
 
-		data, err := repo.GetAllDataRole("","")
+		data, _,err := repo.GetAllDataRole("","",0,0)
 		assert.NoError(t, err)
 		assert.NotNil(t, data)
 
@@ -46,7 +46,7 @@ func TestGetAllDAtaRole(t *testing.T) {
 	t.Run("Failed Get All Data Role", func(t *testing.T) {
 		mock.ExpectQuery("SELECT (.*)").WillReturnError(db.Error)
 
-		data, err := repo.GetAllDataRole("","")
+		data, _,err := repo.GetAllDataRole("","",0,0)
 		assert.Error(t, err)
 		assert.Nil(t, data)
 

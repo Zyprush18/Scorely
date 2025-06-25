@@ -28,20 +28,6 @@ func TestGetAlldatasRole(t *testing.T) {
 				{
 					IdRole:   1,
 					NameRole: "Admin",
-					Users: []response.Users{
-						{
-							IdUser:   1,
-							Email:    "admin@gmail.com",
-							Password: "admin123",
-							RoleId:   1,
-						},
-						{
-							IdUser:   2,
-							Email:    "admin2@gmail.com",
-							Password: "admin123",
-							RoleId:   1,
-						},
-					},
 					Models: helper.Models{
 						CreatedAt: time.Now(),
 					},
@@ -49,20 +35,6 @@ func TestGetAlldatasRole(t *testing.T) {
 				{
 					IdRole:   2,
 					NameRole: "User",
-					Users: []response.Users{
-						{
-							IdUser:   3,
-							Email:    "user@gmail.com",
-							Password: "user123",
-							RoleId:   2,
-						},
-						{
-							IdUser:   4,
-							Email:    "user2@gmail.com",
-							Password: "user123",
-							RoleId:   2,
-						},
-					},
 					Models: helper.Models{
 						CreatedAt: time.Now(),
 					},
@@ -84,7 +56,7 @@ func TestGetAlldatasRole(t *testing.T) {
 			mock.ExpectedCalls = nil
 			mock.Calls = nil
 			mock.On("GetAllDataRole").Return(val.Data, val.ExpectedErr)
-			resp, err := service.GetAllData("","")
+			resp,_, err := service.GetAllData("","",0,0)
 			if val.ExpectedErr != nil {
 				assert.Error(t, err)
 				assert.Nil(t, resp)

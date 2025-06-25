@@ -17,20 +17,6 @@ func BenchmarkGetAllData(b *testing.B) {
 		{
 			IdRole:   1,
 			NameRole: "Admin",
-			Users: []response.Users{
-				{
-					IdUser:   1,
-					Email:    "admin@gmail.com",
-					Password: "admin123",
-					RoleId:   1,
-				},
-				{
-					IdUser:   2,
-					Email:    "admin2@gmail.com",
-					Password: "admin123",
-					RoleId:   1,
-				},
-			},
 			Models: helper.Models{
 				CreatedAt: time.Now(),
 			},
@@ -38,20 +24,6 @@ func BenchmarkGetAllData(b *testing.B) {
 		{
 			IdRole:   2,
 			NameRole: "User",
-			Users: []response.Users{
-				{
-					IdUser:   3,
-					Email:    "user@gmail.com",
-					Password: "user123",
-					RoleId:   2,
-				},
-				{
-					IdUser:   4,
-					Email:    "user2@gmail.com",
-					Password: "user123",
-					RoleId:   2,
-				},
-			},
 			Models: helper.Models{
 				CreatedAt: time.Now(),
 			},
@@ -63,7 +35,7 @@ func BenchmarkGetAllData(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	for b.Loop() {
-		_, _ = service.GetAllData("","")
+		_, _,_ = service.GetAllData("","",0,0)
 	}
 	b.StopTimer()
 	mock.AssertExpectations(b)

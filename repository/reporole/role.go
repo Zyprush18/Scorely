@@ -13,7 +13,7 @@ import (
 )
 
 type RoleService interface {
-	GetAllDataRole(search,sort string) ([]response.Roles, error)
+	GetAllDataRole(search,sort string,page,perpage int) ([]response.Roles, int64,error)
 	CreateRole(data *request.Roles) error
 	ShowById(id int) (*response.Roles, error)
 	UpdateRole(id int, data *request.Roles) error
@@ -29,34 +29,26 @@ func RolesMysql(db *gorm.DB) RoleMysql {
 }
 
 // GetAllData
-func (r RoleMysql) GetAllDataRole(search,sort string) ([]response.Roles, error) {
+func (r RoleMysql) GetAllDataRole(search,sort string, page,perpage int) ([]response.Roles, int64 ,error) {
 	var RoleModel []entity.Roles
-	data := r.db.Table("roles").Preload("Users")
+	var count int64
+	offset := (page - 1 ) * perpage
+	order := fmt.Sprintf("created_at %s", sort)
 
-	// search
-	if search != "" {
-		data.Where("name_role LIKE ?", "%"+search+"%").Find(&RoleModel)
+	query := r.db.Table("roles").Where("name_role LIKE ?", "%"+search+"%")
+	query.Count(&count)
+	if  query.Error != nil {
+		return nil, 0, query.Error
 	}
 
-	// sort by created_at
-	if sort != "" {
-		order := fmt.Sprintf("created_at %s", sort)
-		data.Order(order)
-	}
-
-	// pagination
-
-	if data.Find(&RoleModel).Error != nil {
-		return nil, data.Error
-	}
-
+	query.Order(order).Limit(perpage).Offset(offset).Find(&RoleModel)
 	resp := []response.Roles{}
 
 	for _, r := range RoleModel {
 		resp = append(resp, response.Roles{
 			IdRole: r.IdRole,
 			NameRole: r.NameRole,
-			Users: ResponseRole(r.Users),
+			// Users: ResponseRole(r.Users),
 			Models: helper.Models{
 				CreatedAt: r.CreatedAt,
 				UpdatedAt: r.UpdatedAt,
@@ -64,7 +56,7 @@ func (r RoleMysql) GetAllDataRole(search,sort string) ([]response.Roles, error) 
 		})
 	}
 
-	return resp, nil
+	return resp, count,nil
 }
 
 // create
@@ -93,7 +85,7 @@ func (r RoleMysql) ShowById(id int) (*response.Roles, error) {
 	resp := response.Roles{
 		IdRole: rolemodel.IdRole,
 		NameRole: rolemodel.NameRole,
-		Users: ResponseRole(rolemodel.Users),
+		// Users: ResponseRole(rolemodel.Users),
 		Models: helper.Models{
 			CreatedAt: rolemodel.CreatedAt,
 			UpdatedAt: rolemodel.UpdatedAt,

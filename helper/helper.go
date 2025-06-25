@@ -4,9 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -15,38 +17,39 @@ import (
 )
 
 const (
-	Success          = http.StatusOK
-	Created          = http.StatusCreated
-	BadRequest       = http.StatusBadRequest
-	Notfound		= http.StatusNotFound
-	Conflict	= http.StatusConflict
-	UnprocessbleEntity	= http.StatusUnprocessableEntity
-	MethodNotAllowed = http.StatusMethodNotAllowed
-	InternalServError = http.StatusInternalServerError
+	Success            = http.StatusOK
+	Created            = http.StatusCreated
+	BadRequest         = http.StatusBadRequest
+	Notfound           = http.StatusNotFound
+	Conflict           = http.StatusConflict
+	UnprocessbleEntity = http.StatusUnprocessableEntity
+	MethodNotAllowed   = http.StatusMethodNotAllowed
+	InternalServError  = http.StatusInternalServerError
 )
 
 const (
-	Gets = http.MethodGet
-	Post = http.MethodPost
-	Put	= http.MethodPut
+	Gets   = http.MethodGet
+	Post   = http.MethodPost
+	Put    = http.MethodPut
 	Delete = http.MethodDelete
 )
 
-
-
 // struct message
 type Messages struct {
-	Message string `json:"message,omitempty"`
-	Data    any    `json:"data,omitempty"`
-	Errors  string    `json:"error,omitempty"`
-	Fields  any    `json:"field,omitempty"`
-
+	Message    string `json:"message,omitempty"`
+	Data       any    `json:"data,omitempty"`
+	Errors     string `json:"error,omitempty"`
+	Fields     any    `json:"field,omitempty"`
+	Pagination *Pag    `json:"pagination,omitempty"`
 }
 
-type Pagination struct {
-	Page int	`json:"page"`
-	Size int	`json:"size"`
-	TotalPage int	`json:"total_page"`
+type Pag struct {
+	Page      int    `json:"page"`
+	TotalData int    `json:"total_data"`
+	PerPage   int64  `json:"perpage"`
+	Totalpage int    `json:"total_page"`
+	Prev      string `json:"prev"`
+	Next      string `json:"next"`
 }
 
 // createdat and updatedat struct
@@ -63,7 +66,7 @@ type Logger struct {
 	path string
 }
 
-func NewLogger(pathfile string) Loggers  {
+func NewLogger(pathfile string) Loggers {
 	return Logger{path: pathfile}
 }
 
@@ -107,13 +110,53 @@ func ValidateForm(data interface{}) error {
 	return nil
 }
 
-
 func IsDuplicateEntryError(err error) bool {
-    var mysqlErr *mysql.MySQLError
-    if errors.As(err, &mysqlErr) {
-        if mysqlErr.Number == 1062 {
-            return true
-        }
-    }
-    return false
+	var mysqlErr *mysql.MySQLError
+	if errors.As(err, &mysqlErr) {
+		if mysqlErr.Number == 1062 {
+			return true
+		}
+	}
+	return false
+}
+
+func QueryParam(r *http.Request, perpages int) (page, perpage int, sort, search string, err error) {
+	search = r.URL.Query().Get("search")
+	p := r.URL.Query().Get("page")
+	page = 1
+	if p != "" {
+		page, err = strconv.Atoi(p)
+		if err != nil {
+			return 0, 0, "", "", err
+		}
+	}
+
+	sort = r.URL.Query().Get("sort")
+	if sort != "asc" && sort != "desc" {
+		sort = "asc"
+	}
+
+	return page, perpages, sort, search, nil
+
+}
+
+func Paginations(page, perpage, count int) *Pag {
+	var next int
+	prev := page - 1
+	if prev <= 0 {
+		prev = 0
+	}
+	totalpage := int(math.Ceil(float64(count) / float64(perpage)))
+	if page < totalpage {
+		next = page + 1
+	}
+
+	return &Pag{
+		Page:      page,
+		TotalData: int(count),
+		PerPage:   int64(perpage),
+		Totalpage: totalpage,
+		Prev:      fmt.Sprintf("/role?page=%d", prev),
+		Next:      fmt.Sprintf("/role?page=%d", next),
+	}
 }
