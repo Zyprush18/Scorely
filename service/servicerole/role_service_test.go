@@ -15,6 +15,11 @@ type StructTest struct {
 	Name        string
 	Data        []response.Roles
 	Mocks       func(m RepoRoleMock) ([]response.Roles, error)
+	Counts      int
+	Page        int
+	Perpage     int
+	Search      string
+	Sort        string
 	ExpectedErr error
 }
 
@@ -40,11 +45,21 @@ func TestGetAlldatasRole(t *testing.T) {
 					},
 				},
 			},
+			Counts:      1,
+			Page:        1,
+			Perpage:     10,
+			Search:      "",
+			Sort:        "",
 			ExpectedErr: nil,
 		},
 		{
 			Name:        "Failed Get Data Role",
 			Data:        []response.Roles(nil),
+			Counts:      0,
+			Page:        1,
+			Perpage:     10,
+			Search:      "",
+			Sort:        "",
 			ExpectedErr: errors.New("Database is refused"),
 		},
 	}
@@ -55,15 +70,18 @@ func TestGetAlldatasRole(t *testing.T) {
 
 			mock.ExpectedCalls = nil
 			mock.Calls = nil
-			mock.On("GetAllDataRole").Return(val.Data, val.ExpectedErr)
-			resp,_, err := service.GetAllData("","",0,0)
+			
+			mock.On("GetAllDataRole", v.Search, v.Sort, v.Page, v.Perpage).Return(val.Data, v.Counts, val.ExpectedErr)
+			resp, count, err := service.GetAllData(v.Search, v.Sort, v.Page, v.Perpage)
 			if val.ExpectedErr != nil {
 				assert.Error(t, err)
 				assert.Nil(t, resp)
+				assert.Equal(t, int64(v.Counts), count)
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, resp)
 				assert.Equal(t, val.Data, resp)
+				assert.Equal(t, int64(v.Counts), count)
 			}
 			mock.AssertExpectations(t)
 		})
@@ -180,5 +198,3 @@ func TestDeleteRole(t *testing.T) {
 		mock.AssertExpectations(t)
 	})
 }
-
-
