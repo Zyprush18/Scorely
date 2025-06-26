@@ -30,33 +30,16 @@ func RolesMysql(db *gorm.DB) RoleMysql {
 
 // GetAllData
 func (r RoleMysql) GetAllDataRole(search,sort string, page,perpage int) ([]response.Roles, int64 ,error) {
-	var RoleModel []entity.Roles
+	var RoleModel []response.Roles
 	var count int64
 	offset := (page - 1 ) * perpage
 	order := fmt.Sprintf("created_at %s", sort)
 
-	query := r.db.Table("roles").Where("name_role LIKE ?", "%"+search+"%")
-	query.Count(&count)
-	if  query.Error != nil {
-		return nil, 0, query.Error
+	if  err := r.db.Table("roles").Where("name_role LIKE ?", "%"+search+"%").Count(&count).Order(order).Limit(perpage).Offset(offset).Find(&RoleModel).Error; err != nil {
+		return nil, 0, err
 	}
-
-	query.Order(order).Limit(perpage).Offset(offset).Find(&RoleModel)
-	resp := []response.Roles{}
-
-	for _, r := range RoleModel {
-		resp = append(resp, response.Roles{
-			IdRole: r.IdRole,
-			NameRole: r.NameRole,
-			// Users: ResponseRole(r.Users),
-			Models: helper.Models{
-				CreatedAt: r.CreatedAt,
-				UpdatedAt: r.UpdatedAt,
-			},
-		})
-	}
-
-	return resp, count,nil
+	
+	return RoleModel, count,nil
 }
 
 // create

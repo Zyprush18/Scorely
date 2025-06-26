@@ -10,9 +10,10 @@ type RepoRoleMock struct {
 	mock.Mock
 }
 
-// GetAllDataRole implements reporole.RoleService.
-func (m *RepoRoleMock) GetAllDataRole(search string, sort string, page int, perpage int) ([]response.Roles, int64, error) {
-	panic("unimplemented")
+func (m *RepoRoleMock) GetAllDataRole(search, sort string, page, perpage int) ([]response.Roles, int64, error) {
+	args := m.Called(search, sort, page, perpage)
+
+	return args.Get(0).([]response.Roles), int64(args.Int(1)), args.Error(2)
 }
 
 func (m *RepoRoleMock) CreateRole(data *request.Roles) error {
@@ -23,12 +24,6 @@ func (m *RepoRoleMock) CreateRole(data *request.Roles) error {
 func (m *RepoRoleMock) ShowById(id int) (*response.Roles, error) {
 	args := m.Called(id)
 	return args.Get(0).(*response.Roles), args.Error(1)
-}
-
-func (m *RepoRoleMock) GetAllData(search, sort string, page, perpage int) ([]response.Roles, int64, error) {
-	args := m.Called(search, sort, page, perpage)
-
-	return args.Get(0).([]response.Roles), int64(args.Int(1)), args.Error(2)
 }
 
 func (m *RepoRoleMock) UpdateRole(id int, data *request.Roles) error {
