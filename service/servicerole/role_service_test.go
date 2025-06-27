@@ -14,7 +14,7 @@ import (
 type StructTest struct {
 	Name        string
 	Data        []response.Roles
-	Mocks       func(m RepoRoleMock) ([]response.Roles, error)
+	Request     *request.Roles
 	Counts      int
 	Page        int
 	Perpage     int
@@ -92,29 +92,37 @@ func TestGetAlldatasRole(t *testing.T) {
 func TestCreateServiceRole(t *testing.T) {
 	mock := new(RepoRoleMock)
 	service := NewRoleService(mock)
-	t.Run("Service Success Create a New Role", func(t *testing.T) {
-		rolePass := &request.Roles{
-			NameRole: "Admin",
-		}
-		mock.On("CreateRole", rolePass).Return(nil)
 
-		err := service.Create(rolePass)
-		assert.NoError(t, err)
-		mock.AssertExpectations(t)
+	data := []StructTest{
+		{
+			Name: "Service Success Create a New Role",
+			Request: &request.Roles{
+				NameRole: "Admin",
+			},
+			ExpectedErr: nil,
+		},
+		{
+			Name: "Service Failed Create a New Role",
+			Request: &request.Roles{
+				NameRole: "User",
+			},
+			ExpectedErr: errors.New("Failed Create Role"),
+		},
+	}
 
-	})
+	for _, v := range data {
+		t.Run(v.Name,func(t *testing.T) {
+			mock.On("CreateRole", v.Request).Return(v.ExpectedErr)
+			err := service.Create(v.Request)
+			if v.ExpectedErr != nil {
+				assert.Error(t, err)
+			}else{
+				assert.NoError(t, err)
+			}
 
-	t.Run("Service Failed Create a New Role", func(t *testing.T) {
-		roleFails := &request.Roles{
-			NameRole: "",
-		}
-		mock.On("CreateRole", roleFails).Return(errors.New("failed"))
-		errs := service.Create(roleFails)
-
-		assert.Error(t, errs)
-		mock.AssertExpectations(t)
-	})
-
+			mock.AssertExpectations(t)
+		})
+	}
 }
 
 func TestShowRoleById(t *testing.T) {

@@ -33,7 +33,7 @@ func (h *HandlerRole) GetRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page,perpage,sort,search,err := helper.QueryParam(r, 10)
+	page, perpage, sort, search, err := helper.QueryParam(r, 10)
 	if err != nil {
 		w.WriteHeader(helper.BadRequest)
 		json.NewEncoder(w).Encode(helper.Messages{
@@ -44,7 +44,7 @@ func (h *HandlerRole) GetRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp,count, err := h.services.GetAllData(search,sort,page,perpage)
+	resp, count, err := h.services.GetAllData(search, sort, page, perpage)
 	if err != nil {
 		h.logg.Logfile(err.Error())
 		w.WriteHeader(helper.InternalServError)
@@ -57,9 +57,9 @@ func (h *HandlerRole) GetRole(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(helper.Success)
 	json.NewEncoder(w).Encode(helper.Messages{
-		Message: "Success",
-		Data:    resp,
-		Pagination: helper.Paginations(page,perpage,int(count)),
+		Message:    "Success",
+		Data:       resp,
+		Pagination: helper.Paginations(page, perpage, int(count)),
 	})
 }
 
@@ -149,15 +149,16 @@ func (h *HandlerRole) Show(w http.ResponseWriter, r *http.Request) {
 
 	// ambil data by id
 	resp, err := h.services.ShowRoleById(id)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		w.WriteHeader(helper.Notfound)
-		json.NewEncoder(w).Encode(helper.Messages{
-			Message: fmt.Sprintf("Not Found data by id: %v", id),
-			Errors:  "Not Found",
-		})
-		return
-	}
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			w.WriteHeader(helper.Notfound)
+			json.NewEncoder(w).Encode(helper.Messages{
+				Message: fmt.Sprintf("Not Found data by id: %v", id),
+				Errors:  "Not Found",
+			})
+			return
+		}
+		
 		h.logg.Logfile(err.Error())
 		w.WriteHeader(helper.InternalServError)
 		json.NewEncoder(w).Encode(helper.Messages{
@@ -267,21 +268,20 @@ func (h *HandlerRole) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.services.DeleteRole(id); err != nil {
-		
+
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			w.WriteHeader(helper.Notfound)
 			json.NewEncoder(w).Encode(helper.Messages{
 				Message: fmt.Sprintf("Not Found id role: %d", id),
-				Errors: "Not Found",
+				Errors:  "Not Found",
 			})
 			return
 		}
 
-
 		w.WriteHeader(helper.InternalServError)
 		json.NewEncoder(w).Encode(helper.Messages{
 			Message: "Something Went Wrong",
-			Errors: "Internal Server Error",
+			Errors:  "Internal Server Error",
 		})
 		return
 	}

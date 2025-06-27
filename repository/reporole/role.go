@@ -59,23 +59,14 @@ func (r RoleMysql) CreateRole(data *request.Roles) error {
 
 // show
 func (r RoleMysql) ShowById(id int) (*response.Roles, error) {
-	var rolemodel entity.Roles
+	var rolemodel response.Roles
 
-	if err := r.db.Model(&rolemodel).Preload("Users").Where("id_role = ?", id).First(&rolemodel).Error; err != nil {
+	if err := r.db.Model(&rolemodel).Where("id_role = ?", id).First(&rolemodel).Error; err != nil {
 		return nil, err
 	}
 
-	resp := response.Roles{
-		IdRole: rolemodel.IdRole,
-		NameRole: rolemodel.NameRole,
-		// Users: ResponseRole(rolemodel.Users),
-		Models: helper.Models{
-			CreatedAt: rolemodel.CreatedAt,
-			UpdatedAt: rolemodel.UpdatedAt,
-		},
-	}
 
-	return &resp, nil
+	return &rolemodel, nil
 
 }
 
