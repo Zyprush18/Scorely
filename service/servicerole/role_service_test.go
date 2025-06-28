@@ -20,6 +20,8 @@ type StructTest struct {
 	Perpage     int
 	Search      string
 	Sort        string
+	Id			int
+	Response    *response.Roles
 	ExpectedErr error
 }
 
@@ -70,7 +72,7 @@ func TestGetAlldatasRole(t *testing.T) {
 
 			mock.ExpectedCalls = nil
 			mock.Calls = nil
-			
+
 			mock.On("GetAllDataRole", v.Search, v.Sort, v.Page, v.Perpage).Return(val.Data, v.Counts, val.ExpectedErr)
 			resp, count, err := service.GetAllData(v.Search, v.Sort, v.Page, v.Perpage)
 			if val.ExpectedErr != nil {
@@ -111,12 +113,12 @@ func TestCreateServiceRole(t *testing.T) {
 	}
 
 	for _, v := range data {
-		t.Run(v.Name,func(t *testing.T) {
+		t.Run(v.Name, func(t *testing.T) {
 			mock.On("CreateRole", v.Request).Return(v.ExpectedErr)
 			err := service.Create(v.Request)
 			if v.ExpectedErr != nil {
 				assert.Error(t, err)
-			}else{
+			} else {
 				assert.NoError(t, err)
 			}
 
@@ -128,81 +130,103 @@ func TestCreateServiceRole(t *testing.T) {
 func TestShowRoleById(t *testing.T) {
 	mock := new(RepoRoleMock)
 	servicerole := NewRoleService(mock)
-	data := &response.Roles{
-		IdRole:   1,
-		NameRole: "Admin",
+
+	data := []StructTest{
+		{
+			Name: "Success Show Role",
+			Id: 1,
+			Response: &response.Roles{
+				IdRole:   1,
+				NameRole: "Admin",
+			},
+			ExpectedErr: nil,
+		},
+		{
+			Name: "Failed Show Role",
+			Id: 2,
+			Response: nil,
+			ExpectedErr: errors.New("Not Found Id: 2"),
+		},
 	}
-	t.Run("Success Show Role by id", func(t *testing.T) {
 
-		mock.On("ShowById", 1).Return(data, nil)
+	for _, v := range data {
+		t.Run(v.Name, func(t *testing.T) {
+			mock.On("ShowById", v.Id).Return(v.Response, v.ExpectedErr)
+			resp, err := servicerole.ShowRoleById(v.Id)
+			if v.ExpectedErr != nil {
+				assert.Error(t, err)
+				assert.Nil(t, resp)
+			}else{
+				assert.NoError(t, err)
+				assert.Equal(t, uint(1), resp.IdRole)
+				assert.Equal(t, "Admin", resp.NameRole)
+			}
 
-		resp, err := servicerole.ShowRoleById(1)
-		assert.NoError(t, err)
-		assert.Equal(t, uint(1), resp.IdRole)
-		assert.Equal(t, "Admin", resp.NameRole)
-
-		mock.AssertExpectations(t)
-	})
-
-	t.Run("Failed Show Role by id", func(t *testing.T) {
-
-		mock.On("ShowById", 2).Return((*response.Roles)(nil), errors.New("Not Found role id: 2"))
-
-		resp, err := servicerole.ShowRoleById(2)
-
-		assert.Error(t, err)
-		assert.Nil(t, resp)
-
-		mock.AssertExpectations(t)
-	})
+			mock.AssertExpectations(t)
+		})
+	}
 }
 
 func TestUpdateRole(t *testing.T) {
 	mock := new(RepoRoleMock)
 	servicerole := NewRoleService(mock)
-
-	data := &request.Roles{
-		NameRole: "Admin",
+	data := []StructTest{
+		{
+			Name: "Success Update Role",
+			Id: 1,
+			Request: &request.Roles{
+				NameRole: "Admin",
+			},
+			ExpectedErr: nil,
+		},
+		{
+			Name: "Failed Update Role",
+			Id: 2,
+			Request: nil,
+			ExpectedErr: errors.New("Not Found Id: 2"),
+		},
 	}
-	t.Run("Success Update Role", func(t *testing.T) {
-		mock.On("UpdateRole", 1, data).Return(nil)
 
-		err := servicerole.UpdateRole(1, data)
-		assert.NoError(t, err)
-
-		mock.AssertExpectations(t)
-	})
-
-	t.Run("Failed Delete Role", func(t *testing.T) {
-		mock.On("UpdateRole", 90, data).Return(errors.New("Not Found Role Id: 90"))
-
-		err := servicerole.UpdateRole(90, data)
-
-		assert.Error(t, err)
-
-		mock.AssertExpectations(t)
-	})
+	for _, v := range data {
+		t.Run(v.Name, func(t *testing.T) {
+			mock.On("UpdateRole", v.Id, v.Request).Return(v.ExpectedErr)
+			err := servicerole.UpdateRole(v.Id,v.Request)
+			if v.ExpectedErr != nil {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			mock.AssertExpectations(t)
+		})
+	}
 }
 
 func TestDeleteRole(t *testing.T) {
 	mock := new(RepoRoleMock)
 	servicerepo := NewRoleService(mock)
+	data := []StructTest{
+		{
+			Name: "Success Delete Role",
+			Id: 1,
+			ExpectedErr: nil,
+		},
+		{
+			Name: "Failed Delete Role",
+			Id: 2,
+			ExpectedErr: errors.New("Not Found Id: 2"),
+		},
+	}
 
-	t.Run("Success Delete Role", func(t *testing.T) {
-		mock.On("DeleteRole", 1).Return(nil)
-
-		err := servicerepo.DeleteRole(1)
-		assert.NoError(t, err)
-
-		mock.AssertExpectations(t)
-	})
-
-	t.Run("Failed Delete Role", func(t *testing.T) {
-		mock.On("DeleteRole", 3).Return(errors.New("Not Found Id_Role: 3"))
-
-		err := servicerepo.DeleteRole(3)
-		assert.Error(t, err)
-
-		mock.AssertExpectations(t)
-	})
+	for _, v := range data {
+		t.Run(v.Name,func(t *testing.T) {
+			mock.On("DeleteRole",v.Id).Return(v.ExpectedErr)
+			err := servicerepo.DeleteRole(v.Id)
+			if v.ExpectedErr != nil {
+				assert.Error(t, err)
+			}else{
+				assert.NoError(t, err)
+			}
+			mock.AssertExpectations(t)
+		})
+	}
 }
