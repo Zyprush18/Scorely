@@ -11,6 +11,7 @@ import (
 )
 
 func BenchmarkGetAllData(b *testing.B) {
+	now := time.Now()
 	mock := new(servicerole.RepoRoleMock)
 	service := servicerole.NewRoleService(mock)
 	data := []response.Roles{
@@ -18,24 +19,24 @@ func BenchmarkGetAllData(b *testing.B) {
 			IdRole:   1,
 			NameRole: "Admin",
 			Models: helper.Models{
-				CreatedAt: time.Now(),
+				CreatedAt: now,
 			},
 		},
 		{
 			IdRole:   2,
 			NameRole: "User",
 			Models: helper.Models{
-				CreatedAt: time.Now(),
+				CreatedAt: now,
 			},
 		},
 	}
 
-	mock.On("GetAllDataRole").Return(data, nil)
+	mock.On("GetAllDataRole","","",1,10).Return(data, 2,nil)
 
 	b.ResetTimer()
 	b.ReportAllocs()
 	for b.Loop() {
-		_, _,_ = service.GetAllData("","",0,0)
+		_, _,_ = service.GetAllData("","",1,10)
 	}
 	b.StopTimer()
 	mock.AssertExpectations(b)
