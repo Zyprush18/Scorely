@@ -6,11 +6,14 @@ import (
 	"net/http"
 
 	"github.com/Zyprush18/Scorely/database"
+	"github.com/Zyprush18/Scorely/handlers/major"
 	"github.com/Zyprush18/Scorely/handlers/role"
 	"github.com/Zyprush18/Scorely/handlers/user"
 	"github.com/Zyprush18/Scorely/helper"
+	"github.com/Zyprush18/Scorely/repository/repomajor"
 	"github.com/Zyprush18/Scorely/repository/reporole"
 	"github.com/Zyprush18/Scorely/repository/repouser"
+	"github.com/Zyprush18/Scorely/service/majorservice"
 	"github.com/Zyprush18/Scorely/service/servicerole"
 	"github.com/Zyprush18/Scorely/service/userservice"
 )
@@ -50,6 +53,14 @@ func RunApp() {
 	adminMux.HandleFunc("/user/{id}", userhandler.Show)
 	adminMux.HandleFunc("/user/{id}/update", userhandler.Update)
 	adminMux.HandleFunc("/user/{id}/delete", userhandler.Delete)
+
+	// major
+	majorrepo := repomajor.ConnectDb(initDb)
+	majorservice := majorservice.RepoMajorConn(&majorrepo)
+	hanldermajor := major.Handlers(majorservice, initlog)
+
+	// major route
+	adminMux.HandleFunc("/major", hanldermajor.GetAllData)
 
 	fmt.Println("🚀 running on: http://localhost:8000")
 	http.ListenAndServe(":8000", adminMux)

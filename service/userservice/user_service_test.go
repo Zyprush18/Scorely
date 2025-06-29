@@ -40,7 +40,7 @@ func TestAllUser(t *testing.T) {
 		}
 
 		mockuser.On("GetAll").Return(data, nil)
-		resp, err := userservices.AllUser()
+		resp, _,err := userservices.AllUser("","",0,0)
 		assert.NoError(t, err)
 		assert.NotNil(t, resp)
 
@@ -52,7 +52,7 @@ func TestAllUser(t *testing.T) {
 		mockuser := UserRepository{Mock: mock.Mock{}}
 		userservices := NewUserService(&mockuser)
 		mockuser.On("GetAll").Return([]response.Users(nil), errors.New("something went wrong"))
-		resp, err := userservices.AllUser()
+		resp, _,err := userservices.AllUser("","",0,0)
 		assert.Error(t, err)
 		assert.Nil(t, resp)
 
