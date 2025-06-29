@@ -26,7 +26,7 @@ func TestGetAll(t *testing.T) {
 	t.Run("Success Get All User", func(t *testing.T) {
 		mocks.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users`")).WillReturnRows(userRow)
 
-		data, err := repousers.GetAll()
+		data, _,err := repousers.GetAll("","",0,0)
 		assert.NoError(t, err)
 		assert.NotNil(t, data)
 
@@ -36,7 +36,7 @@ func TestGetAll(t *testing.T) {
 	t.Run("Failed Get All User", func(t *testing.T) {
 		mocks.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users`")).WillReturnError(database.Error)
 
-		data, err := repousers.GetAll()
+		data, _,err := repousers.GetAll("","",0,0)
 		assert.Error(t, err)
 		assert.Nil(t, data)
 

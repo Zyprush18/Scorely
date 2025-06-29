@@ -33,7 +33,17 @@ func (h *UserService) GetAllUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := h.service.AllUser()
+	page,perpage,sort,search, err:=helper.QueryParam(r, 10)
+	if err != nil {
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Invalid Query Params Format",
+			Errors:  "Bad Request",
+		})
+		return
+	}
+
+	resp, count,err := h.service.AllUser(search,sort,page,perpage)
 	if err != nil {
 		w.WriteHeader(helper.InternalServError)
 		json.NewEncoder(w).Encode(helper.Messages{
@@ -47,6 +57,7 @@ func (h *UserService) GetAllUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(helper.Messages{
 		Message: "Success",
 		Data:    resp,
+		Pagination: helper.Paginations(page,perpage,int(count)),
 	})
 
 }

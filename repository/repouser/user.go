@@ -1,6 +1,7 @@
 package repouser
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/Zyprush18/Scorely/helper"
@@ -11,7 +12,7 @@ import (
 )
 
 type UserRepo interface {
-	GetAll() ([]response.Users, error)
+	GetAll(search, sort string, page,perpage int) ([]response.Users, int64,error)
 	Create(data *request.User) error
 	Show(id int) (*response.Users, error)
 	Update(id int, data *request.User) error
@@ -26,27 +27,17 @@ func NewUserDatabase(db *gorm.DB) UserMysql {
 	return UserMysql{db: db}
 }
 
-func (u *UserMysql) GetAll() ([]response.Users, error) {
-	var modeluser []entity.Users
-	if err := u.db.Model(&modeluser).Find(&modeluser).Error; err != nil {
-		return nil, err
+func (u *UserMysql) GetAll(search, sort string, page,perpage int) ([]response.Users, int64,error) {
+	var modeluser []response.Users
+	var count int64
+	order := fmt.Sprintf("created_at %s", sort)
+	offset := (page - 1) * perpage
+
+	if err := u.db.Table("users").Where("email LIKE ?","%"+search+"%").Count(&count).Order(order).Limit(perpage).Offset(offset).Find(&modeluser).Error; err != nil {
+		return nil, 0,err
 	}
 
-	resp := []response.Users{}
-	for _, u := range modeluser {
-		resp = append(resp, response.Users{
-			IdUser:   u.IdUser,
-			Email:    u.Email,
-			Password: u.Password,
-			RoleId:   u.RoleId,
-			Models: helper.Models{
-				CreatedAt: u.CreatedAt,
-				UpdatedAt: u.UpdatedAt,
-			},
-		})
-	}
-
-	return resp, nil
+	return modeluser, count, nil
 }
 
 func (u *UserMysql) Create(data *request.User) error {

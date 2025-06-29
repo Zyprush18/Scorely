@@ -7,7 +7,7 @@ import (
 )
 
 type ServiceUser interface {
-	AllUser()([]response.Users, error)
+	AllUser(search, sort string, page,perpage int)([]response.Users, int64,error)
 	CreateUser(data *request.User) error
 	ShowUser(id int) (*response.Users, error)
 	UpdateUser(id int, data *request.User) error
@@ -22,13 +22,9 @@ func NewUserService(r repouser.UserRepo) ServiceUser  {
 	return &UserRepo{repo: r}
 }
 
-func (u *UserRepo) AllUser()([]response.Users, error) {
-	data, err := u.repo.GetAll()
-	if err != nil {
-		return nil, err
-	}
+func (u *UserRepo) AllUser(search, sort string, page,perpage int)([]response.Users, int64,error) {
+	return u.repo.GetAll(search,sort,page,perpage)
 
-	return data, nil
 }
 
 func (u *UserRepo) CreateUser(data *request.User) error {
