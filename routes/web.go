@@ -61,6 +61,7 @@ func RunApp() {
 
 	// major route
 	adminMux.HandleFunc("/major", hanldermajor.GetAllData)
+	adminMux.HandleFunc("/major/add",hanldermajor.Create )
 
 	fmt.Println("🚀 running on: http://localhost:8000")
 	http.ListenAndServe(":8000", adminMux)
