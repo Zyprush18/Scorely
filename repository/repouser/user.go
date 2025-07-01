@@ -43,7 +43,7 @@ func (u *UserMysql) GetAll(search, sort string, page,perpage int) ([]response.Us
 func (u *UserMysql) Create(data *request.User) error {
 	req := &request.User{
 		Email: data.Email,
-		Password: data.Password,
+		Password: helper.HashingPassword(data.Password),
 		RoleId: data.RoleId,
 		Models: helper.Models{
 			CreatedAt: time.Now().Local(),
