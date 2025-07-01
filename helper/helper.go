@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/go-sql-driver/mysql"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
@@ -159,4 +161,17 @@ func Paginations(page, perpage, count int) *Pag {
 		Prev:      fmt.Sprintf("/role?page=%d", prev),
 		Next:      fmt.Sprintf("/role?page=%d", next),
 	}
+}
+
+func HashingPassword(password string) string {
+	pasbyte, err:=json.Marshal(password)
+	if err != nil {
+		Loggers.Logfile(Logger{}, err.Error())
+	}
+
+	passhash, err:= bcrypt.GenerateFromPassword(pasbyte, 12)
+	if err != nil {
+		Loggers.Logfile(Logger{}, err.Error())
+	}
+	return string(passhash)
 }

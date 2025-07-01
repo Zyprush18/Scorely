@@ -6,7 +6,7 @@ import "github.com/Zyprush18/Scorely/helper"
 type Users struct {
 	IdUser   uint   `json:"id_user" gorm:"primaryKey;autoIncrement"`
 	Email    string `json:"email" gorm:"unique;type:varchar(50)"`
-	Password string `json:"password" gorm:"type:varchar(50)"`
+	Password string `json:"password" gorm:"type:varchar(255)"`
 	RoleId   uint   `json:"role_id"`
 	// belongs to role table
 	Role Roles `gorm:"foreignKey:RoleId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
