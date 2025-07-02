@@ -27,6 +27,8 @@ type roleHandlerTest struct {
 	Muxserver      *http.ServeMux
 	Mocks          func(data []response.Roles, count int, err error) *mock.Call
 	Request        *request.Roles
+	DataShow       *response.Roles
+	Id            any
 	RequestConvert func(data *request.Roles) []byte
 	ErrorMocks     error
 	CountData      int
@@ -274,295 +276,292 @@ func TestHandlerCreate(t *testing.T) {
 }
 
 func TestHandlerShow(t *testing.T) {
-	Mockservice := &ServiceRole{Mock: mock.Mock{}}
-	Mocklogger := &LoggerMock{}
-	handler := RoleHandler(Mockservice, Mocklogger)
+	mockservice := &ServiceRole{}
+	mocklogger := &LoggerMock{}
+	handler := RoleHandler(mockservice, mocklogger)
 
-	data := &response.Roles{
-		IdRole:   1,
-		NameRole: "Admin",
+	data := []roleHandlerTest{
+		{
+			Name:       "Method Not Allowed",
+			DataShow:   nil,
+			Id:         5,
+			Method:     helper.Post,
+			Target:     "/role/1",
+			Code:       helper.MethodNotAllowed,
+			Muxserver:  http.NewServeMux(),
+			ErrorMocks: nil,
+			UseMock:    false,
+		},
+		{
+			Name:       "Invalid Format Param",
+			DataShow:   nil,
+			Id:         5,
+			Method:     helper.Gets,
+			Target:     "/role/abc",
+			Code:       helper.BadRequest,
+			Muxserver:  http.NewServeMux(),
+			ErrorMocks: nil,
+			UseMock:    false,
+		},
+		{
+			Name:       "Not Found Data By Id",
+			DataShow:   nil,
+			Id:         11,
+			Method:     helper.Gets,
+			Target:     "/role/11",
+			Code:       helper.Notfound,
+			Muxserver:  http.NewServeMux(),
+			ErrorMocks: gorm.ErrRecordNotFound,
+			UseMock:    true,
+		},
+		{
+			Name:       "Internal Server Error",
+			DataShow:   nil,
+			Id:         12,
+			Method:     helper.Gets,
+			Target:     "/role/12",
+			Code:       helper.InternalServError,
+			Muxserver:  http.NewServeMux(),
+			ErrorMocks: errors.New("Database Is Refused"),
+			UseMock:    true,
+		},
+		{
+			Name: "Success Show role by id",
+			DataShow: &response.Roles{
+				IdRole:   1,
+				NameRole: "Admin",
+			},
+			Id:         1,
+			Method:     helper.Gets,
+			Target:     "/role/1",
+			Code:       helper.Success,
+			Muxserver:  http.NewServeMux(),
+			ErrorMocks: nil,
+			UseMock:    true,
+		},
 	}
-	// success show data by id
-	t.Run("Success show role by id", func(t *testing.T) {
-		jsonmars, _ := json.Marshal(data)
 
-		req := httptest.NewRequest(helper.Gets, "/role/1", bytes.NewReader(jsonmars))
+	for _, v := range data {
+		t.Run(v.Name, func(t *testing.T) {
+			req := httptest.NewRequest(v.Method, v.Target, nil)
+			req.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
 
-		req.Header.Set("Content-Type", "application/json")
+			if v.UseMock {
+				mockservice.On("ShowRoleById", v.Id).Return(v.DataShow, v.ErrorMocks)
+			}
+			v.Muxserver.HandleFunc("/role/{id}", handler.Show)
+			v.Muxserver.ServeHTTP(w, req)
 
-		w := httptest.NewRecorder()
+			assert.Equal(t, v.Code, w.Code)
+			mockservice.AssertExpectations(t)
 
-		Mockservice.On("ShowRoleById", 1).Return(data, nil)
-		mux := http.NewServeMux()
-		mux.HandleFunc("/role/{id}", handler.Show)
-		mux.ServeHTTP(w, req)
-
-		assert.Equal(t, helper.Success, w.Code)
-		Mockservice.AssertExpectations(t)
-	})
-
-	// failed show data by id
-	t.Run("Failed show role by id", func(t *testing.T) {
-		jsonmars, _ := json.Marshal(data)
-
-		req := httptest.NewRequest(helper.Gets, "/role/2", bytes.NewReader(jsonmars))
-
-		req.Header.Set("Content-Type", "application/json")
-
-		w := httptest.NewRecorder()
-
-		Mockservice.On("ShowRoleById", 2).Return(data, gorm.ErrRecordNotFound)
-		mux := http.NewServeMux()
-		mux.HandleFunc("/role/{id}", handler.Show)
-		mux.ServeHTTP(w, req)
-
-		assert.Equal(t, helper.Notfound, w.Code)
-		Mockservice.AssertExpectations(t)
-	})
-
-	// failed show data (database refused)
-	t.Run("Failed show role (database refused)", func(t *testing.T) {
-		jsonmars, _ := json.Marshal(data)
-
-		req := httptest.NewRequest(helper.Gets, "/role/2", bytes.NewReader(jsonmars))
-
-		req.Header.Set("Content-Type", "application/json")
-
-		w := httptest.NewRecorder()
-
-		Mockservice.On("ShowRoleById", 2).Return(data, errors.New("Some Thong Wrong"))
-		mux := http.NewServeMux()
-		mux.HandleFunc("/role/{id}", handler.Show)
-		mux.ServeHTTP(w, req)
-
-		assert.Equal(t, helper.Notfound, w.Code)
-		Mockservice.AssertExpectations(t)
-	})
-
-	// Method Not AllowedShow data
-	t.Run("Method Not Allowed", func(t *testing.T) {
-		handler := RoleHandler(Mockservice, Mocklogger)
-		req := httptest.NewRequest(helper.Post, "/role/{id}", nil)
-		req.Header.Set("Content-Type", "application/json")
-
-		w := httptest.NewRecorder()
-		mux := http.NewServeMux()
-		mux.HandleFunc("/role/{id}", handler.Show)
-		mux.ServeHTTP(w, req)
-
-		assert.Equal(t, helper.MethodNotAllowed, w.Code)
-	})
-
-	// path value is not int
-	t.Run("failed Path Id", func(t *testing.T) {
-		jsonmars, _ := json.Marshal(data)
-		req := httptest.NewRequest(helper.Gets, "/role/abc", bytes.NewReader(jsonmars))
-		req.SetPathValue("id", "abc")
-		req.Header.Set("Content-Type", "application/json")
-
-		w := httptest.NewRecorder()
-		mux := http.NewServeMux()
-		mux.HandleFunc("/role/{id}", handler.Show)
-		mux.ServeHTTP(w, req)
-
-		assert.Equal(t, helper.BadRequest, w.Code)
-	})
+		})
+	}
 
 }
 
 func TestHandlerUpdate(t *testing.T) {
-	mockservice := &ServiceRole{Mock: mock.Mock{}}
-	Mocklogger := &LoggerMock{}
-	handler := RoleHandler(mockservice, Mocklogger)
+	mockservice := &ServiceRole{}
+	mocklogger := &LoggerMock{}
+	handler := RoleHandler(mockservice, mocklogger)
 
-	reqdata := &request.Roles{
-		NameRole: "AdminUpdate",
+	data := []roleHandlerTest{
+		{
+			Name:           "Method Not Allowed",
+			Id:             2,
+			Request:        nil,
+			Method:         helper.Gets,
+			Target:         "/role/2/update",
+			Code:           helper.MethodNotAllowed,
+			RequestConvert: nil,
+			Muxserver:      http.NewServeMux(),
+			ErrorMocks:     nil,
+			UseMock:        false,
+		},
+		{
+			Name: "Body Request Is missing",
+			Id:   2,
+			Request: nil,
+			Method:         helper.Put,
+			Target:         "/role/2/update",
+			Code:           helper.BadRequest,
+			RequestConvert: nil,
+			Muxserver:      http.NewServeMux(),
+			ErrorMocks:     nil,
+			UseMock:        false,
+		},
+		{
+			Name: "Invalid Format Param",
+			Id:   "abc",
+			Request: nil,
+			Method:         helper.Put,
+			Target:         "/role/abc/update",
+			Code:           helper.BadRequest,
+			RequestConvert: nil,
+			Muxserver:      http.NewServeMux(),
+			ErrorMocks:     nil,
+			UseMock:        false,
+		},
+		{
+			Name: "Failed Update Role Not Found Data By Id",
+			Id:   5,
+			Request: &request.Roles{
+				NameRole: "Admin5",
+			},
+			Method: helper.Put,
+			Target: "/role/5/update",
+			Code:   helper.Notfound,
+			RequestConvert: func(data *request.Roles) []byte {
+				jsonm, _ := json.Marshal(data)
+				return jsonm
+			},
+			Muxserver:  http.NewServeMux(),
+			ErrorMocks: gorm.ErrRecordNotFound,
+			UseMock:    true,
+		},
+		{
+			Name: "Server Error",
+			Id:   5,
+			Request: &request.Roles{
+				NameRole: "Admin5",
+			},
+			Method: helper.Put,
+			Target: "/role/5/update",
+			Code:   helper.Notfound,
+			RequestConvert: func(data *request.Roles) []byte {
+				jsonm, _ := json.Marshal(data)
+				return jsonm
+			},
+			Muxserver:  http.NewServeMux(),
+			ErrorMocks: errors.New("Database Refused"),
+			UseMock:    true,
+		},
+		{
+			Name: "Success Update Role",
+			Id:   1,
+			Request: &request.Roles{
+				NameRole: "Admin",
+			},
+			Method: helper.Put,
+			Target: "/role/1/update",
+			Code:   helper.Success,
+			RequestConvert: func(data *request.Roles) []byte {
+				jsonm, _ := json.Marshal(data)
+				return jsonm
+			},
+			Muxserver:  http.NewServeMux(),
+			ErrorMocks: nil,
+			UseMock:    true,
+		},
 	}
 
-	// Success Update Role
-	t.Run("Success Update Role", func(t *testing.T) {
-		jsonm, _ := json.Marshal(reqdata)
-		req := httptest.NewRequest(helper.Put, "/role/1/update", bytes.NewReader(jsonm))
-		w := httptest.NewRecorder()
+	for _, v := range data {
+		t.Run(v.Name, func(t *testing.T) {
+			bodyreq := bytes.NewReader([]byte{})
+			if v.Request != nil {
+				bodyreq = bytes.NewReader(v.RequestConvert(v.Request))
+			}
+			req := httptest.NewRequest(v.Method, v.Target, bodyreq)
+			req.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
 
-		mockservice.On("UpdateRole", 1, reqdata).Return(nil)
-		mux := http.NewServeMux()
-		mux.HandleFunc("/role/{id}/update", handler.Update)
-		mux.ServeHTTP(w, req)
+			if v.UseMock {
+				mockservice.On("UpdateRole", v.Id, v.Request).Return(v.ErrorMocks)
+			}
 
-		assert.Equal(t, helper.Success, w.Code)
+			v.Muxserver.HandleFunc("/role/{id}/update", handler.Update)
+			v.Muxserver.ServeHTTP(w, req)
 
-		mockservice.AssertExpectations(t)
-	})
-
-	// failed update role id not found
-	t.Run("Failed Update Role id not found", func(t *testing.T) {
-		jsom, _ := json.Marshal(reqdata)
-		req := httptest.NewRequest(helper.Put, "/role/90/update", bytes.NewReader(jsom))
-		w := httptest.NewRecorder()
-
-		mockservice.On("UpdateRole", 90, reqdata).Return(gorm.ErrRecordNotFound)
-		mux := http.NewServeMux()
-		mux.HandleFunc("/role/{id}/update", handler.Update)
-		mux.ServeHTTP(w, req)
-
-		assert.Equal(t, helper.Notfound, w.Code)
-
-		mockservice.AssertExpectations(t)
-	})
-
-	// failed update name role exist
-	t.Run("Failed Update Role name role is exist", func(t *testing.T) {
-		jsom, _ := json.Marshal(reqdata)
-		req := httptest.NewRequest(helper.Put, "/role/4/update", bytes.NewReader(jsom))
-		w := httptest.NewRecorder()
-
-		errDub := &mysql.MySQLError{
-			Number:  1062,
-			Message: "Duplicate entry",
-		}
-
-		mockservice.On("UpdateRole", 4, reqdata).Return(errDub)
-		mux := http.NewServeMux()
-		mux.HandleFunc("/role/{id}/update", handler.Update)
-		mux.ServeHTTP(w, req)
-
-		assert.Equal(t, helper.Conflict, w.Code)
-
-		mockservice.AssertExpectations(t)
-	})
-
-	// failed update database refused
-	t.Run("Failed Update Role database refused", func(t *testing.T) {
-		jsom, _ := json.Marshal(reqdata)
-		req := httptest.NewRequest(helper.Put, "/role/6/update", bytes.NewReader(jsom))
-		w := httptest.NewRecorder()
-
-		mockservice.On("UpdateRole", 6, reqdata).Return(errors.New("Something went wrong"))
-		mux := http.NewServeMux()
-		mux.HandleFunc("/role/{id}/update", handler.Update)
-		mux.ServeHTTP(w, req)
-
-		assert.Equal(t, helper.InternalServError, w.Code)
-
-		mockservice.AssertExpectations(t)
-	})
-
-	// body nil
-	t.Run("Request Body Nil", func(t *testing.T) {
-		req := httptest.NewRequest(helper.Put, "/role/abc/update", nil)
-		req.SetPathValue("id", "abc")
-		req.Header.Set("Content-Type", "application/json")
-
-		w := httptest.NewRecorder()
-		mux := http.NewServeMux()
-		mux.HandleFunc("/role/{id}/update", handler.Update)
-		mux.ServeHTTP(w, req)
-
-		assert.Equal(t, helper.BadRequest, w.Code)
-	})
-
-	// Method Not AllowedShow data
-	t.Run("Method Not Allowed", func(t *testing.T) {
-		jsom, _ := json.Marshal(reqdata)
-		req := httptest.NewRequest(helper.Gets, "/role/90/update", bytes.NewReader(jsom))
-		req.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
-
-		mux := http.NewServeMux()
-		mux.HandleFunc("/role/{id}/update", handler.Update)
-		mux.ServeHTTP(w, req)
-
-		assert.Equal(t, helper.MethodNotAllowed, w.Code)
-	})
-
-	// path value is not int
-	t.Run("failed Path Id", func(t *testing.T) {
-		jsonmars, _ := json.Marshal(reqdata)
-		req := httptest.NewRequest(helper.Put, "/role/abc/update", bytes.NewReader(jsonmars))
-		req.SetPathValue("id", "abc")
-		req.Header.Set("Content-Type", "application/json")
-
-		w := httptest.NewRecorder()
-		mux := http.NewServeMux()
-		mux.HandleFunc("/role/{id}/update", handler.Update)
-		mux.ServeHTTP(w, req)
-
-		assert.Equal(t, helper.BadRequest, w.Code)
-	})
-
+			assert.Equal(t, v.Code, w.Code)
+			mockservice.AssertExpectations(t)
+		})
+	}
 }
 
-func TestHandlerDelete(t *testing.T) {
-	mockservice := &ServiceRole{Mock: mock.Mock{}}
-	logger := &LoggerMock{}
+func TestHandlerDelete(t *testing.T)  {
+	mockservice := &ServiceRole{}
+	mocklogger := &LoggerMock{}
+	handler := RoleHandler(mockservice, mocklogger)
 
-	handler := RoleHandler(mockservice, logger)
+	data := []roleHandlerTest{
+		{
+			Name: "Method Not Found",
+			Id: 10,
+			Method: helper.Gets,
+			Target: "/role/10/delete",
+			Code: helper.MethodNotAllowed,
+			Muxserver: http.NewServeMux(),
+			ErrorMocks: nil,
+			UseMock: false,
+		},
+		{
+			Name: "Invalid Format Param",
+			Id: "abc",
+			Method: helper.Delete,
+			Target: "/role/abc/delete",
+			Code: helper.BadRequest,
+			Muxserver: http.NewServeMux(),
+			ErrorMocks: nil,
+			UseMock: false,
+		},
+		{
+			Name: "Invalid Format Param",
+			Id: "abc",
+			Method: helper.Delete,
+			Target: "/role/abc/delete",
+			Code: helper.BadRequest,
+			Muxserver: http.NewServeMux(),
+			ErrorMocks: nil,
+			UseMock: false,
+		},
+		{
+			Name: "Not Found Data",
+			Id: 100,
+			Method: helper.Delete,
+			Target: "/role/100/delete",
+			Code: helper.Notfound,
+			Muxserver: http.NewServeMux(),
+			ErrorMocks: gorm.ErrRecordNotFound,
+			UseMock: true,
+		},
+		{
+			Name: "Server Error",
+			Id: 11,
+			Method: helper.Delete,
+			Target: "/role/11/delete",
+			Code: helper.InternalServError,
+			Muxserver: http.NewServeMux(),
+			ErrorMocks: errors.New("Database Is Refused"),
+			UseMock: true,
+		},
+		{
+			Name: "Success Delete",
+			Id: 1,
+			Method: helper.Delete,
+			Target: "/role/1/delete",
+			Code: helper.Success,
+			Muxserver: http.NewServeMux(),
+			ErrorMocks: nil,
+			UseMock: true,
+		},
+	}
 
-	t.Run("Success Delete Role", func(t *testing.T) {
-		req := httptest.NewRequest(helper.Delete, "/role/1/delete", nil)
+	for _, v := range data {
+		t.Run(v.Name, func(t *testing.T) {
+			req := httptest.NewRequest(v.Method, v.Target, nil)
+			req.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
 
-		mockservice.On("DeleteRole", 1).Return(nil)
-		req.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
-		mux := http.NewServeMux()
-		mux.HandleFunc("/role/{id}/delete", handler.Delete)
-		mux.ServeHTTP(w, req)
+			if v.UseMock {
+				mockservice.On("DeleteRole", v.Id).Return(v.ErrorMocks)
+			}
 
-		assert.Equal(t, helper.Success, w.Code)
-		mockservice.AssertExpectations(t)
-	})
+			v.Muxserver.HandleFunc("/role/{id}/delete", handler.Delete)
+			v.Muxserver.ServeHTTP(w, req)
 
-	t.Run("Failed Delete Role (not found id)", func(t *testing.T) {
-		req := httptest.NewRequest(helper.Delete, "/role/9/delete", nil)
-		w := httptest.NewRecorder()
-
-		mockservice.On("DeleteRole", 9).Return(gorm.ErrRecordNotFound)
-		mux := http.NewServeMux()
-		mux.HandleFunc("/role/{id}/delete", handler.Delete)
-		mux.ServeHTTP(w, req)
-
-		assert.Equal(t, helper.Notfound, w.Code)
-		mockservice.AssertExpectations(t)
-
-	})
-
-	t.Run("Failed Delete Role (database refused)", func(t *testing.T) {
-		req := httptest.NewRequest(helper.Delete, "/role/90/delete", nil)
-		w := httptest.NewRecorder()
-
-		mockservice.On("DeleteRole", 90).Return(errors.New("something went wrong"))
-		mux := http.NewServeMux()
-		mux.HandleFunc("/role/{id}/delete", handler.Delete)
-		mux.ServeHTTP(w, req)
-
-		assert.Equal(t, helper.InternalServError, w.Code)
-		mockservice.AssertExpectations(t)
-
-	})
-
-	t.Run("Failed Path Value Delete Role", func(t *testing.T) {
-		req := httptest.NewRequest(helper.Delete, "/role/abc/delete", nil)
-
-		req.Header.Set("Content-Type", "application/json")
-		req.SetPathValue("id", "abc")
-		w := httptest.NewRecorder()
-		mux := http.NewServeMux()
-		mux.HandleFunc("/role/{id}/delete", handler.Delete)
-		mux.ServeHTTP(w, req)
-
-		assert.Equal(t, helper.BadRequest, w.Code)
-	})
-
-	t.Run("Method Not Allowed", func(t *testing.T) {
-		req := httptest.NewRequest(helper.Gets, "/role/90/delete", nil)
-		req.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
-
-		mux := http.NewServeMux()
-		mux.HandleFunc("/role/{id}/delete", handler.Delete)
-		mux.ServeHTTP(w, req)
-
-		assert.Equal(t, helper.MethodNotAllowed, w.Code)
-	})
+			assert.Equal(t, v.Code, w.Code)
+			mockservice.AssertExpectations(t)
+		})
+	}
 }
