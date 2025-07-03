@@ -6,14 +6,17 @@ import (
 	"net/http"
 
 	"github.com/Zyprush18/Scorely/database"
+	"github.com/Zyprush18/Scorely/handlers/level"
 	"github.com/Zyprush18/Scorely/handlers/major"
 	"github.com/Zyprush18/Scorely/handlers/role"
 	"github.com/Zyprush18/Scorely/handlers/user"
 	"github.com/Zyprush18/Scorely/helper"
+	"github.com/Zyprush18/Scorely/repository/repolevel"
 	"github.com/Zyprush18/Scorely/repository/repomajor"
 	"github.com/Zyprush18/Scorely/repository/reporole"
 	"github.com/Zyprush18/Scorely/repository/repouser"
 	"github.com/Zyprush18/Scorely/service/majorservice"
+	"github.com/Zyprush18/Scorely/service/servicelevel"
 	"github.com/Zyprush18/Scorely/service/servicerole"
 	"github.com/Zyprush18/Scorely/service/userservice"
 )
@@ -65,6 +68,14 @@ func RunApp() {
 	adminMux.HandleFunc("/major/{id}",hanldermajor.Show)
 	adminMux.HandleFunc("/major/{id}/update",hanldermajor.Updated)
 	adminMux.HandleFunc("/major/{id}/delete",hanldermajor.Deleted)
+
+	// level
+	levelrepo := repolevel.ConnectDb(initDb)
+	levelservice := servicelevel.ConnectRepo(&levelrepo)
+	handlerlevel := level.ConnectService(levelservice, initlog)
+
+	// route level
+	adminMux.HandleFunc("/level", handlerlevel.GetAll)
 
 	fmt.Println("🚀 running on: http://localhost:8000")
 	http.ListenAndServe(":8000", adminMux)
