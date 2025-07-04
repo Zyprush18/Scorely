@@ -2,13 +2,17 @@ package repolevel
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/Zyprush18/Scorely/helper"
+	"github.com/Zyprush18/Scorely/models/request"
 	"github.com/Zyprush18/Scorely/models/response"
 	"gorm.io/gorm"
 )
 
 type LevelRepo interface {
 	GetAll(search, sort string, page,perpage int) ([]response.Levels, int64,error)
+	Create(data *request.Levels) error
 }
 
 type MysqlStruct struct {
@@ -29,4 +33,19 @@ func (m *MysqlStruct) GetAll(search, sort string, page,perpage int) ([]response.
 	}
 
 	return model_level,count, nil
+}
+
+func (m *MysqlStruct) Create(data *request.Levels) error {
+	levelreq:= &request.Levels{
+		Level: data.Level,
+		Models: helper.Models{
+			CreatedAt: time.Now(),
+		},
+	}
+
+	if err:= m.db.Table("levels").Create(levelreq).Error;err != nil {
+		return err
+	}
+
+	return  nil
 }
