@@ -40,7 +40,7 @@ func RunApp() {
 
 	// role route
 	adminMux.HandleFunc("/role", roleHandler.GetRole)
-	adminMux.HandleFunc("/add/role", roleHandler.AddRoles)
+	adminMux.HandleFunc("/role/add", roleHandler.AddRoles)
 	adminMux.HandleFunc("/role/{id}", roleHandler.Show)
 	adminMux.HandleFunc("/role/{id}/update", roleHandler.Update)
 	adminMux.HandleFunc("/role/{id}/delete", roleHandler.Delete)
@@ -52,7 +52,7 @@ func RunApp() {
 
 	// user route
 	adminMux.HandleFunc("/user", userhandler.GetAllUser)
-	adminMux.HandleFunc("/add/user", userhandler.Create)
+	adminMux.HandleFunc("/user/add", userhandler.Create)
 	adminMux.HandleFunc("/user/{id}", userhandler.Show)
 	adminMux.HandleFunc("/user/{id}/update", userhandler.Update)
 	adminMux.HandleFunc("/user/{id}/delete", userhandler.Delete)
@@ -76,6 +76,7 @@ func RunApp() {
 
 	// route level
 	adminMux.HandleFunc("/level", handlerlevel.GetAll)
+	adminMux.HandleFunc("/level/add", handlerlevel.Create)
 
 	fmt.Println("🚀 running on: http://localhost:8000")
 	http.ListenAndServe(":8000", adminMux)
