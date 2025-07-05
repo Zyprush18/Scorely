@@ -2,11 +2,15 @@ package level
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/Zyprush18/Scorely/helper"
 	"github.com/Zyprush18/Scorely/models/request"
 	"github.com/Zyprush18/Scorely/service/servicelevel"
+	"gorm.io/gorm"
 )
 
 type HandlerLevel struct {
@@ -114,5 +118,55 @@ func (h *HandlerLevel) Create (w http.ResponseWriter, r *http.Request)  {
 	w.WriteHeader(helper.Created)
 	json.NewEncoder(w).Encode(helper.Messages{
 		Message: "Success Created a New Level",
+	})
+}
+
+func (h *HandlerLevel) Show (w http.ResponseWriter, r *http.Request)  {
+	w.Header().Set("Content-Type","application/json")
+	if r.Method != helper.Gets {
+		w.WriteHeader(helper.MethodNotAllowed)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Method Get Is Allowed",
+			Errors: "Method Not Allowed",
+		})
+		return
+	}
+
+	id,err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Invalid Level Id Format",
+			Errors: "Bad Request",
+		})
+
+		return
+	} 
+
+
+	resp, err := h.service.ShowLevel(id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			w.WriteHeader(helper.Notfound)
+			json.NewEncoder(w).Encode(helper.Messages{
+				Message: fmt.Sprintf("Not Found Data Id: %d", id),
+				Errors: "Not Found",
+			})
+			return
+		}
+
+		h.logs.Logfile(err.Error())
+		w.WriteHeader(helper.InternalServError)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Something Went Wrong",
+			Errors: "Internal Server Error",
+		})
+		return
+	}
+
+	w.WriteHeader(helper.Success)
+	json.NewEncoder(w).Encode(helper.Messages{
+		Message: "Success",
+		Data: resp,
 	})
 }

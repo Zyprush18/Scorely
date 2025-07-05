@@ -1,47 +1,130 @@
 package repouser
 
 import (
-	"errors"
 	"regexp"
 	"testing"
-
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/Zyprush18/Scorely/models/request"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
+type repoTest struct {
+	Name                                         string
+	DataRows, DataRelation                       *sqlmock.Rows
+	Count                                        func(search string, expcount int64) *sqlmock.ExpectedQuery
+	FindDataAll                                  func(search string, perpage, offset int, data *sqlmock.Rows) *sqlmock.ExpectedQuery
+	Find                                         func(iduser, idrole int, datauser, datarole *sqlmock.Rows)
+	Request                                      *request.User
+	Mocks                                        func(email string, idrole,iduser int)
+	Search, Sort                                 string
+	Page, Perpage, expectedCount, iduser, idrole int
+	Err                                          bool
+}
+
 func TestGetAll(t *testing.T) {
-	database, mocks, err := SetupDBForUser()
+	database, mock, err := SetupDBForUser()
 	assert.NoError(t, err)
-	repousers := NewUserDatabase(database)
+	repouser := NewUserDatabase(database)
 
-	userRow := sqlmock.NewRows([]string{
-		"id_user",
-		"email",
-		"password",
-		"role_id",
-	}).AddRow(1, "Admin@gmail.com", "Admin124", 1)
+	data := []repoTest{
+		{
+			Name: "Success Get All Data With Order Asceding",
+			DataRows: sqlmock.NewRows([]string{
+				"id_user",
+				"email",
+				"password",
+				"role_id",
+			}).AddRow(1, "Admin@gmail.com", "Admin124", 1).AddRow(2, "user@gmail.com", "user123", 2),
+			Count: func(search string, expcount int64) *sqlmock.ExpectedQuery {
+				return mock.ExpectQuery(regexp.QuoteMeta("SELECT count(*) FROM `users` WHERE email LIKE ?")).WithArgs("%" + search + "%").WillReturnRows(sqlmock.NewRows([]string{
+					"count",
+				}).AddRow(expcount))
+			},
+			FindDataAll: func(search string, perpage, offset int, data *sqlmock.Rows) *sqlmock.ExpectedQuery {
+				if offset != 0 {
+					return mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE email LIKE ? ORDER BY created_at ASC LIMIT ? OFFSET ?")).WithArgs("%"+search+"%", perpage, offset).WillReturnRows(data)
+				}
+				return mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE email LIKE ? ORDER BY created_at ASC LIMIT ?")).WithArgs("%"+search+"%", perpage).WillReturnRows(data)
+			},
+			Search:        "",
+			Sort:          "ASC",
+			Page:          1,
+			Perpage:       10,
+			expectedCount: 2,
+			Err:           false,
+		},
+		{
+			Name: "Success Get All Data With Order Desceding",
+			DataRows: sqlmock.NewRows([]string{
+				"id_user",
+				"email",
+				"password",
+				"role_id",
+			}).AddRow(2, "user@gmail.com", "user123", 2).AddRow(1, "Admin@gmail.com", "Admin124", 1),
+			Count: func(search string, expcount int64) *sqlmock.ExpectedQuery {
+				return mock.ExpectQuery(regexp.QuoteMeta("SELECT count(*) FROM `users` WHERE email LIKE ?")).WithArgs("%" + search + "%").WillReturnRows(sqlmock.NewRows([]string{
+					"count",
+				}).AddRow(expcount))
+			},
+			FindDataAll: func(search string, perpage, offset int, data *sqlmock.Rows) *sqlmock.ExpectedQuery {
+				if offset != 0 {
+					return mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE email LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?")).WithArgs("%"+search+"%", perpage, offset).WillReturnRows(data)
+				}
+				return mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE email LIKE ? ORDER BY created_at DESC LIMIT ?")).WithArgs("%"+search+"%", perpage).WillReturnRows(data)
+			},
+			Search:        "",
+			Sort:          "DESC",
+			Page:          1,
+			Perpage:       10,
+			expectedCount: 2,
+			Err:           false,
+		},
+		{
+			Name: "Failed Get All Data",
+			DataRows: sqlmock.NewRows([]string{
+				"id_user",
+				"email",
+				"password",
+				"role_id",
+			}).AddRow(1, "Admin@gmail.com", "Admin124", 1).AddRow(2, "user@gmail.com", "user123", 2),
+			Count: func(search string, expcount int64) *sqlmock.ExpectedQuery {
+				return mock.ExpectQuery(regexp.QuoteMeta("SELECT count(*) FROM `users` WHERE email LIKE ?")).WithArgs("%" + search + "%").WillReturnRows(sqlmock.NewRows([]string{
+					"count",
+				}).AddRow(expcount))
+			},
+			FindDataAll: func(search string, perpage, offset int, data *sqlmock.Rows) *sqlmock.ExpectedQuery {
+				return mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE email LIKE ? ORDER BY created_at ASC LIMIT ?")).WithArgs("%"+search+"%", perpage).WillReturnError(database.Error)
+			},
+			Search:        "",
+			Sort:          "ASC",
+			Page:          1,
+			Perpage:       10,
+			expectedCount: 0,
+			Err:           true,
+		},
+	}
 
-	t.Run("Success Get All User", func(t *testing.T) {
-		mocks.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users`")).WillReturnRows(userRow)
+	for _, v := range data {
+		t.Run(v.Name, func(t *testing.T) {
+			offset := (v.Page - 1) * v.Perpage
+			v.Count(v.Search, int64(v.expectedCount))
+			v.FindDataAll(v.Search, v.Perpage, offset, v.DataRows)
 
-		data, _,err := repousers.GetAll("","",0,0)
-		assert.NoError(t, err)
-		assert.NotNil(t, data)
+			resp, count, err := repouser.GetAll(v.Search, v.Sort, v.Page, v.Perpage)
+			if v.Err {
+				assert.Error(t, err)
+				assert.Nil(t, resp)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, resp)
+				assert.Equal(t, int64(v.expectedCount), count)
+			}
 
-		assert.NoError(t, mocks.ExpectationsWereMet())
-	})
-
-	t.Run("Failed Get All User", func(t *testing.T) {
-		mocks.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users`")).WillReturnError(database.Error)
-
-		data, _,err := repousers.GetAll("","",0,0)
-		assert.Error(t, err)
-		assert.Nil(t, data)
-
-		assert.NoError(t, mocks.ExpectationsWereMet())
-	})
+			assert.NoError(t, mock.ExpectationsWereMet())
+		})
+	}
 }
 
 func TestCreateUser(t *testing.T) {
@@ -49,169 +132,245 @@ func TestCreateUser(t *testing.T) {
 	assert.NoError(t, err)
 	repouser := NewUserDatabase(databases)
 
-	t.Run("Success Create a New User", func(t *testing.T) {
-		reqUser := &request.User{
-			Email:    "Admin11@gmail.com",
-			Password: "admin123",
-			RoleId:   3,
-		}
-		mocks.ExpectBegin()
-		mocks.ExpectExec(regexp.QuoteMeta("INSERT INTO `users` ")).WithArgs(reqUser.Email, reqUser.Password, reqUser.RoleId, sqlmock.AnyArg()).WillReturnResult(sqlmock.NewResult(1, 1))
-		mocks.ExpectCommit()
+	data := []repoTest{
+		{
+			Name: "Success Create User",
+			Request: &request.User{
+				Email:    "Admin11@gmail.com",
+				Password: "admin123",
+				RoleId:   1,
+			},
+			Mocks: func(email string, idrole,iduser int) {
+				mocks.ExpectBegin()
+				mocks.ExpectExec(regexp.QuoteMeta("INSERT INTO `users`")).WithArgs(email, sqlmock.AnyArg(), idrole, sqlmock.AnyArg()).WillReturnResult(sqlmock.NewResult(1, 1))
+				mocks.ExpectCommit()
+			},
+			Err: false,
+		},
+		{
+			Name: "Failed Create User",
+			Request: &request.User{
+				Email:    "Admin1@gmail.com",
+				Password: "admin123",
+				RoleId:   1,
+			},
+			Mocks: func(email string, idrole,iduser int) {
+				mocks.ExpectBegin()
+				mocks.ExpectExec(regexp.QuoteMeta("INSERT INTO `users`")).WithArgs(email, sqlmock.AnyArg(), idrole, sqlmock.AnyArg()).WillReturnError(databases.Error)
+				mocks.ExpectRollback()
+			},
+			Err: true,
+		},
+	}
 
-		err := repouser.Create(reqUser)
-		assert.NoError(t, err)
-		assert.NoError(t, mocks.ExpectationsWereMet())
-	})
+	for _, v := range data {
+		t.Run(v.Name, func(t *testing.T) {
+			v.Mocks(v.Request.Email, int(v.Request.RoleId),v.iduser)
+			err := repouser.Create(v.Request)
+			if v.Err {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
 
-	t.Run("Failed Create a New User", func(t *testing.T) {
-		reqUser := &request.User{
-			Email:    "Admin@gmail.com",
-			Password: "admin123",
-			RoleId:   1,
-		}
-		mocks.ExpectBegin()
-		mocks.ExpectExec(regexp.QuoteMeta("INSERT INTO `users` ")).WithArgs(reqUser.Email, reqUser.Password, reqUser.RoleId).WillReturnError(errors.New("Database is Refused"))
-		mocks.ExpectRollback()
-
-		err := repouser.Create(reqUser)
-		assert.Error(t, err)
-		assert.Error(t, mocks.ExpectationsWereMet())
-	})
-
+			assert.NoError(t, mocks.ExpectationsWereMet())
+		})
+	}
 }
 
-func TestShowuserById(t *testing.T) {
+func TestShowUser(t *testing.T) {
 	databases, mocks, err := SetupDBForUser()
 	assert.NoError(t, err)
 	repouser := NewUserDatabase(databases)
 
-	dataUser := sqlmock.NewRows([]string{
-		"id_user",
-		"email",
-		"password",
-		"role_id",
-	}).AddRow(1, "Admin@gmail.com", "admin123", 1)
+	data := []repoTest{
+		{
+			Name: "Success Show User",
+			DataRows: sqlmock.NewRows([]string{
+				"id_user",
+				"email",
+				"password",
+				"role_id",
+			}).AddRow(1, "Admin@gmail.com", "admin123", 1),
+			DataRelation: sqlmock.NewRows([]string{
+				"id_role",
+				"name_role",
+			}).AddRow(1, "Admin"),
+			Find: func(iduser, idrole int, datauser, datarole *sqlmock.Rows) {
+				mocks.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE id_user = ? ORDER BY `users`.`id_user` LIMIT ?")).WithArgs(iduser, 1).WillReturnRows(datauser)
+				mocks.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `roles` WHERE `roles`.`id_role` = ?")).WithArgs(idrole).WillReturnRows(datarole)
+			},
+			iduser: 1,
+			idrole: 1,
+			Err:    false,
+		},
+		{
+			Name: "Failed Show User",
+			DataRows: sqlmock.NewRows([]string{
+				"id_user",
+				"email",
+				"password",
+				"role_id",
+			}).AddRow(1, "admin@gmail.com", "admin123", 1),
+			DataRelation: sqlmock.NewRows([]string{
+				"id_role",
+				"name_role",
+			}).AddRow(1, "admin"),
+			Find: func(iduser, idrole int, datauser, datarole *sqlmock.Rows) {
+				mocks.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE id_user = ? ORDER BY `users`.`id_user` LIMIT ?")).WithArgs(iduser, 1).WillReturnError(gorm.ErrRecordNotFound)
+			},
+			iduser: 3,
+			idrole: 1,
+			Err:    true,
+		},
+	}
+	for _, v := range data {
+		t.Run(v.Name, func(t *testing.T) {
+			v.Find(v.iduser, v.idrole, v.DataRows, v.DataRelation)
+			data, err := repouser.Show(v.iduser)
+			if v.Err {
+				assert.Error(t, err)
+				assert.Nil(t, data)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, uint(v.iduser), data.IdUser)
+			}
 
-	dataRole := sqlmock.NewRows([]string{
-		"id_role",
-		"name_role",
-	}).AddRow(1, "Admin")
-	t.Run("Success Show User By Id", func(t *testing.T) {
-		id_success := 1
-
-		mocks.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE id_user = ? ORDER BY `users`.`id_user` LIMIT ?")).WithArgs(id_success, 1).WillReturnRows(dataUser)
-		mocks.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `roles` WHERE `roles`.`id_role` = ?")).
-			WithArgs(id_success).
-			WillReturnRows(dataRole)
-
-		data, err := repouser.Show(id_success)
-		assert.NoError(t, err)
-		assert.Equal(t, uint(1), data.IdUser)
-
-		assert.NoError(t, mocks.ExpectationsWereMet())
-	})
-
-	t.Run("Failed Show User By id", func(t *testing.T) {
-		id_failed := 2
-
-		mocks.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE id_user = ? ORDER BY `users`.`id_user` LIMIT ?")).WithArgs(id_failed, 2).WillReturnRows(dataUser)
-		mocks.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `roles` WHERE `roles`.`id_role` = ?")).
-			WithArgs(id_failed).
-			WillReturnRows(dataRole)
-
-		data, err := repouser.Show(id_failed)
-		assert.Error(t, err)
-		assert.Nil(t, data)
-
-		assert.Error(t, mocks.ExpectationsWereMet())
-	})
+			assert.NoError(t, mocks.ExpectationsWereMet())
+		})
+	}
 }
 
 func TestUpdateUser(t *testing.T) {
 	database, mock, err := SetupDBForUser()
 	assert.NoError(t, err)
-
-	dataUser := sqlmock.NewRows([]string{
-		"id_user",
-		"email",
-		"password",
-		"role_id",
-	}).AddRow(1, "Admin@gmail.com", "admin123", 1)
-
 	repouser := NewUserDatabase(database)
-	t.Run("Success Update User", func(t *testing.T) {
-		id_success := 1
-		datareq := &request.User{
-			Email: "Admin@gmail.com",
-		}
 
-		mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE id_user = ? ORDER BY `users`.`id_user` LIMIT ?")).WithArgs(id_success, 1).WillReturnRows(dataUser)
+	data := []repoTest{
+		{
+			Name: "Success Update User",
+			DataRows: sqlmock.NewRows([]string{
+				"id_user",
+				"email",
+				"password",
+				"role_id",
+			}).AddRow(1, "Admin@gmail.com", "admin123", 1),
+			Request: &request.User{
+				Email: "AdminUpdate@gmail.com",
+			},
+			Find: func(iduser, idrole int, datauser, datarole *sqlmock.Rows) {
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE id_user = ? ORDER BY `users`.`id_user` LIMIT ?")).WithArgs(iduser, 1).WillReturnRows(datauser)
+			},
+			Mocks: func(email string, idrole,iduser int) {
+				mock.ExpectBegin()
+				mock.ExpectExec(regexp.QuoteMeta("UPDATE `users`")).WithArgs(email, sqlmock.AnyArg(), idrole).WillReturnResult(sqlmock.NewResult(0, 1))
+				mock.ExpectCommit()
+			},
+			iduser: 1,
+			idrole: 1,
+			Err:    false,
+		},
+		{
+			Name: "Failed Update User",
+			DataRows: sqlmock.NewRows([]string{
+				"id_user",
+				"email",
+				"password",
+				"role_id",
+			}).AddRow(1, "Admin@gmail.com", "admin123", 1),
+			Request: &request.User{
+				Email: "admins@gmail.com",
+			},
+			Find: func(iduser, idrole int, datauser, datarole *sqlmock.Rows) {
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE id_user = ? ORDER BY `users`.`id_user` LIMIT ?")).WithArgs(iduser, 1).WillReturnRows(datauser)
+			},
+			Mocks: func(email string, idrole,iduser int) {
+				mock.ExpectBegin()
+				mock.ExpectExec(regexp.QuoteMeta("UPDATE `users`")).WithArgs(email, sqlmock.AnyArg(), sqlmock.AnyArg()).WillReturnError(sqlmock.ErrCancelled)
+				mock.ExpectRollback()
+			},
+			iduser: 2,
+			Err:    true,
+		},
+	}
 
-		mock.ExpectBegin()
-		mock.ExpectExec(regexp.QuoteMeta("UPDATE `users`")).WithArgs(datareq.Email, sqlmock.AnyArg(), id_success).WillReturnResult(sqlmock.NewResult(0,1))
-		mock.ExpectCommit()
+	for _, v := range data {
+		t.Run(v.Name, func(t *testing.T) {
+			v.Find(v.iduser, v.idrole, v.DataRows, nil)
+			v.Mocks(v.Request.Email, v.idrole,v.iduser)
 
-		err := repouser.Update(id_success, datareq)
-		assert.NoError(t, err)
+			err := repouser.Update(v.iduser, v.Request)
+			if v.Err {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
 
-		assert.NoError(t, mock.ExpectationsWereMet())
-	})
-
-	t.Run("Failed Update User", func(t *testing.T) {
-		id_failed := 2
-		datareq := &request.User{
-			Email: "Users@gmail.com",
-		}
-		mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE id_user = ? ORDER BY `users`.`id_user` LIMIT ?")).WithArgs(id_failed, 2).WillReturnRows(dataUser)
-
-		mock.ExpectBegin()
-		mock.ExpectExec(regexp.QuoteMeta("UPDATE `users`")).WithArgs(datareq.Email, sqlmock.AnyArg(), id_failed).WillReturnError(sqlmock.ErrCancelled)
-		mock.ExpectRollback()
-
-		err := repouser.Update(id_failed, datareq)
-		assert.Error(t, err)
-		assert.Error(t, mock.ExpectationsWereMet())
-	})
+			assert.NoError(t, mock.ExpectationsWereMet())
+		})
+	}
 }
 
-func TestDeleteUser(t *testing.T)  {
+func TestDeleteUser(t *testing.T) {
 	database, mock, err := SetupDBForUser()
-	userrep := NewUserDatabase(database)
 	assert.NoError(t, err)
+	repouser := NewUserDatabase(database)
 
-	dataUser := sqlmock.NewRows([]string{
-		"id_user",
-		"email",
-		"password",
-		"role_id",
-	}).AddRow(1, "Admin@gmail.com", "admin123", 1)
-	t.Run("Success Delete User", func(t *testing.T) {
-		id_success := 1 
-		mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE id_user = ? ORDER BY `users`.`id_user` LIMIT ?")).WithArgs(id_success, 1).WillReturnRows(dataUser)
+	data := []repoTest{
+		{
+			Name: "Success Delete User",
+			DataRows: sqlmock.NewRows([]string{
+				"id_user",
+				"email",
+				"password",
+				"role_id",
+			}).AddRow(1, "Admin@gmail.com", "admin123", 1),
+			Find: func(iduser, idrole int, datauser, datarole *sqlmock.Rows) {
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE id_user = ? ORDER BY `users`.`id_user` LIMIT ?")).WithArgs(iduser, 1).WillReturnRows(datauser)
+			},
+			Mocks: func(email string, idrole,iduser int) {
+				mock.ExpectBegin()
+				mock.ExpectExec(regexp.QuoteMeta("DELETE FROM `users`")).WithArgs(iduser).WillReturnResult(sqlmock.NewResult(0,1))
+				mock.ExpectCommit()
+			},
+			iduser: 1,
+			Err: false,
+		},
+		{
+			Name: "Failed Delete User",
+			DataRows: sqlmock.NewRows([]string{
+				"id_user",
+				"email",
+				"password",
+				"role_id",
+			}).AddRow(1, "Admin@gmail.com", "admin123", 1),
+			Find: func(iduser, idrole int, datauser, datarole *sqlmock.Rows) {
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE id_user = ? ORDER BY `users`.`id_user` LIMIT ?")).WithArgs(iduser, 1).WillReturnRows(datauser)
+			},
+			Mocks: func(email string, idrole,iduser int) {
+				mock.ExpectBegin()
+				mock.ExpectExec(regexp.QuoteMeta("DELETE FROM `users`")).WithArgs(iduser).WillReturnError(sqlmock.ErrCancelled)
+				mock.ExpectRollback()
+			},
+			iduser: 1,
+			Err: true,
+		},
+	}
 
-		mock.ExpectBegin()
-		mock.ExpectExec(regexp.QuoteMeta("DELETE FROM `users` ")).WithArgs(id_success).WillReturnResult(sqlmock.NewResult(0,1))
-		mock.ExpectCommit()
+	for _, v := range data {
+		t.Run(v.Name,func(t *testing.T) {
+			v.Find(v.iduser,0,v.DataRows,nil)
+			v.Mocks("", 0,v.iduser)
 
-		err := userrep.Delete(id_success)
-		assert.NoError(t, err)
+			err:= repouser.Delete(v.iduser)
+			if v.Err {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 
-		assert.NoError(t, mock.ExpectationsWereMet())
-	})
+			}
 
-	t.Run("Failed Delete User", func(t *testing.T) {
-		id_success := 2 
-		mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE id_user = ? ORDER BY `users`.`id_user` LIMIT ?")).WithArgs(id_success, 1).WillReturnRows(dataUser)
-
-		mock.ExpectBegin()
-		mock.ExpectExec(regexp.QuoteMeta("DELETE FROM `users` ")).WithArgs(id_success).WillReturnError(sqlmock.ErrCancelled)
-		mock.ExpectCommit()
-
-		err := userrep.Delete(id_success)
-		assert.Error(t, err)
-
-		assert.Error(t, mock.ExpectationsWereMet())
-	})
-	
+			assert.NoError(t, mock.ExpectationsWereMet())
+		})
+	}
 }

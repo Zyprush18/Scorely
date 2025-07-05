@@ -77,6 +77,7 @@ func RunApp() {
 	// route level
 	adminMux.HandleFunc("/level", handlerlevel.GetAll)
 	adminMux.HandleFunc("/level/add", handlerlevel.Create)
+	adminMux.HandleFunc("/level/{id}", handlerlevel.Show)
 
 	fmt.Println("🚀 running on: http://localhost:8000")
 	http.ListenAndServe(":8000", adminMux)
