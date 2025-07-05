@@ -13,6 +13,7 @@ import (
 type LevelRepo interface {
 	GetAll(search, sort string, page,perpage int) ([]response.Levels, int64,error)
 	Create(data *request.Levels) error
+	Show(id int) (*response.Levels, error)
 }
 
 type MysqlStruct struct {
@@ -48,4 +49,13 @@ func (m *MysqlStruct) Create(data *request.Levels) error {
 	}
 
 	return  nil
+}
+
+func (m *MysqlStruct) Show(id int) (*response.Levels, error) {
+	var model_level response.Levels
+	if err:=m.db.Table("levels").Where("id_level = ?", id).First(&model_level).Error;err != nil {
+		return nil, err
+	}
+
+	return &model_level,nil
 }

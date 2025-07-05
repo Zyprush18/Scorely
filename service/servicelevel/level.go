@@ -9,6 +9,7 @@ import (
 type LevelService interface {
 	GetAllLevel(search,sort string, page,perpage int) ([]response.Levels, int64, error)
 	CreateLevel(data *request.Levels) error
+	ShowLevel(id int) (*response.Levels, error)
 }
 
 type Repolevels struct {
@@ -25,4 +26,8 @@ func (r *Repolevels) GetAllLevel(search,sort string, page,perpage int) ([]respon
 
 func (r *Repolevels) CreateLevel(data *request.Levels) error  {
 	return  r.repo.Create(data)
+}
+
+func (r *Repolevels) ShowLevel(id int) (*response.Levels, error) {
+	return r.repo.Show(id)
 }
