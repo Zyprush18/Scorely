@@ -10,6 +10,8 @@ type LevelService interface {
 	GetAllLevel(search,sort string, page,perpage int) ([]response.Levels, int64, error)
 	CreateLevel(data *request.Levels) error
 	ShowLevel(id int) (*response.Levels, error)
+	UpdateLevel(id int, data *request.Levels) error
+	DeleteLevel(id int) error
 }
 
 type Repolevels struct {
@@ -30,4 +32,12 @@ func (r *Repolevels) CreateLevel(data *request.Levels) error  {
 
 func (r *Repolevels) ShowLevel(id int) (*response.Levels, error) {
 	return r.repo.Show(id)
+}
+
+func (r *Repolevels) UpdateLevel(id int, data *request.Levels) error {
+	return r.repo.Update(id, data)
+}
+
+func (r *Repolevels) DeleteLevel(id int) error {
+	return r.repo.Delete(id)
 }

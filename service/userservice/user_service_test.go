@@ -40,7 +40,7 @@ func TestAllUser(t *testing.T) {
 		}
 
 		mockuser.On("GetAll").Return(data, nil)
-		resp, _,err := userservices.AllUser("","",0,0)
+		resp, _,err := userservices.AllUser("","ASC",1,10)
 		assert.NoError(t, err)
 		assert.NotNil(t, resp)
 
