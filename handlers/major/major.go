@@ -27,7 +27,7 @@ func (s *ServiceMajor) GetAllData(w http.ResponseWriter, r *http.Request) {
 	if r.Method != helper.Gets {
 		w.WriteHeader(helper.MethodNotAllowed)
 		json.NewEncoder(w).Encode(helper.Messages{
-			Message: "Method Get is Allowed",
+			Message: "Only Get Method is Allowed",
 			Errors:  "Method Not Allowed",
 		})
 		return
@@ -67,7 +67,7 @@ func (s *ServiceMajor) Create(w http.ResponseWriter, r *http.Request) {
 	if r.Method != helper.Post {
 		w.WriteHeader(helper.MethodNotAllowed)
 		json.NewEncoder(w).Encode(helper.Messages{
-			Message: "Method Post Is Allowed",
+			Message: "Only Post Method Is Allowed",
 			Errors:  "Method Not Allowed",
 		})
 		return
@@ -123,7 +123,7 @@ func (s *ServiceMajor) Show(w http.ResponseWriter, r *http.Request) {
 	if r.Method != helper.Gets {
 		w.WriteHeader(helper.MethodNotAllowed)
 		json.NewEncoder(w).Encode(helper.Messages{
-			Message: "Method Get Is Allowed",
+			Message: "Only Get Method Is Allowed",
 			Errors:  "Method Not Found",
 		})
 		return
@@ -171,7 +171,7 @@ func (s *ServiceMajor) Updated(w http.ResponseWriter, r *http.Request) {
 	if r.Method != helper.Put {
 		w.WriteHeader(helper.MethodNotAllowed)
 		json.NewEncoder(w).Encode(helper.Messages{
-			Message: "Method Put Is Allowed",
+			Message: "Only Put Method Is Allowed",
 			Errors:  "Method Not Allowed",
 		})
 		return
@@ -237,7 +237,7 @@ func (s *ServiceMajor) Deleted(w http.ResponseWriter, r *http.Request) {
 	if r.Method != helper.Delete {
 		w.WriteHeader(helper.MethodNotAllowed)
 		json.NewEncoder(w).Encode(helper.Messages{
-			Message: "Method Delete Is Allowed",
+			Message: "Only Delete Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
 		return

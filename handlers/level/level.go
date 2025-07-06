@@ -27,7 +27,7 @@ func (h *HandlerLevel) GetAll(w http.ResponseWriter, r *http.Request)  {
 	if r.Method != helper.Gets {
 		w.WriteHeader(helper.MethodNotAllowed)
 		json.NewEncoder(w).Encode(helper.Messages{
-			Message: "Method Get Is Allowed",
+			Message: "Only Get Method Is Allowed",
 			Errors: "Method Not Found",
 		})
 		return
@@ -68,7 +68,7 @@ func (h *HandlerLevel) Create (w http.ResponseWriter, r *http.Request)  {
 	if r.Method != helper.Post {
 		w.WriteHeader(helper.MethodNotAllowed)
 		json.NewEncoder(w).Encode(helper.Messages{
-			Message: "Method Post Is Allowed",
+			Message: "Only Post Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
 		return
@@ -126,7 +126,7 @@ func (h *HandlerLevel) Show (w http.ResponseWriter, r *http.Request)  {
 	if r.Method != helper.Gets {
 		w.WriteHeader(helper.MethodNotAllowed)
 		json.NewEncoder(w).Encode(helper.Messages{
-			Message: "Method Get Is Allowed",
+			Message: "Only Get Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
 		return
@@ -168,5 +168,117 @@ func (h *HandlerLevel) Show (w http.ResponseWriter, r *http.Request)  {
 	json.NewEncoder(w).Encode(helper.Messages{
 		Message: "Success",
 		Data: resp,
+	})
+}
+
+func (h *HandlerLevel) Update(w http.ResponseWriter, r *http.Request)  {
+	w.Header().Set("Content-Type","application/json")
+	if r.Method != helper.Put {
+		w.WriteHeader(helper.MethodNotAllowed)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Only Put Method Is Allowed",
+			Errors: "Method Not Allowed",
+		})
+		return
+	}
+
+	levelreq := new(request.Levels)
+	if err:= json.NewDecoder(r.Body).Decode(levelreq);err != nil {
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Body Request Is Missing",
+			Errors: "Bad Request",
+		})
+		return
+	}
+
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Invalid Id Levels Format",
+			Errors: "Bad Request",
+		})
+		return
+	} 
+
+	if err:= h.service.UpdateLevel(id, levelreq);err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			w.WriteHeader(helper.Notfound)
+			json.NewEncoder(w).Encode(helper.Messages{
+				Message: fmt.Sprintf("Not Found Data Id: %d", id),
+				Errors: "Not Found",
+			})
+			return
+		}
+
+		if helper.IsDuplicateEntryError(err) {
+			w.WriteHeader(helper.Conflict)
+			json.NewEncoder(w).Encode(helper.Messages{
+				Message: "Data Is Exist",
+				Errors: "Conflict",
+			})
+			return
+		}
+
+		h.logs.Logfile(err.Error())
+		w.WriteHeader(helper.InternalServError)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Somethin Wnet Wrong",
+			Errors: "internal Server Error",
+		})
+		return
+	}
+
+	w.WriteHeader(helper.Success)
+	json.NewEncoder(w).Encode(helper.Messages{
+		Message: "Success Update Level",
+	})
+}
+
+
+func (h *HandlerLevel) Delete(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type","application/json")
+	if r.Method != helper.Delete {
+		w.WriteHeader(helper.MethodNotAllowed)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Only Delete Method Is Allowed",
+			Errors: "Method Not Allowed",
+		})
+		return
+	}
+
+	id,err:= strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Invalid Id Level Format",
+			Errors: "Bad Request",
+		})
+		return
+	}
+
+	if err:=h.service.DeleteLevel(id);err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			w.WriteHeader(helper.Notfound)
+			json.NewEncoder(w).Encode(helper.Messages{
+				Message: fmt.Sprintf("Not Found id: %d", id),
+				Errors: "Not Found",
+			})
+			return
+		}
+
+		h.logs.Logfile(err.Error())
+		w.WriteHeader(helper.InternalServError)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Somethind Went Wrong",
+			Errors: "Internal Server Error",
+		})
+		return
+	}
+
+	w.WriteHeader(helper.Success)
+	json.NewEncoder(w).Encode(helper.Messages{
+		Message: "Success Delete Level",
 	})
 }
