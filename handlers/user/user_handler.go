@@ -96,11 +96,7 @@ func (h *UserService) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// userreq.Models.CreatedAt = time.Now()
-	// create new user
-	err := h.service.CreateUser(&userreq)
-	// pengecekan error dari create
-	if err != nil {
+	if err := h.service.CreateUser(&userreq);err != nil {
 
 		// jika terjadi duplicate email
 		if helper.IsDuplicateEntryError(err) {
