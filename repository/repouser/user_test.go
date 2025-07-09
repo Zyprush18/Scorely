@@ -271,7 +271,25 @@ func TestUpdateUser(t *testing.T) {
 			Err:    false,
 		},
 		{
-			Name: "Failed Update User",
+			Name: "Failed Update User: Not Found",
+			DataRows: sqlmock.NewRows([]string{
+				"id_user",
+				"email",
+				"password",
+				"role_id",
+			}).AddRow(1, "Admin@gmail.com", "admin123", 1),
+			Request: &request.User{
+				Email: "admins@gmail.com",
+			},
+			Find: func(iduser, idrole int, datauser, datarole *sqlmock.Rows) {
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` WHERE id_user = ? ORDER BY `users`.`id_user` LIMIT ?")).WithArgs(iduser, 1).WillReturnError(gorm.ErrRecordNotFound)
+			},
+			Mocks: func(email string, idrole, iduser int) {},
+			iduser: 2,
+			Err:    true,
+		},
+		{
+			Name: "Failed Update User: Database Error",
 			DataRows: sqlmock.NewRows([]string{
 				"id_user",
 				"email",
@@ -286,7 +304,7 @@ func TestUpdateUser(t *testing.T) {
 			},
 			Mocks: func(email string, idrole,iduser int) {
 				mock.ExpectBegin()
-				mock.ExpectExec(regexp.QuoteMeta("UPDATE `users`")).WithArgs(email, sqlmock.AnyArg(), sqlmock.AnyArg()).WillReturnError(sqlmock.ErrCancelled)
+				mock.ExpectExec(regexp.QuoteMeta("UPDATE `users`")).WithArgs(email, sqlmock.AnyArg(), sqlmock.AnyArg()).WillReturnError(database.Error)
 				mock.ExpectRollback()
 			},
 			iduser: 2,

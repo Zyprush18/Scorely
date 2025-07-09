@@ -9,6 +9,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/Zyprush18/Scorely/models/request"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
 type tableRoleTest struct {
@@ -181,7 +182,7 @@ func TestShowRole(t *testing.T) {
 			FindData: func(search string, perpage, offset int, data *sqlmock.Rows) *sqlmock.ExpectedQuery {
 				return mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `roles` WHERE id_role = ? ORDER BY `roles`.`id_role` LIMIT ?")).
 					WithArgs(2, 1).
-					WillReturnError(errors.New("Not Found id: 2"))
+					WillReturnError(gorm.ErrRecordNotFound)
 			},
 			Id:  2,
 			Err: true,
@@ -238,7 +239,7 @@ func TestUpdateRole(t *testing.T) {
 			Err: false,
 		},
 		{
-			Name: "Failed Update Role",
+			Name: "Failed Update Role: Not Found",
 			DataRows: sqlmock.NewRows([]string{
 				"id_role",
 				"name_role",
@@ -246,12 +247,35 @@ func TestUpdateRole(t *testing.T) {
 			FindData: func(search string, perpage, offset int, data *sqlmock.Rows) *sqlmock.ExpectedQuery {
 				return mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `roles` WHERE id_role = ? ORDER BY `roles`.`id_role` LIMIT ?")).
 					WithArgs(2, 1).
-					WillReturnError(errors.New("Not Found id: 2"))
+					WillReturnError(gorm.ErrRecordNotFound)
 			},
 			RequestRole: &request.Roles{
 				NameRole: "UserUpdate",
 			},
 			MockExec: nil,
+			Id:       2,
+			Err:      true,
+		},
+		{
+			Name: "Failed Update Role: Database Error",
+			DataRows: sqlmock.NewRows([]string{
+				"id_role",
+				"name_role",
+			}).AddRow(1, "Admin"),
+			FindData: func(search string, perpage, offset int, data *sqlmock.Rows) *sqlmock.ExpectedQuery {
+				return mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `roles` WHERE id_role = ? ORDER BY `roles`.`id_role` LIMIT ?")).
+					WithArgs(2, 1).
+					WillReturnRows(data)
+			},
+			RequestRole: &request.Roles{
+				NameRole: "UserUpdate",
+			},
+			MockExec: func(name string) {
+				mock.ExpectBegin()
+				mock.ExpectExec(regexp.QuoteMeta("UPDATE `roles` ")).
+					WithArgs(name, sqlmock.AnyArg(), 2).WillReturnError(db.Error)
+				mock.ExpectRollback()
+			},
 			Id:       2,
 			Err:      true,
 		},
