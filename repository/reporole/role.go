@@ -95,18 +95,3 @@ func (r RoleMysql) DeleteRole(id int) error {
 
 	return nil
 }
-
-
-
-func ResponseRole(data []entity.Users) []response.Users {
-	var result []response.Users
-	for _, d := range data {
-			result = append(result, response.Users{
-				IdUser: d.IdUser,
-				Email: d.Email,
-				Password: d.Password,
-				RoleId: d.RoleId,
-			})
-	}
-	return result
-}

@@ -41,11 +41,12 @@ func (m *MysqlStruct) GetAllData(search, sort string, page, perpage int) ([]resp
 }
 
 func (m *MysqlStruct) Create(data *request.Majors) error {
+	now := time.Now()
 	major := &request.Majors{
 		Major:             data.Major,
 		MajorAbbreviation: data.MajorAbbreviation,
 		Models: helper.Models{
-			CreatedAt: time.Now(),
+			CreatedAt: now,
 		},
 	}
 
@@ -66,20 +67,13 @@ func (m *MysqlStruct) ShowById(id int) (*response.Majors, error) {
 }
 
 func (m *MysqlStruct) Updates(id int, data *request.Majors) error {
-	var modelmajor response.Majors
-	major := &request.Majors{
-		Major:             data.Major,
-		MajorAbbreviation: data.MajorAbbreviation,
-		Models: helper.Models{
-			UpdatedAt: time.Now(),
-		},
-	}
+	var modelmajor entity.Majors
 
 	if err := m.db.Table("majors").Where("id_major = ?", id).First(&modelmajor).Error; err != nil {
 		return err
 	}
 
-	if err := m.db.Table("majors").Where("id_major = ?", id).Updates(major).Error; err != nil {
+	if err := m.db.Table("majors").Where("id_major = ?", id).Updates(data).Error; err != nil {
 		return err
 	}
 
