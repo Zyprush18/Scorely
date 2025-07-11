@@ -2,8 +2,6 @@ package entity
 
 import "github.com/Zyprush18/Scorely/helper"
 
-
-
 type Answer_Questions struct {
 	IdAnswerQuestion uint   `json:"id_answer_question" gorm:"primaryKey;autoIncrement"`
 	Option           string `json:"option" gorm:"type:varchar(1)"`
