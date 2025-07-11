@@ -32,7 +32,7 @@ func (m *MysqlStruct) GetAll(search, sort string, page,perpage int) ([]response.
 	var count int64
 	order := fmt.Sprintf("created_at %s", sort)
 	offset := (page - 1) * perpage
-	if err:= m.db.Table("levels").Where("level LIKE ?", "%"+search+"%").Count(&count).Order(order).Limit(perpage).Offset(offset).Find(&model_level).Error;err != nil {
+	if err:= m.db.Table("levels").Debug().Where("level LIKE ?", "%"+search+"%").Count(&count).Order(order).Limit(perpage).Offset(offset).Find(&model_level).Error;err != nil {
 		return nil, 0, err
 	}
 
@@ -47,7 +47,7 @@ func (m *MysqlStruct) Create(data *request.Levels) error {
 		},
 	}
 
-	if err:= m.db.Table("levels").Create(levelreq).Error;err != nil {
+	if err:= m.db.Table("levels").Debug().Create(levelreq).Error;err != nil {
 		return err
 	}
 
@@ -56,7 +56,7 @@ func (m *MysqlStruct) Create(data *request.Levels) error {
 
 func (m *MysqlStruct) Show(id int) (*response.Levels, error) {
 	var model_level response.Levels
-	if err:=m.db.Table("levels").Where("id_level = ?", id).First(&model_level).Error;err != nil {
+	if err:=m.db.Table("levels").Debug().Where("id_level = ?", id).First(&model_level).Error;err != nil {
 		return nil, err
 	}
 
