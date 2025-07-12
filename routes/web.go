@@ -10,17 +10,20 @@ import (
 	"github.com/Zyprush18/Scorely/handlers/level"
 	"github.com/Zyprush18/Scorely/handlers/major"
 	"github.com/Zyprush18/Scorely/handlers/role"
+	"github.com/Zyprush18/Scorely/handlers/student"
 	"github.com/Zyprush18/Scorely/handlers/user"
 	"github.com/Zyprush18/Scorely/helper"
 	"github.com/Zyprush18/Scorely/repository/repoclass"
 	"github.com/Zyprush18/Scorely/repository/repolevel"
 	"github.com/Zyprush18/Scorely/repository/repomajor"
 	"github.com/Zyprush18/Scorely/repository/reporole"
+	"github.com/Zyprush18/Scorely/repository/repostudent"
 	"github.com/Zyprush18/Scorely/repository/repouser"
 	"github.com/Zyprush18/Scorely/service/classservice"
 	"github.com/Zyprush18/Scorely/service/majorservice"
 	"github.com/Zyprush18/Scorely/service/servicelevel"
 	"github.com/Zyprush18/Scorely/service/servicerole"
+	"github.com/Zyprush18/Scorely/service/servicestudent"
 	"github.com/Zyprush18/Scorely/service/userservice"
 )
 
@@ -95,6 +98,16 @@ func RunApp() {
 	adminMux.HandleFunc("/api/class/{id}", handlerclass.Show)
 	adminMux.HandleFunc("/api/class/{id}/update", handlerclass.Update)
 	adminMux.HandleFunc("/api/class/{id}/delete", handlerclass.Delete)
+
+	// student
+	studentrepo := repostudent.ConnectDb(initDb)
+	servicestudent := servicestudent.NewServiceStudent(&studentrepo)
+	handlerstudent := student.NewHandlerStudent(servicestudent,initlog)
+
+	// route student
+	adminMux.HandleFunc("/api/student", handlerstudent.GetAll)
+	adminMux.HandleFunc("/api/student/add", handlerstudent.Create)
+	adminMux.HandleFunc("/api/student/{id}", handlerstudent.Show)
 
 	fmt.Println("🚀 running on: http://localhost:8000")
 	http.ListenAndServe(":8000", adminMux)

@@ -5,9 +5,9 @@ import "github.com/Zyprush18/Scorely/helper"
 type Students struct {
 	IdStudent uint   `json:"id_student" gorm:"primaryKey;autoIncrement"`
 	Name      string `json:"name" gorm:"type:varchar(50)"`
-	Nisn      string `json:"" gorm:"type:varchar(10);unique"`
+	Nisn      string `json:"nisn" gorm:"type:varchar(10);unique"`
 	Gender    string `json:"gender" gorm:"type:varchar(10)"`
-	Address   string `json:"address" gorm:"type:varchar(50)"`
+	Address   string `json:"address" gorm:"type:varchar(255)"`
 	Phone     uint   `json:"phone" gorm:"type:bigint;unique"`
 	UserId    uint   `json:"user_id"`
 	ClassId   uint   `json:"class_id"`
