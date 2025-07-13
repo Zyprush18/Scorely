@@ -10,6 +10,8 @@ type ServiceStudent interface {
 	GetAllStudent(Search,Sort string, Page,Perpage int) ([]response.Students, int64, error)
 	CreateStudent(data *request.Students) error
 	ShowStudent(id int) (*response.Students, error)
+	UpdateStudent(id int, data *request.Students) error
+	DeleteStudent(id int) error
 }
 
 type RepoStudent struct {
@@ -30,4 +32,12 @@ func (r *RepoStudent) CreateStudent(data *request.Students) error  {
 
 func (r *RepoStudent) ShowStudent(id int)(*response.Students, error) {
 	return r.repo.Show(id)
+}
+
+func (r *RepoStudent) UpdateStudent(id int, data *request.Students) error {
+	return r.repo.Update(id, data)
+}
+
+func (r *RepoStudent) DeleteStudent(id int) error  {
+	return r.repo.Delete(id)
 }

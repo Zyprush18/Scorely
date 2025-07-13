@@ -166,3 +166,118 @@ func (h *HandlerStudent) Show(w http.ResponseWriter, r *http.Request)  {
 		Data: resp,
 	})
 }
+
+func (h *HandlerStudent) Update(w http.ResponseWriter,r *http.Request) {
+	w.Header().Set("Content-Type","application/json")
+	if r.Method != helper.Put {
+		w.WriteHeader(helper.MethodNotAllowed)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Only Put Method Is Allowed",
+			Errors: "Method Not Allowed",
+		})
+		return
+	}
+
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Invalid Format Id Params",
+			Errors: "Bad Request",
+		})
+		return
+	}
+
+	datareq := new(request.Students)
+	if err := json.NewDecoder(r.Body).Decode(&datareq); err != nil {
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Body Request Is Missing",
+			Errors: "Bad Request",
+		})
+
+		return
+	}
+
+	if err:= h.service.UpdateStudent(id, datareq);err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			w.WriteHeader(helper.Notfound)
+			json.NewEncoder(w).Encode(helper.Messages{
+				Message: fmt.Sprintf("Not Found Id: %d", id),
+				Errors: "Not Found",
+			})
+			return
+		}
+
+		if helper.IsDuplicateEntryError(err) {
+			w.WriteHeader(helper.Conflict)
+			json.NewEncoder(w).Encode(helper.Messages{
+				Message: "Nisn Or Phone Is Exists",
+				Errors: "Conflict",
+			})
+			return
+		}
+
+		h.log.Logfile(err.Error())
+		w.WriteHeader(helper.InternalServError)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Something Went Wrong",
+			Errors: "Internal Server Error",
+		})
+
+		return
+	}
+
+	w.WriteHeader(helper.Success)
+	json.NewEncoder(w).Encode(helper.Messages{
+		Message: "Success Update Students",
+	})
+}
+
+func (h *HandlerStudent) Delete(w http.ResponseWriter,r *http.Request)  {
+	w.Header().Set("Content-Type","application/json")
+	if r.Method != helper.Delete {
+		w.WriteHeader(helper.MethodNotAllowed)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Only Delete Method Is Allowed",
+			Errors: "Method Not Allowed",
+		})
+		return
+	}
+
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Invalid Format Id Params",
+			Errors: "Bad Request",
+		})
+		return
+	}
+
+	if err := h.service.DeleteStudent(id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			w.WriteHeader(helper.Notfound)
+			json.NewEncoder(w).Encode(helper.Messages{
+				Message: fmt.Sprintf("Not Found Id: %d", id),
+				Errors: "Not Found",
+			})
+			return
+		}
+
+		h.log.Logfile(err.Error())
+		w.WriteHeader(helper.InternalServError)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Something Went Wrong",
+			Errors: "Internal Server Error",
+		})
+
+		return
+	}
+
+
+	w.WriteHeader(helper.Success)
+	json.NewEncoder(w).Encode(helper.Messages{
+		Message: "Success Delete Student",
+	})
+}

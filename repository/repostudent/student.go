@@ -15,6 +15,8 @@ type StudentRepo interface {
 	GetAll(Search,Sort string, Page,Perpage int) ([]response.Students, int64, error)
 	Create(data *request.Students) error
 	Show(id int) (*response.Students, error)
+	Update(id int, data *request.Students) error
+	Delete(id int) error
 }
 
 type MysqlStruct struct {
@@ -95,6 +97,39 @@ func (m *MysqlStruct) Show(id int) (*response.Students, error) {
 		Models: findstudent.Models,
 	},nil
 }
+
+func (m *MysqlStruct) Update(id int, data *request.Students) error {
+	var finddata entity.Students
+	now := time.Now()
+	studentreq := &request.Students{
+		Name: data.Name,
+		Nisn: data.Nisn,
+		Gender: data.Gender,
+		Address: data.Address,
+		Phone: data.Phone,
+		UserId: data.UserId,
+		ClassId: data.ClassId,
+		Models: helper.Models{
+			UpdatedAt: now,
+		},
+	}
+
+	if err:= m.db.Table("students").Where("id_student = ?", id).First(&finddata).Updates(studentreq).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MysqlStruct) Delete(id int) error {
+	var finddata entity.Students
+	if err := m.db.Table("students").Where("id_student = ?", id).First(&finddata).Delete(finddata).Error; err != nil {
+		return  err
+	}
+
+	return nil
+}
+
 
 func ParseResponse(data []entity.Students) (resp []response.Students) {
 	for _, v := range data {
