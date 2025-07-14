@@ -11,6 +11,7 @@ import (
 	"github.com/Zyprush18/Scorely/handlers/major"
 	"github.com/Zyprush18/Scorely/handlers/role"
 	"github.com/Zyprush18/Scorely/handlers/student"
+	"github.com/Zyprush18/Scorely/handlers/teacher"
 	"github.com/Zyprush18/Scorely/handlers/user"
 	"github.com/Zyprush18/Scorely/helper"
 	"github.com/Zyprush18/Scorely/repository/repoclass"
@@ -18,12 +19,14 @@ import (
 	"github.com/Zyprush18/Scorely/repository/repomajor"
 	"github.com/Zyprush18/Scorely/repository/reporole"
 	"github.com/Zyprush18/Scorely/repository/repostudent"
+	"github.com/Zyprush18/Scorely/repository/repoteacher"
 	"github.com/Zyprush18/Scorely/repository/repouser"
 	"github.com/Zyprush18/Scorely/service/classservice"
 	"github.com/Zyprush18/Scorely/service/majorservice"
 	"github.com/Zyprush18/Scorely/service/servicelevel"
 	"github.com/Zyprush18/Scorely/service/servicerole"
 	"github.com/Zyprush18/Scorely/service/servicestudent"
+	"github.com/Zyprush18/Scorely/service/serviceteacher"
 	"github.com/Zyprush18/Scorely/service/userservice"
 )
 
@@ -111,6 +114,14 @@ func RunApp() {
 	adminMux.HandleFunc("/api/student/{id}/update", handlerstudent.Update)
 	adminMux.HandleFunc("/api/student/{id}/delete", handlerstudent.Delete)
 
+	// teacher
+	teacherrepo := repoteacher.ConnectDb(initDb)
+	servicesteacher := serviceteacher.ConnectRepo(&teacherrepo)
+	handlerteacher := teacher.ConnectService(servicesteacher,initlog)
+
+	// route teacher
+	adminMux.HandleFunc("/api/teacher", handlerteacher.GetAll)
+	
 	fmt.Println("🚀 running on: http://localhost:8000")
 	http.ListenAndServe(":8000", adminMux)
 }
