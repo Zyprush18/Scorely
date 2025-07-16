@@ -121,6 +121,7 @@ func RunApp() {
 
 	// route teacher
 	adminMux.HandleFunc("/api/teacher", handlerteacher.GetAll)
+	adminMux.HandleFunc("/api/teacher/add", handlerteacher.Create)
 	
 	fmt.Println("🚀 running on: http://localhost:8000")
 	http.ListenAndServe(":8000", adminMux)
