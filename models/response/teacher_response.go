@@ -1,14 +1,17 @@
 package response
 
-import "github.com/Zyprush18/Scorely/helper"
+import (
+	"github.com/Zyprush18/Scorely/helper"
+	"github.com/Zyprush18/Scorely/models/entity"
+)
 
 type Teachers struct {
-	IdTeacher uint   `json:"id_teacher" gorm:"primaryKey;autoIncrement"`
-	Name      string `json:"name" gorm:"not null;type:varchar(50)"`
-	Nip       string `json:"nip" gorm:"type:varchar(50)"`
-	Gender    string `json:"gender" gorm:"type:varchar(10)"`
-	Address   string `json:"address" gorm:"type:varchar(50)"`
-	Phone     uint   `json:"phone" gorm:"type:bigint;unique"`
+	IdTeacher uint   `json:"id_teacher"`
+	Name      string `json:"name"`
+	Nip       string `json:"nip"`
+	Gender    string `json:"gender"`
+	Address   string `json:"address"`
+	Phone     uint   `json:"phone"`
 	UserId    uint   `json:"user_id"`
 
 	// di ubah jadi relasi one to one
@@ -17,6 +20,24 @@ type Teachers struct {
 
 
 	// has many to subjects table (many to many with subjects table)
-	// Subject []*Subjects `gorm:"many2many:teacher_subjects;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Subject []Subjects 
 	helper.Models
+}
+
+func RespGetALl(data []entity.Teachers) (resp []Teachers) {
+	for _, v := range data {
+		resp = append(resp, Teachers{
+			IdTeacher: v.IdTeacher,
+			Name: v.Name,
+			Nip: v.Nip,
+			Gender: v.Gender,
+			Address: v.Address,
+			Phone: v.Phone,
+			UserId: v.UserId,
+			Subject: Subjectsresp(v.Subject),
+			Models: v.Models,
+		})
+	}
+
+	return resp
 }
