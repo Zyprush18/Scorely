@@ -9,6 +9,9 @@ import (
 type ServiceTeacher interface {
 	GetAllTeacher(Search, Sort string, Page,Perpage int) ([]response.Teachers, int64, error)
 	CreateTeacher(data *request.Teachers) error
+	ShowTeacher(id int)(*response.Teachers, error)
+	UpdateTeacher(id int, data *request.Teachers) error
+	DeleteTeacher(id int) error
 }
 
 type RepoTeacherStruct struct {
@@ -25,4 +28,16 @@ func (r *RepoTeacherStruct) GetAllTeacher(Search, Sort string, Page,Perpage int)
 
 func (r *RepoTeacherStruct) CreateTeacher(data *request.Teachers) error {
 	return r.repo.Create(data)
+}
+
+func (r *RepoTeacherStruct) ShowTeacher(id int)(*response.Teachers, error) {
+	return r.repo.Show(id)
+}
+
+func (r *RepoTeacherStruct) UpdateTeacher(id int, data *request.Teachers) error {
+	return r.repo.Update(id, data)
+}
+
+func (r *RepoTeacherStruct) DeleteTeacher(id int) error {
+	return r.repo.Delete(id)
 }
