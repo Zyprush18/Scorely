@@ -92,6 +92,9 @@ func (m *MysqlStruct) Update(id int, data *request.Subjects) error {
 
 func (m *MysqlStruct) Delete(id int) error {
 	var finddata entity.Subjects
+	if err:= m.db.Table("teacher_subjects").Where("id_subject = ?", id).Debug().Delete("teacher_subjects").Error;err != nil {
+		return err
+	}
 	if err := m.db.Table("subjects").Where("id_subject = ?",id).First(&finddata).Delete(finddata).Error;err != nil {
 		return err
 	}
