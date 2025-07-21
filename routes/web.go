@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/Zyprush18/Scorely/database"
+	"github.com/Zyprush18/Scorely/handlers/auth"
 	"github.com/Zyprush18/Scorely/handlers/class"
 	"github.com/Zyprush18/Scorely/handlers/level"
 	"github.com/Zyprush18/Scorely/handlers/major"
@@ -15,6 +16,7 @@ import (
 	"github.com/Zyprush18/Scorely/handlers/teacher"
 	"github.com/Zyprush18/Scorely/handlers/user"
 	"github.com/Zyprush18/Scorely/helper"
+	"github.com/Zyprush18/Scorely/repository/repoauth"
 	"github.com/Zyprush18/Scorely/repository/repoclass"
 	"github.com/Zyprush18/Scorely/repository/repolevel"
 	"github.com/Zyprush18/Scorely/repository/repomajor"
@@ -25,6 +27,7 @@ import (
 	"github.com/Zyprush18/Scorely/repository/repouser"
 	"github.com/Zyprush18/Scorely/service/classservice"
 	"github.com/Zyprush18/Scorely/service/majorservice"
+	"github.com/Zyprush18/Scorely/service/serviceauth"
 	"github.com/Zyprush18/Scorely/service/servicelevel"
 	"github.com/Zyprush18/Scorely/service/servicerole"
 	"github.com/Zyprush18/Scorely/service/servicestudent"
@@ -44,6 +47,14 @@ func RunApp() {
 	}
 
 	adminMux := http.NewServeMux()
+
+	// login
+	authrepo := repoauth.ConnectDb(initDb)
+	authservice:= serviceauth.ConnectRepo(&authrepo)
+	handlerauth := auth.ConnectService(authservice,initlog)
+
+	// route login
+	adminMux.HandleFunc("/api/login",handlerauth.Login)
 
 	// role
 	roleRepo := reporole.RolesMysql(initDb)

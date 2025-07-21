@@ -14,7 +14,7 @@ type Exams struct {
 	SubjectId   uint      `json:"subject_id"`
 
 	// belongs to subjects table
-	Subject Subjects `gorm:"foreignKey:SubjectId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Subject *Subjects `gorm:"foreignKey:SubjectId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 
 	// has many to exam question table
 	ExamQuestion []Exam_Questions `gorm:"foreignKey:ExamId;references:IdExam;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`

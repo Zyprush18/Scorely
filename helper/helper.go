@@ -1,7 +1,6 @@
 package helper
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -26,6 +25,7 @@ const (
 	Notfound           = http.StatusNotFound
 	Conflict           = http.StatusConflict
 	UnprocessbleEntity = http.StatusUnprocessableEntity
+	Unauthorized	   = http.StatusUnauthorized
 	MethodNotAllowed   = http.StatusMethodNotAllowed
 	InternalServError  = http.StatusInternalServerError
 )
@@ -165,15 +165,18 @@ func Paginations(page, perpage, count int) *Pag {
 }
 
 func HashingPassword(password string) string {
-	pasbyte, err:=json.Marshal(password)
-	if err != nil {
-		Loggers.Logfile(Logger{}, err.Error())
-	}
-
-	passhash, err:= bcrypt.GenerateFromPassword(pasbyte, 12)
+	passhash, err:= bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
 		Loggers.Logfile(Logger{}, err.Error())
 	}
 	return string(passhash)
+}
+
+func DecryptPassword(passhash,passreq string) error {
+	if err:= bcrypt.CompareHashAndPassword([]byte(passhash),[]byte(passreq)); err != nil {
+		return errors.New("invalid_pw")
+	}
+
+	return nil
 }
 
