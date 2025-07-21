@@ -11,9 +11,9 @@ type Class struct {
 	// has many to student table
 	Student []Students `gorm:"foreignKey:ClassId;references:IdClass;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	// belongs to level table
-	Level Levels `gorm:"foreignKey:LevelId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Level *Levels `gorm:"foreignKey:LevelId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	// belongs to level table
-	Major Majors `gorm:"foreignKey:MajorId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Major *Majors `gorm:"foreignKey:MajorId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
 	helper.Models
 }

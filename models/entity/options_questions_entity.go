@@ -10,7 +10,7 @@ type Option_Questions struct {
 	ExamQuestionId    uint   `json:"exam_question_id"`
 
 	// belongs to exam table
-	ExamQuestion Exam_Questions `gorm:"foreignKey:ExamQuestionId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	ExamQuestion *Exam_Questions `gorm:"foreignKey:ExamQuestionId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
 	helper.Models
 }

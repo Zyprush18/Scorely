@@ -2,26 +2,55 @@ package database
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"strings"
 
 	"github.com/Zyprush18/Scorely/models/entity"
+	"gorm.io/driver/gaussdb"
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	// "gorm.io/gorm/logger"
 )
 
-func Connect() (*gorm.DB,error) {
+func checkDBConn(conn string) (*gorm.DB, error) {
+	// membuat semuah huruf mnjadi kecil agar ketika di env db connectionnya MYSQL jadi mysql
+	nameConn := strings.ToLower(conn)
 
-	dsn := "root:@tcp(127.0.0.1:3306)/scorely?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
-		// Logger: logger.Default.LogMode(logger.Info), 
-	})
+	// ambil .env
+	host := os.Getenv("DB_HOST")
+	port := os.Getenv("DB_PORT")
+	namedb := os.Getenv("DB_NAME")
+	user := os.Getenv("DB_USERNAME")
+	pass := os.Getenv("DB_PASSWORD")
+
+
+	switch nameConn {
+	case "postgres" :
+		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai",host,user,pass,namedb,port)
+		return gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	case "gauss":
+		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai",host,user,pass,namedb,port)
+		return gorm.Open(gaussdb.Open(dsn), &gorm.Config{})
+	case "sqlite":
+		return gorm.Open(sqlite.Open(namedb), &gorm.Config{})
+	default:
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",user,pass,host,port,namedb)
+		return gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	}
+}
+
+
+func Connect() (*gorm.DB,error) {
+	db, err := checkDBConn(os.Getenv("DB_CONNECTION"))
 	if err != nil {
-		fmt.Println("Failed Connect Database")
+		log.Println("Failed Connect DB")
 		return nil,err
 	}
 
 
-	errs := db.AutoMigrate(
+	ers := db.AutoMigrate(
 		&entity.Roles{},
 		&entity.Users{},
 		&entity.Teachers{},
@@ -35,9 +64,9 @@ func Connect() (*gorm.DB,error) {
 		&entity.Exams{},
 		&entity.Subjects{},
 	)
-	if errs != nil {
-		fmt.Println("Failed Migrate Table Tp Database")
-		return nil,err
+	if ers != nil {
+		log.Println("Failed Migrate database")
+		return nil,ers
 	}
 
 	return db,nil

@@ -11,9 +11,9 @@ type Answer_Questions struct {
 	ExamQuestionId   uint   `json:"exam_question_id"`
 
 	// belongs to student table
-	Student Students `gorm:"foreignKey:StudentId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Student *Students `gorm:"foreignKey:StudentId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	// belongs to student table
-	Exam Exams `gorm:"foreignKey:ExamId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Exam *Exams `gorm:"foreignKey:ExamId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	// belongs to student table
 	ExamQuestion Exam_Questions `gorm:"foreignKey:ExamQuestionId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
