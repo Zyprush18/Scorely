@@ -41,6 +41,7 @@ const (
 type Messages struct {
 	Message    string `json:"message,omitempty"`
 	Data       any    `json:"data,omitempty"`
+	Token 		string `json:"token,omitempty"`
 	Errors     string `json:"error,omitempty"`
 	Fields     any    `json:"field,omitempty"`
 	Pagination *Pag    `json:"pagination,omitempty"`

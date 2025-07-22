@@ -50,7 +50,8 @@ func (h *HandlerAuth) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.servc.Loginuser(loginreq); err != nil {
+	token,err := h.servc.Loginuser(loginreq);
+	if  err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			w.WriteHeader(helper.Notfound)
 			json.NewEncoder(w).Encode(helper.Messages{
@@ -81,5 +82,6 @@ func (h *HandlerAuth) Login(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(helper.Success)
 	json.NewEncoder(w).Encode(helper.Messages{
 		Message: "Success Login",
+		Token: token,
 	})
 }
