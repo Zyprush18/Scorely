@@ -46,6 +46,7 @@ func (r RoleMysql) GetAllDataRole(search,sort string, page,perpage int) ([]respo
 func (r RoleMysql) CreateRole(data *request.Roles) error {
 	role:= &request.Roles{
 		NameRole: data.NameRole,
+		CodeRole: data.CodeRole,
 		Models: helper.Models{
 			CreatedAt: time.Now(),
 		},

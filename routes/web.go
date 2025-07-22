@@ -16,6 +16,7 @@ import (
 	"github.com/Zyprush18/Scorely/handlers/teacher"
 	"github.com/Zyprush18/Scorely/handlers/user"
 	"github.com/Zyprush18/Scorely/helper"
+	"github.com/Zyprush18/Scorely/middleware"
 	"github.com/Zyprush18/Scorely/repository/repoauth"
 	"github.com/Zyprush18/Scorely/repository/repoclass"
 	"github.com/Zyprush18/Scorely/repository/repolevel"
@@ -62,7 +63,7 @@ func RunApp() {
 	roleHandler := role.RoleHandler(roleService, initlog)
 
 	// role route
-	adminMux.HandleFunc("/api/role", roleHandler.GetRole)
+	adminMux.Handle("/api/role", middleware.MiddlewareAuthAdmin(http.HandlerFunc(roleHandler.GetRole)))
 	adminMux.HandleFunc("/api/role/add", roleHandler.AddRoles)
 	adminMux.HandleFunc("/api/role/{id}", roleHandler.Show)
 	adminMux.HandleFunc("/api/role/{id}/update", roleHandler.Update)

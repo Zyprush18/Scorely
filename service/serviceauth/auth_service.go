@@ -7,7 +7,7 @@ import (
 
 
 type AuthService interface {
-	Loginuser(data *request.Login) error
+	Loginuser(data *request.Login) (string,error)
 }
 
 type ServiceRepoAuth struct {
@@ -18,6 +18,6 @@ func ConnectRepo(r repoauth.RepoAuth)  AuthService {
 	return &ServiceRepoAuth{repo: r}
 }
 
-func (s *ServiceRepoAuth) Loginuser(data *request.Login) error {
+func (s *ServiceRepoAuth) Loginuser(data *request.Login) (string,error) {
 	return s.repo.Login(data)
 }
