@@ -34,3 +34,14 @@ func GenerateToken(user_id uint, code_role string) (string, error) {
 
 	return ss, err
 }
+
+func ParseTokenJwt(tokenJwt string) (*CustomClaims,bool,error) {
+	token,err:=  jwt.ParseWithClaims(tokenJwt, &CustomClaims{},func(t *jwt.Token) (any, error) {
+		return []byte(secretkey),nil
+	})
+
+	
+	claims,ok := token.Claims.(*CustomClaims)
+
+	return claims,ok,err
+}
