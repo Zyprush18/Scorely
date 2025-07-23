@@ -24,6 +24,7 @@ const (
 	BadRequest         = http.StatusBadRequest
 	Notfound           = http.StatusNotFound
 	Conflict           = http.StatusConflict
+	Forbidden		   = http.StatusForbidden
 	UnprocessbleEntity = http.StatusUnprocessableEntity
 	Unauthorized	   = http.StatusUnauthorized
 	MethodNotAllowed   = http.StatusMethodNotAllowed
