@@ -148,7 +148,7 @@ func RunApp() {
 
 	// route subject
 	adminMux.Handle("/api/subject", middleware.MiddlewareAuthAdmin(http.HandlerFunc(subjecthandler.GetAll)))
-	adminMux.Handle("/api/subject/add", http.HandlerFunc(subjecthandler.Create))
+	adminMux.Handle("/api/subject/add", middleware.MiddlewareAuthAdmin(http.HandlerFunc(subjecthandler.Create)))
 	adminMux.Handle("/api/subject/{id}", middleware.MiddlewareAuthAdmin(http.HandlerFunc(subjecthandler.Show)))
 	adminMux.Handle("/api/subject/{id}/update", middleware.MiddlewareAuthAdmin(http.HandlerFunc(subjecthandler.Update)))
 	adminMux.Handle("/api/subject/{id}/delete", middleware.MiddlewareAuthAdmin(http.HandlerFunc(subjecthandler.Delete)))

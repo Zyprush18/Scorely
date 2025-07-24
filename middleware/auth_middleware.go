@@ -15,6 +15,7 @@ func MiddlewareAuthAdmin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		auth := strings.Split(r.Header.Get("Authorization"), " ")
+
 		// cek apakah di authorization nya ada token atau nggak
 		if len(auth) != 2 || strings.TrimSpace(auth[1]) == "" {
 			w.WriteHeader(helper.Unauthorized)
@@ -26,10 +27,10 @@ func MiddlewareAuthAdmin(next http.Handler) http.Handler {
 		}
 
 		// mengecek apakah tokennya valid atau nggak
-		token, ok ,err := config.ParseTokenJwt(strings.TrimSpace(auth[1]))
-		if err != nil || !ok {
+		token, err := config.ParseTokenJwt(strings.TrimSpace(auth[1]))
+		if err != nil {
 			// mengecek apakah token expired atau nggak
-			if errors.Is(err ,jwt.ErrTokenExpired) {
+			if errors.Is(err , jwt.ErrTokenExpired) {
 				w.WriteHeader(helper.Unauthorized)
 				json.NewEncoder(w).Encode(helper.Messages{
 					Message: "Token Is Expired",
