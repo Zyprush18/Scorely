@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -35,13 +36,21 @@ func GenerateToken(user_id uint, code_role string) (string, error) {
 	return ss, err
 }
 
-func ParseTokenJwt(tokenJwt string) (*CustomClaims,bool,error) {
+func ParseTokenJwt(tokenJwt string) (*CustomClaims,error) {
+	fmt.Println(secretkey)
+
 	token,err:=  jwt.ParseWithClaims(tokenJwt, &CustomClaims{},func(t *jwt.Token) (any, error) {
-		return []byte(secretkey),nil
+		return secretkey,nil
 	})
 
-	
-	claims,ok := token.Claims.(*CustomClaims)
+	if err != nil {
+		return nil, err
+	}
 
-	return claims,ok,err
+	claims,ok := token.Claims.(*CustomClaims)
+	if  !ok && !token.Valid {
+		return nil, jwt.ErrTokenExpired
+	}
+
+	return claims, nil
 }
