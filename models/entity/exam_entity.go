@@ -8,9 +8,10 @@ import (
 
 type Exams struct {
 	IdExam      uint      `json:"id_exam" gorm:"primaryKey;autoIncrement"`
+	NameExams   string    `json:"name_exam" gorm:"type:varchar(200)"`
 	Dates       time.Time `json:"date" gorm:"type:date"`
-	StartLesson time.Time `json:"start_lesson" gorm:"type:timestamp"`
-	EndLesson   time.Time `json:"end_lesson" gorm:"type:timestamp"`
+	StartLesson string 	  `json:"start_lesson" gorm:"type:time"`
+	EndLesson   string    `json:"end_lesson" gorm:"type:time"`
 	SubjectId   uint      `json:"subject_id"`
 
 	// belongs to subjects table
