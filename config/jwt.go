@@ -1,7 +1,7 @@
 package config
 
 import (
-	"fmt"
+
 	"os"
 	"strconv"
 	"time"
@@ -15,9 +15,10 @@ type CustomClaims struct {
 	jwt.RegisteredClaims
 }
 
-var secretkey = []byte(os.Getenv("JWT_SECRET_KEY"))
+
 
 func GenerateToken(user_id uint, code_role string) (string, error) {
+	secretkey := []byte(os.Getenv("JWT_SECRET_KEY"))
 	claims := CustomClaims{
 		CodeRole: code_role,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -37,7 +38,7 @@ func GenerateToken(user_id uint, code_role string) (string, error) {
 }
 
 func ParseTokenJwt(tokenJwt string) (*CustomClaims,error) {
-	fmt.Println(secretkey)
+	secretkey := []byte(os.Getenv("JWT_SECRET_KEY"))
 
 	token,err:=  jwt.ParseWithClaims(tokenJwt, &CustomClaims{},func(t *jwt.Token) (any, error) {
 		return secretkey,nil

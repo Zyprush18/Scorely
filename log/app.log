@@ -16,3 +16,5 @@ crypto/bcrypt: hashedPassword is not the hash of the given password
 Error 1049 (42000): Unknown database 'scorely'
 sql: Scan called without calling Next
 Roles: unsupported relations for schema Users
+Error 1054 (42S22): Unknown column 'subjects.id_subjects' in 'on clause'
+unsupported data type: 0xc00040d1c0: Table not set, please set it like: db.Model(&user) or db.Table("users")

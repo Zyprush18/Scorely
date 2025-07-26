@@ -162,9 +162,10 @@ func RunApp() {
 	handlerexam := exam.ConnServc(examservice,initlog)
 
 	// route exam
-	
-	// for admin
 	adminMux.Handle("/api/exam", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerexam.GetALl)))
+	// route exams for teacher and admin
+	adminMux.Handle("/api/teacher/exam", middleware.MiddlewareAuthTeacher(http.HandlerFunc(handlerexam.FindByIdTeacher)))
+
 	
 	fmt.Println("🚀 running on: http://localhost:8000")
 	http.ListenAndServe(":8000", adminMux)
