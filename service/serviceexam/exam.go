@@ -8,6 +8,7 @@ import (
 
 type ServiceExams interface {
 	GetAllExams(Search,Sort string, Page,Perpage int) ([]response.Exams, int64,error)
+	FindExamsbyIdTeacher(Search,Sort string, Page,Perpage,id int) ([]response.Exams, int64,error)
 }
 
 type RepoExams struct {
@@ -20,4 +21,8 @@ func ConnectRepo(r repoexams.RepoExams) ServiceExams {
 
 func (r *RepoExams) GetAllExams(Search,Sort string, Page,Perpage int) ([]response.Exams, int64,error) {
 	return r.repo.GetAll(Search,Sort,Page,Perpage)
+}
+
+func (r *RepoExams) FindExamsbyIdTeacher(Search,Sort string, Page,Perpage,id int) ([]response.Exams, int64,error) {
+	return r.repo.FindByidTeacher(Search,Sort,Page,Perpage,id)
 }

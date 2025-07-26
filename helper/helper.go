@@ -38,6 +38,11 @@ const (
 	Delete = http.MethodDelete
 )
 
+// custom type for middleware
+type ctxKey string
+
+const KeyTeacherID ctxKey = "id_teacher"
+
 // struct message
 type Messages struct {
 	Message    string `json:"message,omitempty"`
