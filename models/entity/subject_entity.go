@@ -11,7 +11,7 @@ type Subjects struct {
 	// Teacher []Teachers `gorm:"many2many:teacher_subjects;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
 	// has many to exam table
-	Exam []Exams `gorm:"foreignKey:SubjectId;references:IdSubject;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	// Exam []Exams `gorm:"foreignKey:SubjectId;references:IdSubject;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
 	helper.Models
 }

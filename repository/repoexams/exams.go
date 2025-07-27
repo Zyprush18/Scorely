@@ -29,7 +29,7 @@ func (m *MysqlStruct) GetAll(Search,Sort string, Page,Perpage int) ([]response.E
 	order := fmt.Sprintf("created_at %s",Sort)
 	offset := (Page - 1) * Perpage
 
-	if err:= m.db.Model(&entity.Exams{}).Preload("Subject").Where("name_exams LIKE ?", "%"+Search+"%").Count(&count).Order(order).Limit(Perpage).Offset(offset).Find(&modelexam).Error; err != nil {
+	if err:= m.db.Model(&entity.Exams{}).Preload("TeacherSubject.Subject").Where("name_exams LIKE ?", "%"+Search+"%").Count(&count).Order(order).Limit(Perpage).Offset(offset).Find(&modelexam).Error; err != nil {
 		return nil,0,err
 	}
 
@@ -44,7 +44,7 @@ func (m *MysqlStruct) FindByidTeacher(Search,Sort string, Page,Perpage,id int) (
 	order := fmt.Sprintf("created_at %s", Sort)
 	offset := (Page - 1) * Perpage
 
-	if err := m.db.Model(&entity.Exams{}).Preload("Subject").Debug().Joins("JOIN subjects ON subjects.id_subject = exams.subject_id").Joins("JOIN teacher_subjects ON teacher_subjects.id_subject = subjects.id_subject").Joins("JOIN teachers ON teachers.id_teacher = teacher_subjects.id_teacher").Where("teachers.user_id = ?", id).Count(&count).Order(order).Limit(Perpage).Offset(offset).Find(&finddata).Error; err != nil {
+	if err := m.db.Model(&entity.Exams{}).Preload("TeacherSubject.Subject").Debug().Joins("JOIN teacher_subjects AS ts ON ts.id_teacher_subject = exams.teacher_subject_id").Joins("JOIN subjects AS s ON s.id_subject = ts.id_subjects").Joins("JOIN teachers AS t ON t.id_teacher = ts.id_teachers").Where("t.user_id = ?", id).Where("name_exams LIKE ?", "%"+Search+"%").Count(&count).Order(order).Limit(Perpage).Offset(offset).Find(&finddata).Error; err != nil {
 		return nil,0,err
 	}
 
