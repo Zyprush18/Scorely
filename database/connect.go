@@ -53,7 +53,9 @@ func Connect() (*gorm.DB,error) {
 	ers := db.AutoMigrate(
 		&entity.Roles{},
 		&entity.Users{},
+		&entity.Subjects{},
 		&entity.Teachers{},
+		&entity.TeacherSubjects{},
 		&entity.Students{},
 		&entity.Class{},      
 		&entity.Levels{},
@@ -62,7 +64,6 @@ func Connect() (*gorm.DB,error) {
 		&entity.Option_Questions{},
 		&entity.Answer_Questions{},
 		&entity.Exams{},
-		&entity.Subjects{},
 	)
 	if ers != nil {
 		log.Println("Failed Migrate database")

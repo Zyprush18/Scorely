@@ -51,6 +51,10 @@ func RunApp() {
 	}
 
 	adminMux := http.NewServeMux()
+	// daftar role
+	adm := "admin"
+	tch := "teacher"
+	// sdn := "student"
 
 	// login
 	authrepo := repoauth.ConnectDb(initDb)
@@ -66,11 +70,11 @@ func RunApp() {
 	roleHandler := role.RoleHandler(roleService, initlog)
 
 	// role route
-	adminMux.Handle("/api/role", middleware.MiddlewareAuthAdmin(http.HandlerFunc(roleHandler.GetRole)))
-	adminMux.Handle("/api/role/add", middleware.MiddlewareAuthAdmin(http.HandlerFunc(roleHandler.AddRoles)))
-	adminMux.Handle("/api/role/{id}", middleware.MiddlewareAuthAdmin(http.HandlerFunc(roleHandler.Show)))
-	adminMux.Handle("/api/role/{id}/update", middleware.MiddlewareAuthAdmin(http.HandlerFunc(roleHandler.Update)))
-	adminMux.Handle("/api/role/{id}/delete", middleware.MiddlewareAuthAdmin(http.HandlerFunc(roleHandler.Delete)))
+	adminMux.Handle("/api/role", middleware.MiddlewareAuth(http.HandlerFunc(roleHandler.GetRole), adm))
+	adminMux.Handle("/api/role/add", middleware.MiddlewareAuth(http.HandlerFunc(roleHandler.AddRoles), adm))
+	adminMux.Handle("/api/role/{id}", middleware.MiddlewareAuth(http.HandlerFunc(roleHandler.Show), adm))
+	adminMux.Handle("/api/role/{id}/update", middleware.MiddlewareAuth(http.HandlerFunc(roleHandler.Update), adm))
+	adminMux.Handle("/api/role/{id}/delete", middleware.MiddlewareAuth(http.HandlerFunc(roleHandler.Delete), adm))
 
 	// user
 	userRepo := repouser.NewUserDatabase(initDb)
@@ -78,11 +82,11 @@ func RunApp() {
 	userhandler := user.NewHandlerUser(userService, initlog)
 
 	// user route
-	adminMux.Handle("/api/user", middleware.MiddlewareAuthAdmin(http.HandlerFunc(userhandler.GetAllUser)))
-	adminMux.Handle("/api/user/add", middleware.MiddlewareAuthAdmin(http.HandlerFunc(userhandler.Create)))
-	adminMux.Handle("/api/user/{id}", middleware.MiddlewareAuthAdmin(http.HandlerFunc(userhandler.Show)))
-	adminMux.Handle("/api/user/{id}/update", middleware.MiddlewareAuthAdmin(http.HandlerFunc(userhandler.Update)))
-	adminMux.Handle("/api/user/{id}/delete", middleware.MiddlewareAuthAdmin(http.HandlerFunc(userhandler.Delete)))
+	adminMux.Handle("/api/user", middleware.MiddlewareAuth(http.HandlerFunc(userhandler.GetAllUser), adm))
+	adminMux.Handle("/api/user/add", middleware.MiddlewareAuth(http.HandlerFunc(userhandler.Create), adm))
+	adminMux.Handle("/api/user/{id}", middleware.MiddlewareAuth(http.HandlerFunc(userhandler.Show), adm))
+	adminMux.Handle("/api/user/{id}/update", middleware.MiddlewareAuth(http.HandlerFunc(userhandler.Update), adm))
+	adminMux.Handle("/api/user/{id}/delete", middleware.MiddlewareAuth(http.HandlerFunc(userhandler.Delete), adm))
 
 	// major
 	majorrepo := repomajor.ConnectDb(initDb)
@@ -90,11 +94,11 @@ func RunApp() {
 	hanldermajor := major.Handlers(majorservice, initlog)
 
 	// major route
-	adminMux.Handle("/api/major", middleware.MiddlewareAuthAdmin(http.HandlerFunc(hanldermajor.GetAllData)))
-	adminMux.Handle("/api/major/add", middleware.MiddlewareAuthAdmin(http.HandlerFunc(hanldermajor.Create)))
-	adminMux.Handle("/api/major/{id}", middleware.MiddlewareAuthAdmin(http.HandlerFunc(hanldermajor.Show)))
-	adminMux.Handle("/api/major/{id}/update", middleware.MiddlewareAuthAdmin(http.HandlerFunc(hanldermajor.Updated)))
-	adminMux.Handle("/api/major/{id}/delete", middleware.MiddlewareAuthAdmin(http.HandlerFunc(hanldermajor.Deleted)))
+	adminMux.Handle("/api/major", middleware.MiddlewareAuth(http.HandlerFunc(hanldermajor.GetAllData), adm))
+	adminMux.Handle("/api/major/add", middleware.MiddlewareAuth(http.HandlerFunc(hanldermajor.Create), adm))
+	adminMux.Handle("/api/major/{id}", middleware.MiddlewareAuth(http.HandlerFunc(hanldermajor.Show), adm))
+	adminMux.Handle("/api/major/{id}/update", middleware.MiddlewareAuth(http.HandlerFunc(hanldermajor.Updated), adm))
+	adminMux.Handle("/api/major/{id}/delete", middleware.MiddlewareAuth(http.HandlerFunc(hanldermajor.Deleted), adm))
 
 	// level
 	levelrepo := repolevel.ConnectDb(initDb)
@@ -102,11 +106,11 @@ func RunApp() {
 	handlerlevel := level.ConnectService(levelservice, initlog)
 
 	// route level
-	adminMux.Handle("/api/level", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerlevel.GetAll)))
-	adminMux.Handle("/api/level/add", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerlevel.Create)))
-	adminMux.Handle("/api/level/{id}", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerlevel.Show)))
-	adminMux.Handle("/api/level/{id}/update", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerlevel.Update)))
-	adminMux.Handle("/api/level/{id}/delete", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerlevel.Delete)))
+	adminMux.Handle("/api/level", middleware.MiddlewareAuth(http.HandlerFunc(handlerlevel.GetAll), adm))
+	adminMux.Handle("/api/level/add", middleware.MiddlewareAuth(http.HandlerFunc(handlerlevel.Create), adm))
+	adminMux.Handle("/api/level/{id}", middleware.MiddlewareAuth(http.HandlerFunc(handlerlevel.Show), adm))
+	adminMux.Handle("/api/level/{id}/update", middleware.MiddlewareAuth(http.HandlerFunc(handlerlevel.Update), adm))
+	adminMux.Handle("/api/level/{id}/delete", middleware.MiddlewareAuth(http.HandlerFunc(handlerlevel.Delete), adm))
 
 	// class
 	classrepo := repoclass.ConnectDb(initDb)
@@ -114,11 +118,11 @@ func RunApp() {
 	handlerclass := class.NewHandlerClass(serviceclass, initlog)
 
 	// route class
-	adminMux.Handle("/api/class", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerclass.GetAll)))
-	adminMux.Handle("/api/class/add", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerclass.Create)))
-	adminMux.Handle("/api/class/{id}", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerclass.Show)))
-	adminMux.Handle("/api/class/{id}/update", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerclass.Update)))
-	adminMux.Handle("/api/class/{id}/delete", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerclass.Delete)))
+	adminMux.Handle("/api/class", middleware.MiddlewareAuth(http.HandlerFunc(handlerclass.GetAll), adm))
+	adminMux.Handle("/api/class/add", middleware.MiddlewareAuth(http.HandlerFunc(handlerclass.Create), adm))
+	adminMux.Handle("/api/class/{id}", middleware.MiddlewareAuth(http.HandlerFunc(handlerclass.Show), adm))
+	adminMux.Handle("/api/class/{id}/update", middleware.MiddlewareAuth(http.HandlerFunc(handlerclass.Update), adm))
+	adminMux.Handle("/api/class/{id}/delete", middleware.MiddlewareAuth(http.HandlerFunc(handlerclass.Delete), adm))
 
 	// student
 	studentrepo := repostudent.ConnectDb(initDb)
@@ -126,11 +130,11 @@ func RunApp() {
 	handlerstudent := student.NewHandlerStudent(servicestudent,initlog)
 
 	// route student
-	adminMux.Handle("/api/student", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerstudent.GetAll)))
-	adminMux.Handle("/api/student/add", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerstudent.Create)))
-	adminMux.Handle("/api/student/{id}", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerstudent.Show)))
-	adminMux.Handle("/api/student/{id}/update", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerstudent.Update)))
-	adminMux.Handle("/api/student/{id}/delete", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerstudent.Delete)))
+	adminMux.Handle("/api/student", middleware.MiddlewareAuth(http.HandlerFunc(handlerstudent.GetAll), adm))
+	adminMux.Handle("/api/student/add", middleware.MiddlewareAuth(http.HandlerFunc(handlerstudent.Create), adm))
+	adminMux.Handle("/api/student/{id}", middleware.MiddlewareAuth(http.HandlerFunc(handlerstudent.Show), adm))
+	adminMux.Handle("/api/student/{id}/update", middleware.MiddlewareAuth(http.HandlerFunc(handlerstudent.Update), adm))
+	adminMux.Handle("/api/student/{id}/delete", middleware.MiddlewareAuth(http.HandlerFunc(handlerstudent.Delete), adm))
 
 	// teacher
 	teacherrepo := repoteacher.ConnectDb(initDb)
@@ -138,11 +142,11 @@ func RunApp() {
 	handlerteacher := teacher.ConnectService(servicesteacher,initlog)
 
 	// route teacher
-	adminMux.Handle("/api/teacher", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerteacher.GetAll)))
-	adminMux.Handle("/api/teacher/add", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerteacher.Create)))
-	adminMux.Handle("/api/teacher/{id}", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerteacher.Show)))
-	adminMux.Handle("/api/teacher/{id}/update", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerteacher.Update)))
-	adminMux.Handle("/api/teacher/{id}/delete", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerteacher.Delete)))
+	adminMux.Handle("/api/teacher", middleware.MiddlewareAuth(http.HandlerFunc(handlerteacher.GetAll), adm))
+	adminMux.Handle("/api/teacher/add", middleware.MiddlewareAuth(http.HandlerFunc(handlerteacher.Create), adm))
+	adminMux.Handle("/api/teacher/{id}", middleware.MiddlewareAuth(http.HandlerFunc(handlerteacher.Show), adm))
+	adminMux.Handle("/api/teacher/{id}/update", middleware.MiddlewareAuth(http.HandlerFunc(handlerteacher.Update), adm))
+	adminMux.Handle("/api/teacher/{id}/delete", middleware.MiddlewareAuth(http.HandlerFunc(handlerteacher.Delete), adm))
 
 	// subject
 	subjectrepo:= reposubject.ConnectDb(initDb)
@@ -150,11 +154,11 @@ func RunApp() {
 	subjecthandler := subject.ConnectService(servicesubjects,initlog)
 
 	// route subject
-	adminMux.Handle("/api/subject", middleware.MiddlewareAuthAdmin(http.HandlerFunc(subjecthandler.GetAll)))
-	adminMux.Handle("/api/subject/add", middleware.MiddlewareAuthAdmin(http.HandlerFunc(subjecthandler.Create)))
-	adminMux.Handle("/api/subject/{id}", middleware.MiddlewareAuthAdmin(http.HandlerFunc(subjecthandler.Show)))
-	adminMux.Handle("/api/subject/{id}/update", middleware.MiddlewareAuthAdmin(http.HandlerFunc(subjecthandler.Update)))
-	adminMux.Handle("/api/subject/{id}/delete", middleware.MiddlewareAuthAdmin(http.HandlerFunc(subjecthandler.Delete)))
+	adminMux.Handle("/api/subject", middleware.MiddlewareAuth(http.HandlerFunc(subjecthandler.GetAll), adm))
+	adminMux.Handle("/api/subject/add", middleware.MiddlewareAuth(http.HandlerFunc(subjecthandler.Create), adm))
+	adminMux.Handle("/api/subject/{id}", middleware.MiddlewareAuth(http.HandlerFunc(subjecthandler.Show), adm))
+	adminMux.Handle("/api/subject/{id}/update", middleware.MiddlewareAuth(http.HandlerFunc(subjecthandler.Update), adm))
+	adminMux.Handle("/api/subject/{id}/delete", middleware.MiddlewareAuth(http.HandlerFunc(subjecthandler.Delete), adm))
 
 	// exams
 	examrepo := repoexams.ConnectDb(initDb)
@@ -162,9 +166,8 @@ func RunApp() {
 	handlerexam := exam.ConnServc(examservice,initlog)
 
 	// route exam
-	adminMux.Handle("/api/exam", middleware.MiddlewareAuthAdmin(http.HandlerFunc(handlerexam.GetALl)))
-	// route exams for teacher and admin
-	adminMux.Handle("/api/teacher/exam", middleware.MiddlewareAuthTeacher(http.HandlerFunc(handlerexam.FindByIdTeacher)))
+	adminMux.Handle("/api/exam", middleware.MiddlewareAuth(http.HandlerFunc(handlerexam.GetALl), adm))
+	adminMux.Handle("/api/teacher/exam", middleware.MiddlewareAuth(http.HandlerFunc(handlerexam.FindByIdTeacher), tch))
 
 	
 	fmt.Println("🚀 running on: http://localhost:8000")

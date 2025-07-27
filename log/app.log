@@ -18,3 +18,18 @@ sql: Scan called without calling Next
 Roles: unsupported relations for schema Users
 Error 1054 (42S22): Unknown column 'subjects.id_subjects' in 'on clause'
 unsupported data type: 0xc00040d1c0: Table not set, please set it like: db.Model(&user) or db.Table("users")
+Error 1068 (42000): Multiple primary key defined
+failed to parse field: Teacher, error: failed to parse field: Subject, error: invalid field found for struct github.com/Zyprush18/Scorely/models/entity.Subjects's field Exam: define a valid foreign key for relations or implement the Valuer/Scanner interface
+Error 3780 (HY000): Referencing column 'id_teacher' and referenced column 'id_teacher' in foreign key constraint 'fk_teacher_subjects_teacher' are incompatible.
+Error 3780 (HY000): Referencing column 'id_teacher' and referenced column 'id_teacher' in foreign key constraint 'fk_teacher_subjects_teacher' are incompatible.
+Error 1822 (HY000): Failed to add the foreign key constraint. Missing index for constraint 'fk_teacher_subjects_teacher' in the referenced table 'teacher_subjects'
+Error 1822 (HY000): Failed to add the foreign key constraint. Missing index for constraint 'fk_teacher_subjects_subject' in the referenced table 'teacher_subjects'
+Error 1822 (HY000): Failed to add the foreign key constraint. Missing index for constraint 'fk_teacher_subjects_teacher' in the referenced table 'teacher_subjects'
+Error 1822 (HY000): Failed to add the foreign key constraint. Missing index for constraint 'fk_teacher_subjects_subject' in the referenced table 'teacher_subjects'
+Error 1215 (HY000): Cannot add foreign key constraint
+Error 1215 (HY000): Cannot add foreign key constraint
+Error 1054 (42S22): Unknown column 'teachers_id_teacher' in 'field list'
+Error 1054 (42S22): Unknown column 'teachers_id_teacher' in 'field list'
+invalid field found for struct github.com/Zyprush18/Scorely/models/entity.TeacherSubjects's field Subject: define a valid foreign key for relations or implement the Valuer/Scanner interface
+Error 3780 (HY000): Referencing column 'id_subject' and referenced column 'id_subject' in foreign key constraint 'fk_teacher_subjects_subject' are incompatible.
+Error 1054 (42S22): Unknown column 'id_teacher' in 'field list'

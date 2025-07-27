@@ -14,7 +14,7 @@ type Exams struct {
 	Dates       time.Time `json:"date"`
 	StartLesson string `json:"start_lesson"`
 	EndLesson   string `json:"end_lesson"`
-	SubjectId   uint      `json:"subject_id"`
+	TeacherSubjectId uint `json:"teacher_subject_id"`
 
 	// belongs to subjects table
 	Subject Subjects 
@@ -35,12 +35,12 @@ func ParseExams(data []entity.Exams) (resp []Exams) {
 			Dates: v.Dates,
 			StartLesson: v.StartLesson,
 			EndLesson: v.EndLesson,
-			SubjectId: v.SubjectId,
+			TeacherSubjectId:  v.TeacherSubjectId,
 			Subject: Subjects{
-				IdSubject: v.SubjectId,
-				NameSubject: v.Subject.NameSubject,
-				Semester: v.Subject.Semester,
-				Models: v.Subject.Models,
+				IdSubject: v.TeacherSubject.Subject.IdSubject,
+				NameSubject: v.TeacherSubject.Subject.NameSubject,
+				Semester: v.TeacherSubject.Subject.Semester,
+				Models: v.TeacherSubject.Subject.Models,
 			},
 			Models: v.Models,
 		})
