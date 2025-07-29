@@ -58,7 +58,7 @@ func MiddlewareAuth(next http.Handler, roles ...string) http.Handler {
 					Message: "Your role does not have access to this endpoint.",
 					Errors:  "Forbidden",
 				})
-					return
+				return
 			}
 		}
 
@@ -73,7 +73,8 @@ func MiddlewareAuth(next http.Handler, roles ...string) http.Handler {
 		}
 
 		// kirim dalam bentuk context
-		ctx := context.WithValue(r.Context(), helper.KeyTeacherID, idteacher)
+		ctx := context.WithValue(r.Context(), helper.KeyUserID, idteacher)
+		ctx = context.WithValue(ctx, helper.KeyCodeRole, token.CodeRole)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
