@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-
 	"github.com/go-playground/validator/v10"
 	"github.com/go-sql-driver/mysql"
 	"golang.org/x/crypto/bcrypt"
@@ -24,9 +23,9 @@ const (
 	BadRequest         = http.StatusBadRequest
 	Notfound           = http.StatusNotFound
 	Conflict           = http.StatusConflict
-	Forbidden		   = http.StatusForbidden
+	Forbidden          = http.StatusForbidden
 	UnprocessbleEntity = http.StatusUnprocessableEntity
-	Unauthorized	   = http.StatusUnauthorized
+	Unauthorized       = http.StatusUnauthorized
 	MethodNotAllowed   = http.StatusMethodNotAllowed
 	InternalServError  = http.StatusInternalServerError
 )
@@ -41,16 +40,17 @@ const (
 // custom type for middleware
 type ctxKey string
 
-const KeyTeacherID ctxKey = "id_teacher"
+const KeyUserID ctxKey = "id_teacher"
+const KeyCodeRole ctxKey = "role_code"
 
 // struct message
 type Messages struct {
 	Message    string `json:"message,omitempty"`
 	Data       any    `json:"data,omitempty"`
-	Token 		string `json:"token,omitempty"`
+	Token      string `json:"token,omitempty"`
 	Errors     string `json:"error,omitempty"`
 	Fields     any    `json:"field,omitempty"`
-	Pagination *Pag    `json:"pagination,omitempty"`
+	Pagination *Pag   `json:"pagination,omitempty"`
 }
 
 type Pag struct {
@@ -172,18 +172,17 @@ func Paginations(page, perpage, count int) *Pag {
 }
 
 func HashingPassword(password string) string {
-	passhash, err:= bcrypt.GenerateFromPassword([]byte(password), 12)
+	passhash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
 		Loggers.Logfile(Logger{}, err.Error())
 	}
 	return string(passhash)
 }
 
-func DecryptPassword(passhash,passreq string) error {
-	if err:= bcrypt.CompareHashAndPassword([]byte(passhash),[]byte(passreq)); err != nil {
+func DecryptPassword(passhash, passreq string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(passhash), []byte(passreq)); err != nil {
 		return errors.New("invalid_pw")
 	}
 
 	return nil
 }
-

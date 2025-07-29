@@ -9,7 +9,7 @@ type Users struct {
 	Password string `json:"password" gorm:"type:varchar(255)"`
 	RoleId   uint   `json:"role_id"`
 	// belongs to role table
-	Role *Roles `gorm:"foreignKey:RoleId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Role Roles `gorm:"foreignKey:RoleId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	// has many to teacher table
 	Teacher *Teachers `gorm:"foreignKey:UserId;references:IdUser;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	// has many to student table

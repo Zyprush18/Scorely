@@ -224,7 +224,7 @@ func (h *HandlerLevel) Update(w http.ResponseWriter, r *http.Request)  {
 		h.logs.Logfile(err.Error())
 		w.WriteHeader(helper.InternalServError)
 		json.NewEncoder(w).Encode(helper.Messages{
-			Message: "Somethin Wnet Wrong",
+			Message: "Something Wnet Wrong",
 			Errors: "internal Server Error",
 		})
 		return
