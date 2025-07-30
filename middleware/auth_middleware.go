@@ -50,9 +50,8 @@ func MiddlewareAuth(next http.Handler, roles ...string) http.Handler {
 			return
 		}
 
-		// mengecek apakah yg login admin atau bukan
-		for _, v := range roles {
-			if token.CodeRole == "" || strings.ToLower(token.CodeRole) != v {
+		// mengecek role yang login
+		if !checkRole(token.CodeRole,roles...) {
 				w.WriteHeader(helper.Forbidden)
 				json.NewEncoder(w).Encode(helper.Messages{
 					Message: "Your role does not have access to this endpoint.",
@@ -60,7 +59,6 @@ func MiddlewareAuth(next http.Handler, roles ...string) http.Handler {
 				})
 				return
 			}
-		}
 
 		idteacher, err := strconv.Atoi(token.Subject)
 		if err != nil {
@@ -78,4 +76,15 @@ func MiddlewareAuth(next http.Handler, roles ...string) http.Handler {
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+
+func checkRole(coderole string, role ...string) bool  {
+	for _, v := range role {
+		if coderole != "" && coderole == v {
+			return true
+		}
+	}
+
+	return false
 }

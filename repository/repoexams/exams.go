@@ -2,6 +2,7 @@ package repoexams
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/Zyprush18/Scorely/helper"
@@ -16,6 +17,7 @@ type RepoExams interface {
 	GetAll(Search,Sort string, Page,Perpage int) ([]response.Exams, int64,error)
 	FindByidTeacher(Search,Sort string, Page,Perpage,id int) ([]response.Exams, int64,error)
 	Create(data *request.Exams, role string,user_id,subject_id int) error
+	Show(id,userid int,coderole string) (*response.Exams,error)
 }
 
 type MysqlStruct struct {
@@ -57,7 +59,7 @@ func (m *MysqlStruct) FindByidTeacher(Search,Sort string, Page,Perpage,id int) (
 
 func (m *MysqlStruct) Create(data *request.Exams, role string,user_id,subject_id int) error  {
 	now := time.Now()
-	idts, err := checkRole(m.db,role,user_id,subject_id,int(data.TeacherId))
+	idts, err := checkRoleforCreate(m.db,role,user_id,subject_id,data.TeacherId)
 	if err != nil {
 		return err
 	}
@@ -80,18 +82,51 @@ func (m *MysqlStruct) Create(data *request.Exams, role string,user_id,subject_id
 	return  nil
 }
 
-func checkRole(d *gorm.DB,role string,user_id,subject_id,teacher_id int) (uint, error) {
+func (m *MysqlStruct) Show(id,userid int,coderole string) (*response.Exams,error) {
+	var modelexam entity.Exams
+	query := m.db.Model(&entity.Exams{}).Preload("TeacherSubject.Subject")
+	switch coderole {
+	case "admin":
+		if err:= query.Where("id_exam = ?", id).First(&modelexam).Error;err != nil {
+			return nil, err
+		}
+	case "teacher":
+		if err:= query.Joins("JOIN teacher_subjects AS ts ON ts.id_teacher_subjects = exams.teacher_subject_id").Joins("JOIN subjects AS s ON s.id_subject = ts.id_subjects").Joins("JOIN teachers AS t ON t.id_teacher = ts.id_teachers").Where("t.user_id = ? AND id_exam = ?", userid,id).First(&modelexam).Error;err != nil {
+			return nil, err
+		}
+	default:
+		log.Println("Invalid Code Role")
+	}
+
+	return &response.Exams{
+		IdExam: modelexam.IdExam,
+		NameExams: modelexam.NameExams,
+		Dates: modelexam.Dates,
+		StartLesson: modelexam.StartLesson,
+		EndLesson: modelexam.EndLesson,
+		TeacherSubjectId: modelexam.TeacherSubjectId,
+		Subject: response.Subjects{
+			IdSubject: modelexam.TeacherSubject.Subject.IdSubject,
+			NameSubject: modelexam.TeacherSubject.Subject.NameSubject,
+			Semester: modelexam.TeacherSubject.Subject.Semester,
+			Models: modelexam.TeacherSubject.Subject.Models,
+		},
+		Models: modelexam.Models,
+	},nil
+}
+
+func checkRoleforCreate(d *gorm.DB,role string,user_id,subject_id int,teacher_id *uint) (uint, error) {
 	var model_teachersubject entity.TeacherSubjects
 	query := d.Model(&entity.TeacherSubjects{})
 	switch role {
 	case "teacher":
-		if err:= query.Debug().Joins("JOIN teachers AS t ON t.id_teacher = teacher_subjects.id_teachers").Where("t.user_id = ? AND id_subjects = ?", user_id, subject_id).First(model_teachersubject).Error;err != nil {
+		if err:= query.Debug().Joins("JOIN teachers AS t ON t.id_teacher = teacher_subjects.id_teachers").Where("t.user_id = ? AND id_subjects = ?", user_id, subject_id).First(&model_teachersubject).Error;err != nil {
 			return 0, err
 		}
 
 		return model_teachersubject.IdTeacherSubject,nil
 	default:
-		if err := query.Debug().Where("id_teachers = ? AND id_subjects = ?", teacher_id,subject_id).Find(model_teachersubject).Error;err != nil {
+		if err := query.Debug().Where("id_teachers = ? AND id_subjects = ?", teacher_id,subject_id).First(&model_teachersubject).Error;err != nil {
 			return 0, err
 		}
 

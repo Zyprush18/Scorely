@@ -168,6 +168,8 @@ func RunApp() {
 	// route exam
 	adminMux.Handle("/api/exam", middleware.MiddlewareAuth(http.HandlerFunc(handlerexam.GetALl), adm))
 	adminMux.Handle("/api/teacher/exam", middleware.MiddlewareAuth(http.HandlerFunc(handlerexam.FindByIdTeacher), tch))
+	adminMux.Handle("/api/exam/{subject_id}/add", middleware.MiddlewareAuth(http.HandlerFunc(handlerexam.Create), adm, tch))
+	adminMux.Handle("/api/exam/{id}", middleware.MiddlewareAuth(http.HandlerFunc(handlerexam.Show), adm,tch))
 
 	
 	fmt.Println("🚀 running on: http://localhost:8000")
