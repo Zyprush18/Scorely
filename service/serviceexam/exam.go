@@ -11,6 +11,7 @@ type ServiceExams interface {
 	GetAllExams(Search,Sort string, Page,Perpage int) ([]response.Exams, int64,error)
 	FindExamsbyIdTeacher(Search,Sort string, Page,Perpage,id int) ([]response.Exams, int64,error)
 	CreateExams(data *request.Exams, role string,user_id,subject_id int) error
+	ShowExams(id,userid int,coderole string) (*response.Exams,error)
 }
 
 type RepoExams struct {
@@ -31,4 +32,8 @@ func (r *RepoExams) FindExamsbyIdTeacher(Search,Sort string, Page,Perpage,id int
 
 func (r *RepoExams) CreateExams(data *request.Exams, role string,user_id,subject_id int) error {
 	return r.repo.Create(data,role,user_id,subject_id)
+}
+
+func (r *RepoExams) ShowExams(id,userid int,coderole string) (*response.Exams,error) {
+	return r.repo.Show(id,userid,coderole)
 }

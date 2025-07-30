@@ -33,3 +33,9 @@ Error 1054 (42S22): Unknown column 'teachers_id_teacher' in 'field list'
 invalid field found for struct github.com/Zyprush18/Scorely/models/entity.TeacherSubjects's field Subject: define a valid foreign key for relations or implement the Valuer/Scanner interface
 Error 3780 (HY000): Referencing column 'id_subject' and referenced column 'id_subject' in foreign key constraint 'fk_teacher_subjects_subject' are incompatible.
 Error 1054 (42S22): Unknown column 'id_teacher' in 'field list'
+Error 1054 (42S22): Unknown column 'teacher_id' in 'field list'
+Error 1054 (42S22): Unknown column 'teacher_id' in 'field list'
+Error 1054 (42S22): Unknown column 'teacher_id' in 'field list'
+Error 1054 (42S22): Unknown column 'teacher_id' in 'field list'
+Error 1054 (42S22): Unknown column 'teacher_id' in 'field list'
+Error 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`scorely`.`exams`, CONSTRAINT `fk_teacher_subjects_exam` FOREIGN KEY (`teacher_subject_id`) REFERENCES `teacher_subjects` (`id_teacher_subject`) ON DELETE CASCADE ON UPDATE CASCADE)

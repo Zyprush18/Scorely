@@ -7,8 +7,8 @@ type Exams struct {
 	Dates       string 	  `json:"date" validate:"required"`
 	StartLesson string 	  `json:"start_lesson" validate:"required"`
 	EndLesson   string 	  `json:"end_lesson" validate:"required"`
-	TeacherSubjectId uint `json:"teacher_subject_id" validate:"required"`
-	TeacherId uint 		  `json:"teacher_id,,omitempty"`
+	TeacherSubjectId uint `json:"teacher_subject_id"`
+	TeacherId *uint 	  `json:"teacher_id,omitempty" gorm:"-"`
 
 	helper.Models
 }
