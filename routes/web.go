@@ -170,6 +170,7 @@ func RunApp() {
 	adminMux.Handle("/api/teacher/exam", middleware.MiddlewareAuth(http.HandlerFunc(handlerexam.FindByIdTeacher), tch))
 	adminMux.Handle("/api/exam/{subject_id}/add", middleware.MiddlewareAuth(http.HandlerFunc(handlerexam.Create), adm, tch))
 	adminMux.Handle("/api/exam/{id}", middleware.MiddlewareAuth(http.HandlerFunc(handlerexam.Show), adm,tch))
+	adminMux.Handle("/api/exam/{id}/update", middleware.MiddlewareAuth(http.HandlerFunc(handlerexam.Update), adm,tch))
 
 	
 	fmt.Println("🚀 running on: http://localhost:8000")

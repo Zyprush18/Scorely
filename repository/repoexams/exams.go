@@ -18,6 +18,7 @@ type RepoExams interface {
 	FindByidTeacher(Search,Sort string, Page,Perpage,id int) ([]response.Exams, int64,error)
 	Create(data *request.Exams, role string,user_id,subject_id int) error
 	Show(id,userid int,coderole string) (*response.Exams,error)
+	Update(data *request.Exams,role string,id,userid int) error
 }
 
 type MysqlStruct struct {
@@ -59,7 +60,7 @@ func (m *MysqlStruct) FindByidTeacher(Search,Sort string, Page,Perpage,id int) (
 
 func (m *MysqlStruct) Create(data *request.Exams, role string,user_id,subject_id int) error  {
 	now := time.Now()
-	idts, err := checkRoleforCreate(m.db,role,user_id,subject_id,data.TeacherId)
+	idts, err := checkRoleforCreateOrUpdate(m.db,role,user_id,subject_id,data.TeacherId)
 	if err != nil {
 		return err
 	}
@@ -91,7 +92,7 @@ func (m *MysqlStruct) Show(id,userid int,coderole string) (*response.Exams,error
 			return nil, err
 		}
 	case "teacher":
-		if err:= query.Joins("JOIN teacher_subjects AS ts ON ts.id_teacher_subjects = exams.teacher_subject_id").Joins("JOIN subjects AS s ON s.id_subject = ts.id_subjects").Joins("JOIN teachers AS t ON t.id_teacher = ts.id_teachers").Where("t.user_id = ? AND id_exam = ?", userid,id).First(&modelexam).Error;err != nil {
+		if err:= query.Joins("JOIN teacher_subjects AS ts ON ts.id_teacher_subject = exams.teacher_subject_id").Joins("JOIN subjects AS s ON s.id_subject = ts.id_subjects").Joins("JOIN teachers AS t ON t.id_teacher = ts.id_teachers").Where("t.user_id = ? AND id_exam = ?", userid,id).First(&modelexam).Error;err != nil {
 			return nil, err
 		}
 	default:
@@ -115,7 +116,32 @@ func (m *MysqlStruct) Show(id,userid int,coderole string) (*response.Exams,error
 	},nil
 }
 
-func checkRoleforCreate(d *gorm.DB,role string,user_id,subject_id int,teacher_id *uint) (uint, error) {
+func (m *MysqlStruct) Update(data *request.Exams,role string,id,userid int) error {
+	now := time.Now()
+	var modelexam entity.Exams
+	tsid,err := checkRoleforCreateOrUpdate(m.db,role,userid,int(*data.SubjectId),data.TeacherId)
+	if err != nil {
+		return err
+	}
+
+	updatereq := &request.Exams{
+		NameExams: data.NameExams,
+		Dates: data.Dates,
+		StartLesson: data.StartLesson,
+		EndLesson: data.EndLesson,
+		TeacherSubjectId: tsid,
+		Models: helper.Models{
+			UpdatedAt: now,
+		},
+	}
+	if err:= m.db.Model(&entity.Exams{}).Where("id_exam = ?", id).First(&modelexam).Updates(updatereq).Error;err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func checkRoleforCreateOrUpdate(d *gorm.DB,role string,user_id,subject_id int,teacher_id *uint) (uint, error) {
 	var model_teachersubject entity.TeacherSubjects
 	query := d.Model(&entity.TeacherSubjects{})
 	switch role {
