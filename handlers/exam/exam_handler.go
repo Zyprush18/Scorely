@@ -212,7 +212,7 @@ func (h *HandlerExam) Show(w http.ResponseWriter,r *http.Request)  {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			w.WriteHeader(helper.Notfound)
 			json.NewEncoder(w).Encode(helper.Messages{
-				Message: "Exam not found or you do not have access to this resource.",
+				Message: "Exam not found",
 				Errors: "Not Found",
 			})
 			return
@@ -233,4 +233,66 @@ func (h *HandlerExam) Show(w http.ResponseWriter,r *http.Request)  {
 		Message: "Success",
 		Data: resp,
 	})
+}
+
+func (h *HandlerExam) Update(w http.ResponseWriter,r *http.Request)  {
+	w.Header().Set("Content-Type","application/json")
+	if r.Method != helper.Put {
+		w.WriteHeader(helper.MethodNotAllowed)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Only Put Method Not Allowed",
+			Errors: "Method Not Allowed",
+		})
+		return
+	}
+
+	id,err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Invalid Params Id Format",
+			Errors: "Bad Request",
+		})
+		return
+	}
+
+	updatereq := new(request.Exams)
+
+	if json.NewDecoder(r.Body).Decode(updatereq) != nil {
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Request Body Is Missing",
+			Errors: "Bad Request",
+		})
+		return
+	}
+
+	userid := r.Context().Value(helper.KeyUserID).(int)
+	role := r.Context().Value(helper.KeyCodeRole).(string)
+
+
+	if err= h.service.UpdateExam(updatereq,role,id,userid);err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			w.WriteHeader(helper.Notfound)
+			json.NewEncoder(w).Encode(helper.Messages{
+				Message: "Exam Not Found Or No Relation Found Between Teacher and Subject",
+				Errors: "Not Found",
+			})
+			return
+		}
+
+		h.logg.Logfile(err.Error())
+		w.WriteHeader(helper.InternalServError)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Something Went Wrong",
+			Errors: "Internal Server Error",
+		})
+		return
+	}
+
+	w.WriteHeader(helper.Success)
+	json.NewEncoder(w).Encode(helper.Messages{
+		Message: "Success Update exams",
+	})
+
 }

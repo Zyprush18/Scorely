@@ -9,6 +9,7 @@ type Exams struct {
 	EndLesson   string 	  `json:"end_lesson" validate:"required"`
 	TeacherSubjectId uint `json:"teacher_subject_id"`
 	TeacherId *uint 	  `json:"teacher_id,omitempty" gorm:"-"`
+	SubjectId *uint 	  `json:"subject_id,omitempty" gorm:"-"`
 
 	helper.Models
 }
