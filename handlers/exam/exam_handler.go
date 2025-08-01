@@ -296,3 +296,53 @@ func (h *HandlerExam) Update(w http.ResponseWriter,r *http.Request)  {
 	})
 
 }
+
+func (h *HandlerExam) Delete(w http.ResponseWriter, r *http.Request)  {
+	w.Header().Set("Content-Type","application/json")
+	if r.Method != helper.Delete {
+		w.WriteHeader(helper.MethodNotAllowed)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Only Delete Method Is Allowed",
+			Errors: "Method Not Allowed",
+		})
+		return
+	}
+
+	id,err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Invalid Id Params Format",
+			Errors: "Bad Request",
+		})
+		return
+	}
+
+	userid := r.Context().Value(helper.KeyUserID).(int)
+	role := r.Context().Value(helper.KeyCodeRole).(string)
+
+	if err := h.service.DeleteExam(id, userid,role);err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			w.WriteHeader(helper.Notfound)
+			json.NewEncoder(w).Encode(helper.Messages{
+				Message: "Exam Not Found Or No Relation Found Between Teacher and Subject",
+				Errors: "Not Found",
+			})
+			return
+		}
+
+		h.logg.Logfile(err.Error())
+		w.WriteHeader(helper.InternalServError)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Something Went Wrong",
+			Errors: "Internal Server Error",
+		})
+		return
+	}
+
+
+	w.WriteHeader(helper.Success)
+	json.NewEncoder(w).Encode(helper.Messages{
+		Message: "Success Delete",
+	})
+}

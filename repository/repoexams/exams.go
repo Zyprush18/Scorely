@@ -19,6 +19,7 @@ type RepoExams interface {
 	Create(data *request.Exams, role string,user_id,subject_id int) error
 	Show(id,userid int,coderole string) (*response.Exams,error)
 	Update(data *request.Exams,role string,id,userid int) error
+	Delete(id,userid int,coderole string) error
 }
 
 type MysqlStruct struct {
@@ -136,6 +137,24 @@ func (m *MysqlStruct) Update(data *request.Exams,role string,id,userid int) erro
 	}
 	if err:= m.db.Model(&entity.Exams{}).Where("id_exam = ?", id).First(&modelexam).Updates(updatereq).Error;err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *MysqlStruct) Delete(id,userid int,coderole string) error {
+	var modelexam entity.Exams
+	query := m.db.Model(&entity.Exams{})
+	switch coderole {
+	case "teacher":
+		query.Debug().Joins("JOIN teacher_subjects AS ts ON ts.id_teacher_subject = exams.teacher_subject_id").Joins("JOIN teachers AS t ON t.id_teacher = ts.id_teachers").Where("t.user_id = ?", userid).Pluck("id_exam", id)
+		if err:= query.Where("id_exam IN ?", id).Delete(&modelexam).Error;err != nil {
+			return err
+		}
+	default:
+		if err:= query.Debug().Where("id_exam = ?",id).Delete(&modelexam).Error;err != nil {
+			return  err
+		}
 	}
 
 	return nil
