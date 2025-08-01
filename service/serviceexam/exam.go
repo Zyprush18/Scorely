@@ -13,6 +13,7 @@ type ServiceExams interface {
 	CreateExams(data *request.Exams, role string,user_id,subject_id int) error
 	ShowExams(id,userid int,coderole string) (*response.Exams,error)
 	UpdateExam(data *request.Exams,role string,id,userid int) error
+	DeleteExam(id,userid int,coderole string) error
 }
 
 type RepoExams struct {
@@ -41,4 +42,8 @@ func (r *RepoExams) ShowExams(id,userid int,coderole string) (*response.Exams,er
 
 func (r *RepoExams) UpdateExam(data *request.Exams,role string,id,userid int) error  {
 	return r.repo.Update(data,role,id,userid)
+}
+
+func (r *RepoExams) DeleteExam(id,userid int,coderole string) error {
+	return r.repo.Delete(id,userid,coderole)
 }

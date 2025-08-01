@@ -40,3 +40,10 @@ Error 1054 (42S22): Unknown column 'teacher_id' in 'field list'
 Error 1054 (42S22): Unknown column 'teacher_id' in 'field list'
 Error 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`scorely`.`exams`, CONSTRAINT `fk_teacher_subjects_exam` FOREIGN KEY (`teacher_subject_id`) REFERENCES `teacher_subjects` (`id_teacher_subject`) ON DELETE CASCADE ON UPDATE CASCADE)
 Error 1054 (42S22): Unknown column 'ts.id_teacher_subjects' in 'on clause'
+Error 1054 (42S22): Unknown column 't.user_id' in 'where clause'
+Error 1054 (42S22): Unknown column 't.user_id' in 'where clause'
+Error 1054 (42S22): Unknown column 't.user_id' in 'where clause'
+Error 1054 (42S22): Unknown column 't.user_id' in 'where clause'
+Error 1054 (42S22): Unknown column 'id_exam = ?' in 'field list'
+sql: Scan called without calling Next
+Error 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1
