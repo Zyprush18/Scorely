@@ -144,15 +144,15 @@ func (m *MysqlStruct) Update(data *request.Exams,role string,id,userid int) erro
 
 func (m *MysqlStruct) Delete(id,userid int,coderole string) error {
 	var modelexam entity.Exams
-	query := m.db.Model(&entity.Exams{})
+	query := m.db
 	switch coderole {
 	case "teacher":
-		query.Debug().Joins("JOIN teacher_subjects AS ts ON ts.id_teacher_subject = exams.teacher_subject_id").Joins("JOIN teachers AS t ON t.id_teacher = ts.id_teachers").Where("t.user_id = ?", userid).Pluck("id_exam", id)
-		if err:= query.Where("id_exam IN ?", id).Delete(&modelexam).Error;err != nil {
-			return err
+		resp := query.Debug().Exec("DELETE exams FROM exams JOIN teacher_subjects AS ts ON ts.id_teacher_subject = exams.teacher_subject_id JOIN teachers AS t ON t.id_teacher = ts.id_teachers WHERE t.user_id = ? AND id_exam = ?",userid,id)
+		if resp.Error != nil || resp.RowsAffected == 0 {
+			return gorm.ErrRecordNotFound
 		}
 	default:
-		if err:= query.Debug().Where("id_exam = ?",id).Delete(&modelexam).Error;err != nil {
+		if err:= query.Model(&entity.Exams{}).Debug().Where("id_exam = ?",id).Delete(&modelexam).Error;err != nil {
 			return  err
 		}
 	}
