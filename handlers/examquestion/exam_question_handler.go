@@ -1,0 +1,84 @@
+package examquestion
+
+import (
+	"encoding/json"
+	"errors"
+	"net/http"
+	"strconv"
+
+	"github.com/Zyprush18/Scorely/helper"
+	"github.com/Zyprush18/Scorely/service/serviceexamquest"
+	"gorm.io/gorm"
+)
+
+type HandlerExamQuest struct {
+	service serviceexamquest.ServiceExamQuest
+	logg helper.Loggers
+}
+
+func ConnectService(s serviceexamquest.ServiceExamQuest,l helper.Loggers) HandlerExamQuest  {
+	return HandlerExamQuest{service: s,logg: l}
+}
+
+func (h *HandlerExamQuest) GetAll(w http.ResponseWriter, r *http.Request)  {
+	w.Header().Set("Content-Type","application/json")
+	if r.Method != helper.Gets {
+		w.WriteHeader(helper.MethodNotAllowed)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Only Get Method Is Allowed",
+			Errors: "Methid Not Allowed",
+		})
+		return
+	}
+
+	examid,err := strconv.Atoi(r.PathValue("id_exam"))
+	if err != nil {
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Invalid Id Exam Format",
+			Errors: "Bad Request",
+		})
+		return
+	}
+
+	userid := r.Context().Value(helper.KeyUserID).(int)
+	coderole := r.Context().Value(helper.KeyCodeRole).(string)
+
+	page,perpage,sort,search,err:= helper.QueryParam(r,10)
+	if err != nil {
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Invalid Query Param Format",
+			Errors: "Bad Request",
+		})
+		return
+	}
+
+
+	resp,count,err := h.service.GetAllExamQuest(search,sort,coderole,page,perpage,userid,examid)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			w.WriteHeader(helper.Notfound)
+			json.NewEncoder(w).Encode(helper.Messages{
+				Message: "No Relation Found Exam",
+				Errors: "Not Found",
+			})
+			return
+		}
+
+		h.logg.Logfile(err.Error())
+		w.WriteHeader(helper.InternalServError)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Something Went Wrong",
+			Errors: "Internal Server Error",
+		})
+		return
+	}
+
+	w.WriteHeader(helper.Success)
+	json.NewEncoder(w).Encode(helper.Messages{
+		Message: "Sucesss",
+		Data: resp,
+		Pagination: helper.Paginations(page,perpage,int(count)),
+	})
+}
