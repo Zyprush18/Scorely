@@ -9,6 +9,7 @@ import (
 	"github.com/Zyprush18/Scorely/handlers/auth"
 	"github.com/Zyprush18/Scorely/handlers/class"
 	"github.com/Zyprush18/Scorely/handlers/exam"
+	"github.com/Zyprush18/Scorely/handlers/examquestion"
 	"github.com/Zyprush18/Scorely/handlers/level"
 	"github.com/Zyprush18/Scorely/handlers/major"
 	"github.com/Zyprush18/Scorely/handlers/role"
@@ -20,6 +21,7 @@ import (
 	"github.com/Zyprush18/Scorely/middleware"
 	"github.com/Zyprush18/Scorely/repository/repoauth"
 	"github.com/Zyprush18/Scorely/repository/repoclass"
+	"github.com/Zyprush18/Scorely/repository/repoexamquestions"
 	"github.com/Zyprush18/Scorely/repository/repoexams"
 	"github.com/Zyprush18/Scorely/repository/repolevel"
 	"github.com/Zyprush18/Scorely/repository/repomajor"
@@ -32,6 +34,7 @@ import (
 	"github.com/Zyprush18/Scorely/service/majorservice"
 	"github.com/Zyprush18/Scorely/service/serviceauth"
 	"github.com/Zyprush18/Scorely/service/serviceexam"
+	"github.com/Zyprush18/Scorely/service/serviceexamquest"
 	"github.com/Zyprush18/Scorely/service/servicelevel"
 	"github.com/Zyprush18/Scorely/service/servicerole"
 	"github.com/Zyprush18/Scorely/service/servicestudent"
@@ -173,6 +176,13 @@ func RunApp() {
 	adminMux.Handle("/api/exam/{id}/update", middleware.MiddlewareAuth(http.HandlerFunc(handlerexam.Update), adm,tch))
 	adminMux.Handle("/api/exam/{id}/delete", middleware.MiddlewareAuth(http.HandlerFunc(handlerexam.Delete), adm,tch))
 
+	// exam question
+	examquestrepo := repoexamquestions.ConnectDB(initDb)
+	examquestservice := serviceexamquest.ConnectRepo(&examquestrepo)
+	handlerexamquest := examquestion.ConnectService(examquestservice,initlog)
+
+	// route exam question
+	adminMux.Handle("/api/exam/{id_exam}/examquestion", middleware.MiddlewareAuth(http.HandlerFunc(handlerexamquest.GetAll), adm,tch))
 	
 	fmt.Println("🚀 running on: http://localhost:8000")
 	http.ListenAndServe(":8000", adminMux)
