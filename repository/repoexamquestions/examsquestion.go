@@ -2,14 +2,18 @@ package repoexamquestions
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/Zyprush18/Scorely/helper"
 	"github.com/Zyprush18/Scorely/models/entity"
+	"github.com/Zyprush18/Scorely/models/request"
 	"github.com/Zyprush18/Scorely/models/response"
 	"gorm.io/gorm"
 )
 
 type RepoExamQuest interface {
 	GetAll(Search,Sort,coderole string, Page,Perpage,user_id,idexam int) ([]response.Exam_Questions, int64,error)
+	Create(data *request.Exam_Questions,userid,id_exam int,coderole string) error
 }
 
 type MysqlStruct struct {
@@ -34,12 +38,32 @@ func (m *MysqlStruct) GetAll(Search,Sort,coderole string, Page,Perpage,user_id,i
 	return response.ParseExamsQuest(modelexamquestion),count,nil
 }
 
+func (m *MysqlStruct) Create(data *request.Exam_Questions,userid,id_exam int,coderole string) error  {
+	now := time.Now()
+	req := &request.Exam_Questions{
+		Question: data.Question,
+		ExamId: uint(id_exam),
+		Models: helper.Models{
+			CreatedAt: now,
+		},
+	}
+
+
+	query := CheckRole(m.db,userid,id_exam,coderole)
+
+	if err:= query.Create(req).Error;err != nil {
+		return err
+	}
+
+	return nil
+}
+
 
 func CheckRole(d *gorm.DB,userid,idexam int,coderole string) *gorm.DB {
-	query := d.Model(&entity.Exam_Questions{}).Preload("Exam")
+	query := d.Model(&entity.Exam_Questions{}).Preload("Exam").Debug()
 	switch coderole {
 	case "teacher":
-		return query.Joins("JOIN exams AS e ON e.id_exam = exam_questions.exam_id").Joins("JOIN teacher_subjects AS ts ON ts.id_teacher_subject = e.teacher_subject_id").Joins("JOIN teachers AS t ON t.id_teacher = ts.id_teachers").Where("t.user_id = ? AND exam_id = ?",userid,idexam)
+		return query.Joins("JOIN exams AS e ON e.id_exam = exam_questions.exam_id").Joins("JOIN teacher_subjects AS ts ON ts.id_teacher_subject = e.teacher_subject_id").Joins("JOIN teachers AS t ON t.id_teacher = ts.id_teachers").Where("t.user_id = ? AND e.id_exam = ?",userid,idexam)
 	default:
 		return query.Where("exam_id = ?", idexam)
 	}
