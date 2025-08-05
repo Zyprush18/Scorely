@@ -17,7 +17,7 @@ type Exams struct {
 	TeacherSubjectId uint `json:"teacher_subject_id"`
 
 	// belongs to subjects table
-	Subject Subjects 
+	Subject Subjects `json:"omitempty"`
 
 	// has many to exam question table
 	// ExamQuestion []Exam_Questions `gorm:"foreignKey:ExamId;references:IdExam;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`

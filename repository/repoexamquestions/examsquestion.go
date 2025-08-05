@@ -50,8 +50,11 @@ func (m *MysqlStruct) Create(data *request.Exam_Questions,userid,id_exam int,cod
 
 
 	query := CheckRole(m.db,userid,id_exam,coderole)
+	if err:= query.First(&entity.Exam_Questions{}).Error;err != nil {
+		return err
+	}
 
-	if err:= query.Create(req).Error;err != nil {
+	if err:= m.db.Debug().Table("exam_questions").Create(req).Error;err != nil {
 		return err
 	}
 

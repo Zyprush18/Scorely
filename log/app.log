@@ -47,3 +47,5 @@ Error 1054 (42S22): Unknown column 't.user_id' in 'where clause'
 Error 1054 (42S22): Unknown column 'id_exam = ?' in 'field list'
 sql: Scan called without calling Next
 Error 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1
+Error 1054 (42S22): Unknown column 'exam_questions.id_answer_question' in 'field list'
+Error 1054 (42S22): Unknown column 'exams.id_exam' in 'where clause'
