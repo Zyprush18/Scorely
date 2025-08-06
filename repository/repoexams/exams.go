@@ -36,7 +36,7 @@ func (m *MysqlStruct) GetAll(Search,Sort string, Page,Perpage int) ([]response.E
 	order := fmt.Sprintf("created_at %s",Sort)
 	offset := (Page - 1) * Perpage
 
-	if err:= m.db.Model(&entity.Exams{}).Debug().Preload("TeacherSubject.Subject").Where("name_exams LIKE ?", "%"+Search+"%").Count(&count).Order(order).Limit(Perpage).Offset(offset).Find(&modelexam).Error; err != nil {
+	if err:= m.db.Model(&entity.Exams{}).Debug().Preload("TeacherSubject.Subject").Preload("ExamQuestion").Where("name_exams LIKE ?", "%"+Search+"%").Count(&count).Order(order).Limit(Perpage).Offset(offset).Find(&modelexam).Error; err != nil {
 		return nil,0,err
 	}
 

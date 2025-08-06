@@ -17,10 +17,10 @@ type Exams struct {
 	TeacherSubjectId uint `json:"teacher_subject_id"`
 
 	// belongs to subjects table
-	Subject Subjects `json:"omitempty"`
+	Subject Subjects `json:"subject"`
 
 	// has many to exam question table
-	// ExamQuestion []Exam_Questions `gorm:"foreignKey:ExamId;references:IdExam;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	ExamQuestion []Exam_Questions `json:"exam_question,omitempty"`
 	// has many to answer question table
 	// AnswerQuestion []Answer_Questions `gorm:"foreignKey:ExamId;references:IdExam;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
@@ -36,12 +36,8 @@ func ParseExams(data []entity.Exams) (resp []Exams) {
 			StartLesson: v.StartLesson,
 			EndLesson: v.EndLesson,
 			TeacherSubjectId:  v.TeacherSubjectId,
-			Subject: Subjects{
-				IdSubject: v.TeacherSubject.Subject.IdSubject,
-				NameSubject: v.TeacherSubject.Subject.NameSubject,
-				Semester: v.TeacherSubject.Subject.Semester,
-				Models: v.TeacherSubject.Subject.Models,
-			},
+			Subject: Subjects(v.TeacherSubject.Subject),
+			ExamQuestion: ParseExamsQuest(v.ExamQuestion),
 			Models: v.Models,
 		})
 	}

@@ -31,6 +31,7 @@ func ParseExamsQuest(data []entity.Exam_Questions) (resp []Exam_Questions)  {
 				StartLesson: v.Exam.StartLesson,
 				EndLesson: v.Exam.EndLesson,
 				TeacherSubjectId: v.Exam.TeacherSubjectId,
+				Subject: Subjects(v.Exam.TeacherSubject.Subject),
 				Models: v.Exam.Models,
 			},
 			Models: v.Models,
