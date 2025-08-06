@@ -153,3 +153,57 @@ func (h *HandlerExamQuest) Create(w http.ResponseWriter, r *http.Request)  {
 		Message: "Success Created",
 	})
 }
+
+func (h *HandlerExamQuest) Show(w http.ResponseWriter,r *http.Request)  {
+	w.Header().Set("Content-Type","application/json")
+	if r.Method != helper.Gets {
+		w.WriteHeader(helper.MethodNotAllowed)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Only Get Method Is Allowed",
+			Errors: "Method Not Allowed",
+		})
+		return
+	}
+
+	id,errs := strconv.Atoi(r.PathValue("id"))
+	id_exam,err := strconv.Atoi(r.PathValue("id_exam"))
+	if errs != nil||err != nil {
+		w.WriteHeader(helper.BadRequest)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Invalid Id Format",
+			Errors: "Bad Request",
+		})
+		return
+	}
+
+	user_id := r.Context().Value(helper.KeyUserID).(int)  
+	coderole := r.Context().Value(helper.KeyCodeRole).(string)
+	
+	resp,err := h.service.ShowExamQuest(id,user_id,id_exam,coderole)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			w.WriteHeader(helper.Notfound)
+			json.NewEncoder(w).Encode(helper.Messages{
+				Message: "Not Found Exam Question or No Relation Found Exam",
+				Errors: "Not Found",
+			})
+			return
+		}
+
+		h.logg.Logfile(err.Error())
+		w.WriteHeader(helper.InternalServError)
+		json.NewEncoder(w).Encode(helper.Messages{
+			Message: "Something Went Wrong",
+			Errors: "Internal Server Error",
+		})
+		return
+	}
+
+
+	w.WriteHeader(helper.Success)
+	json.NewEncoder(w).Encode(helper.Messages{
+		Message: "Success",
+		Data: resp,
+	})
+
+}

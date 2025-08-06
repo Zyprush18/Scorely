@@ -9,6 +9,7 @@ import (
 type ServiceExamQuest interface {
 	GetAllExamQuest(Search,Sort,coderole string, Page,Perpage,user_id,idexam int) ([]response.Exam_Questions, int64,error)
 	CreateExamQuest(data *request.Exam_Questions,userid,id_exam int, coderole string) error
+	ShowExamQuest(id,user_id,exam_id int,coderole string) (*response.Exam_Questions,error)
 }
 
 type RepoExamQuest struct {
@@ -25,4 +26,8 @@ func (r *RepoExamQuest) GetAllExamQuest(Search,Sort,coderole string, Page,Perpag
 
 func (r *RepoExamQuest) CreateExamQuest(data *request.Exam_Questions,userid,id_exam int,coderole string) error {
 	return r.repo.Create(data,userid,id_exam,coderole)
+}
+
+func (r *RepoExamQuest) ShowExamQuest(id,user_id,exam_id int,coderole string) (*response.Exam_Questions,error)  {
+	return r.repo.Show(id,user_id,exam_id,coderole)
 }

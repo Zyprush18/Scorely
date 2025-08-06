@@ -14,6 +14,7 @@ import (
 type RepoExamQuest interface {
 	GetAll(Search,Sort,coderole string, Page,Perpage,user_id,idexam int) ([]response.Exam_Questions, int64,error)
 	Create(data *request.Exam_Questions,userid,id_exam int,coderole string) error
+	Show(id,user_id,exam_id int,coderole string) (*response.Exam_Questions,error)
 }
 
 type MysqlStruct struct {
@@ -61,9 +62,35 @@ func (m *MysqlStruct) Create(data *request.Exam_Questions,userid,id_exam int,cod
 	return nil
 }
 
+func (m *MysqlStruct) Show(id,user_id,exam_id int,coderole string) (*response.Exam_Questions,error){
+	var modelexamquestion entity.Exam_Questions
+	query := CheckRole(m.db,user_id,exam_id,coderole)
+	if err:= query.Where("id_exam_question = ?", id).First(&modelexamquestion).Error;err != nil {
+		return nil,err
+	}
+
+	return &response.Exam_Questions{
+		IdExamQuestion: modelexamquestion.IdExamQuestion,
+		Question: modelexamquestion.Question,
+		ExamId: modelexamquestion.ExamId,
+		Exam: response.Exams{
+			IdExam: modelexamquestion.Exam.IdExam,
+			NameExams: modelexamquestion.Exam.NameExams,
+			Dates: modelexamquestion.Exam.Dates,
+			StartLesson: modelexamquestion.Exam.StartLesson,
+			EndLesson: modelexamquestion.Exam.EndLesson,
+			TeacherSubjectId: modelexamquestion.Exam.TeacherSubjectId,
+			Subject: response.Subjects(modelexamquestion.Exam.TeacherSubject.Subject),
+			Models: modelexamquestion.Exam.Models,
+		},
+		Models: modelexamquestion.Models,
+	},nil
+}
+
 
 func CheckRole(d *gorm.DB,userid,idexam int,coderole string) *gorm.DB {
-	query := d.Model(&entity.Exam_Questions{}).Preload("Exam").Debug()
+	query := d.Model(&entity.Exam_Questions{}).Preload("Exam.TeacherSubject.Subject").Debug()
+	fmt.Println(coderole)
 	switch coderole {
 	case "teacher":
 		return query.Joins("JOIN exams AS e ON e.id_exam = exam_questions.exam_id").Joins("JOIN teacher_subjects AS ts ON ts.id_teacher_subject = e.teacher_subject_id").Joins("JOIN teachers AS t ON t.id_teacher = ts.id_teachers").Where("t.user_id = ? AND e.id_exam = ?",userid,idexam)
