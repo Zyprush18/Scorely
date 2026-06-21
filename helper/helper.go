@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -42,6 +43,7 @@ type ctxKey string
 
 const KeyUserID ctxKey = "id_teacher"
 const KeyCodeRole ctxKey = "role_code"
+const KeyTokenID ctxKey = "token_id"
 
 // struct message
 type Messages struct {
@@ -185,4 +187,8 @@ func DecryptPassword(passhash, passreq string) error {
 	}
 
 	return nil
+}
+
+func Ctxtimeout(ctx context.Context, duration time.Duration) (context.Context, context.CancelFunc) {
+	return context.WithTimeout(ctx, duration)
 }
