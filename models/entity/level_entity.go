@@ -8,5 +8,5 @@ type Levels struct {
 
 	// has many to class table
 	Class []Class `gorm:"foreignKey:LevelId;references:IdLevel;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	helper.Models
+	Model helper.Models
 }

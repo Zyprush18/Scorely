@@ -72,7 +72,7 @@ func TestHandlerGetAllData(t *testing.T) {
 			Code:      helper.InternalServError,
 			Muxserver: http.NewServeMux(),
 			Mocks: func(data []response.Roles, count int, err error) *mock.Call {
-				return Mockservice.On("GetAllData", "", "asc", 1, 10).Return(data, count, err)
+				return Mockservice.On("GetAllData", mock.Anything, "", "asc", 1, 10).Return(data, count, err)
 			},
 			ErrorMocks: errors.New("Database is refused"),
 			CountData:  0,
@@ -84,14 +84,14 @@ func TestHandlerGetAllData(t *testing.T) {
 				{
 					IdRole:   1,
 					NameRole: "Admin",
-					Models: helper.Models{
+					Model: helper.Models{
 						CreatedAt: time.Now(),
 					},
 				},
 				{
 					IdRole:   2,
 					NameRole: "User",
-					Models: helper.Models{
+					Model: helper.Models{
 						CreatedAt: time.Now(),
 					},
 				},
@@ -101,7 +101,7 @@ func TestHandlerGetAllData(t *testing.T) {
 			Code:      helper.Success,
 			Muxserver: http.NewServeMux(),
 			Mocks: func(data []response.Roles, count int, err error) *mock.Call {
-				return Mockservice.On("GetAllData", "", "asc", 1, 10).Return(data, count, err)
+				return Mockservice.On("GetAllData", mock.Anything, "", "asc", 1, 10).Return(data, count, err)
 			},
 			ErrorMocks: nil,
 			CountData:  2,
@@ -265,7 +265,7 @@ func TestHandlerCreate(t *testing.T) {
 
 			v.Muxserver.HandleFunc("/add/role", handler.AddRoles)
 			if v.UseMock {
-				Mockservice.On("Create", v.Request).Return(v.ErrorMocks)
+				Mockservice.On("Create", mock.Anything, v.Request).Return(v.ErrorMocks)
 			}
 			v.Muxserver.ServeHTTP(w, req)
 
@@ -348,7 +348,7 @@ func TestHandlerShow(t *testing.T) {
 			w := httptest.NewRecorder()
 
 			if v.UseMock {
-				mockservice.On("ShowRoleById", v.Id).Return(v.DataShow, v.ErrorMocks)
+				mockservice.On("ShowRoleById", mock.Anything, v.Id).Return(v.DataShow, v.ErrorMocks)
 			}
 			v.Muxserver.HandleFunc("/role/{id}", handler.Show)
 			v.Muxserver.ServeHTTP(w, req)
@@ -467,7 +467,7 @@ func TestHandlerUpdate(t *testing.T) {
 			w := httptest.NewRecorder()
 
 			if v.UseMock {
-				mockservice.On("UpdateRole", v.Id, v.Request).Return(v.ErrorMocks)
+				mockservice.On("UpdateRole", mock.Anything, v.Id, v.Request).Return(v.ErrorMocks)
 			}
 
 			v.Muxserver.HandleFunc("/role/{id}/update", handler.Update)
@@ -554,7 +554,7 @@ func TestHandlerDelete(t *testing.T)  {
 			w := httptest.NewRecorder()
 
 			if v.UseMock {
-				mockservice.On("DeleteRole", v.Id).Return(v.ErrorMocks)
+				mockservice.On("DeleteRole", mock.Anything, v.Id).Return(v.ErrorMocks)
 			}
 
 			v.Muxserver.HandleFunc("/role/{id}/delete", handler.Delete)

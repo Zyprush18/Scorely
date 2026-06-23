@@ -15,7 +15,7 @@ type Exam_Questions struct {
 	
 	// OptionQuestion []Option_Questions 
 	// AnswerQuestion []Answer_Questions 
-	helper.Models
+	Model helper.Models
 }
 
 func ParseExamsQuest(data []entity.Exam_Questions) (resp []Exam_Questions)  {
@@ -32,9 +32,9 @@ func ParseExamsQuest(data []entity.Exam_Questions) (resp []Exam_Questions)  {
 				EndLesson: v.Exam.EndLesson,
 				TeacherSubjectId: v.Exam.TeacherSubjectId,
 				Subject: Subjects(v.Exam.TeacherSubject.Subject),
-				Models: v.Exam.Models,
+				Model: v.Exam.Model,
 			},
-			Models: v.Models,
+			Model: v.Model,
 		})
 	}
 

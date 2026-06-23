@@ -1,6 +1,7 @@
 package bench
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -18,25 +19,25 @@ func BenchmarkGetAllData(b *testing.B) {
 		{
 			IdRole:   1,
 			NameRole: "Admin",
-			Models: helper.Models{
+			Model: helper.Models{
 				CreatedAt: now,
 			},
 		},
 		{
 			IdRole:   2,
 			NameRole: "User",
-			Models: helper.Models{
+			Model: helper.Models{
 				CreatedAt: now,
 			},
 		},
 	}
 
-	mock.On("GetAllDataRole","","",1,10).Return(data, 2,nil)
+	mock.On("GetAllDataRole", context.Background(),"","",1,10).Return(data, 2,nil)
 
 	b.ResetTimer()
 	b.ReportAllocs()
 	for b.Loop() {
-		_, _,_ = service.GetAllData("","",1,10)
+		_, _,_ = service.GetAllData(context.Background(),"","",1,10)
 	}
 	b.StopTimer()
 	mock.AssertExpectations(b)
@@ -48,11 +49,11 @@ func BenchmarkCreateUser(b *testing.B) {
 	rolePass := &request.Roles{
 		NameRole: "Admin",
 	}
-	mock.On("CreateRole", rolePass).Return(nil)
+	mock.On("CreateRole", context.Background(), rolePass).Return(nil)
 	b.ResetTimer()
 	b.ReportAllocs()
 	for b.Loop() {
-		_ = service.Create(rolePass)
+		_ = service.Create(context.Background(), rolePass)
 	}
 	b.StopTimer()
 	mock.AssertExpectations(b)
@@ -66,11 +67,11 @@ func BenchmarkShowByIdUser(b *testing.B)  {
 		NameRole: "Admin",
 	}
 
-	mock.On("ShowById", 1).Return(data, nil)
+	mock.On("ShowById", context.Background(), 1).Return(data, nil)
 	b.ResetTimer()
 	b.ReportAllocs()
 	for b.Loop(){
-		_,_=service.ShowRoleById(1)
+		_,_=service.ShowRoleById(context.Background(), 1)
 	}
 	b.StopTimer()
 	mock.AssertExpectations(b)
@@ -83,11 +84,11 @@ func BenchmarkUpdate(b *testing.B)  {
 		NameRole: "Admin",
 	}
 
-	mock.On("UpdateRole", 1,rolePass).Return(nil)
+	mock.On("UpdateRole", context.Background(), 1, rolePass).Return(nil)
 	b.ResetTimer()
 	b.ReportAllocs()
 	for b.Loop(){
-		_= service.UpdateRole(1, rolePass)
+		_= service.UpdateRole(context.Background(), 1, rolePass)
 	}
 	b.StopTimer()
 	mock.AssertExpectations(b)
@@ -96,11 +97,11 @@ func BenchmarkUpdate(b *testing.B)  {
 func BenchmarkDelete(b *testing.B)  {
 	mock := servicerole.RepoRoleMock{}
 	service := servicerole.NewRoleService(&mock)
-	mock.On("DeleteRole", 1).Return(nil)
+	mock.On("DeleteRole", context.Background(), 1).Return(nil)
 	b.ResetTimer()
 	b.ReportAllocs()
 	for b.Loop(){
-		_ = service.DeleteRole(1)
+		_ = service.DeleteRole(context.Background(), 1)
 	}
 	b.StopTimer()
 	mock.AssertExpectations(b)

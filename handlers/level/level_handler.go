@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/Zyprush18/Scorely/helper"
 	"github.com/Zyprush18/Scorely/models/request"
@@ -23,10 +24,9 @@ func ConnectService(s servicelevel.LevelService, l helper.Loggers) HandlerLevel 
 }
 
 func (h *HandlerLevel) GetAll(w http.ResponseWriter, r *http.Request)  {
-	w.Header().Set("Content-Type", "application/json")
 	if r.Method != helper.Gets {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Get Method Is Allowed",
 			Errors: "Method Not Found",
 		})
@@ -35,8 +35,8 @@ func (h *HandlerLevel) GetAll(w http.ResponseWriter, r *http.Request)  {
 
 	page,perpage,sort,search,err:=helper.QueryParam(r, 10)
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Format Query Params",
 			Errors: "Bad Request",
 		})
@@ -44,18 +44,21 @@ func (h *HandlerLevel) GetAll(w http.ResponseWriter, r *http.Request)  {
 	}
 
 
-	resp, count, err := h.service.GetAllLevel(search,sort,page,perpage)
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	resp, count, err := h.service.GetAllLevel(ctx,search,sort,page,perpage)
 	if err != nil {
 		h.logs.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors: "Internal Server Error",
 		})
 		return
 	}
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success",
 		Data: resp,
 		Pagination: helper.Paginations(page,perpage,int(count)),
@@ -64,10 +67,9 @@ func (h *HandlerLevel) GetAll(w http.ResponseWriter, r *http.Request)  {
 
 
 func (h *HandlerLevel) Create (w http.ResponseWriter, r *http.Request)  {
-	w.Header().Set("Content-Type", "application/json")
 	if r.Method != helper.Post {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Post Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -76,8 +78,8 @@ func (h *HandlerLevel) Create (w http.ResponseWriter, r *http.Request)  {
 
 	levelreq := new(request.Levels)
 	if err:=json.NewDecoder(r.Body).Decode(levelreq); err!= nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Body Request Is Missing",
 			Errors: "Bad Request",
 		})
@@ -87,8 +89,8 @@ func (h *HandlerLevel) Create (w http.ResponseWriter, r *http.Request)  {
 
 	// validate
 	if err:=helper.ValidateForm(levelreq);err != nil {
-		w.WriteHeader(helper.UnprocessbleEntity)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.UnprocessbleEntity,
 			Message: "Validation Error",
 			Errors: err.Error(),
 		})
@@ -96,10 +98,13 @@ func (h *HandlerLevel) Create (w http.ResponseWriter, r *http.Request)  {
 		return
 	}
 
-	if err:=h.service.CreateLevel(levelreq);err != nil {
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	if err:=h.service.CreateLevel(ctx, levelreq);err != nil {
 		if helper.IsDuplicateEntryError(err) {
-			w.WriteHeader(helper.Conflict)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Conflict,
 				Message: "Data Is Exists",
 				Errors: "Conflict",
 			})
@@ -107,25 +112,24 @@ func (h *HandlerLevel) Create (w http.ResponseWriter, r *http.Request)  {
 		}
 
 		h.logs.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors: "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Created)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Created,
 		Message: "Success Created a New Level",
 	})
 }
 
 func (h *HandlerLevel) Show (w http.ResponseWriter, r *http.Request)  {
-	w.Header().Set("Content-Type","application/json")
 	if r.Method != helper.Gets {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Get Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -134,8 +138,8 @@ func (h *HandlerLevel) Show (w http.ResponseWriter, r *http.Request)  {
 
 	id,err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Level Id Format",
 			Errors: "Bad Request",
 		})
@@ -144,11 +148,14 @@ func (h *HandlerLevel) Show (w http.ResponseWriter, r *http.Request)  {
 	} 
 
 
-	resp, err := h.service.ShowLevel(id)
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	resp, err := h.service.ShowLevel(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(helper.Notfound)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Notfound,
 				Message: fmt.Sprintf("Not Found Data Id: %d", id),
 				Errors: "Not Found",
 			})
@@ -156,26 +163,25 @@ func (h *HandlerLevel) Show (w http.ResponseWriter, r *http.Request)  {
 		}
 
 		h.logs.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors: "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success",
 		Data: resp,
 	})
 }
 
 func (h *HandlerLevel) Update(w http.ResponseWriter, r *http.Request)  {
-	w.Header().Set("Content-Type","application/json")
 	if r.Method != helper.Put {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Put Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -184,8 +190,8 @@ func (h *HandlerLevel) Update(w http.ResponseWriter, r *http.Request)  {
 
 	levelreq := new(request.Levels)
 	if err:= json.NewDecoder(r.Body).Decode(levelreq);err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Body Request Is Missing",
 			Errors: "Bad Request",
 		})
@@ -194,18 +200,21 @@ func (h *HandlerLevel) Update(w http.ResponseWriter, r *http.Request)  {
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Id Levels Format",
 			Errors: "Bad Request",
 		})
 		return
 	} 
 
-	if err:= h.service.UpdateLevel(id, levelreq);err != nil {
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	if err:= h.service.UpdateLevel(ctx, id, levelreq);err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(helper.Notfound)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Notfound,
 				Message: fmt.Sprintf("Not Found Data Id: %d", id),
 				Errors: "Not Found",
 			})
@@ -213,8 +222,8 @@ func (h *HandlerLevel) Update(w http.ResponseWriter, r *http.Request)  {
 		}
 
 		if helper.IsDuplicateEntryError(err) {
-			w.WriteHeader(helper.Conflict)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Conflict,
 				Message: "Data Is Exist",
 				Errors: "Conflict",
 			})
@@ -222,26 +231,25 @@ func (h *HandlerLevel) Update(w http.ResponseWriter, r *http.Request)  {
 		}
 
 		h.logs.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Wnet Wrong",
 			Errors: "internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success Update Level",
 	})
 }
 
 
 func (h *HandlerLevel) Delete(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type","application/json")
 	if r.Method != helper.Delete {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Delete Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -250,18 +258,21 @@ func (h *HandlerLevel) Delete(w http.ResponseWriter, r *http.Request) {
 
 	id,err:= strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Id Level Format",
 			Errors: "Bad Request",
 		})
 		return
 	}
 
-	if err:=h.service.DeleteLevel(id);err != nil {
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	if err:=h.service.DeleteLevel(ctx, id);err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(helper.Notfound)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Notfound,
 				Message: fmt.Sprintf("Not Found id: %d", id),
 				Errors: "Not Found",
 			})
@@ -269,16 +280,16 @@ func (h *HandlerLevel) Delete(w http.ResponseWriter, r *http.Request) {
 		}
 
 		h.logs.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Somethind Went Wrong",
 			Errors: "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success Delete Level",
 	})
 }

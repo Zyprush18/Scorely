@@ -1,7 +1,7 @@
 package majorservice
 
 import (
-	"github.com/Zyprush18/Scorely/models/request"
+	"github.com/Zyprush18/Scorely/models/entity"
 	"github.com/Zyprush18/Scorely/models/response"
 	"github.com/stretchr/testify/mock"
 )
@@ -15,7 +15,7 @@ func (m *RepoMajorMock) GetAllData(search, sort string, page, perpage int) ([]re
 	return args.Get(0).([]response.Majors), int64(args.Int(1)), args.Error(2)
 }
 
-func (m *RepoMajorMock) Create(data *request.Majors) error {
+func (m *RepoMajorMock) Create(data *entity.Majors) error {
 	args := m.Called(data)
 	return args.Error(0)
 }
@@ -25,7 +25,7 @@ func (m *RepoMajorMock) ShowById(id int) (*response.Majors, error) {
 	return args.Get(0).(*response.Majors),args.Error(1)
 }
 
-func (m *RepoMajorMock) Updates(id int, data *request.Majors) error {
+func (m *RepoMajorMock) Updates(id int, data *entity.Majors) error {
 	args := m.Called(id,data)
 	return args.Error(0)
 }

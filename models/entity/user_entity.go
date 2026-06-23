@@ -14,5 +14,5 @@ type Users struct {
 	Teacher *Teachers `gorm:"foreignKey:UserId;references:IdUser;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	// has many to student table
 	Student *Students `gorm:"foreignKey:UserId;references:IdUser;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	helper.Models
+	Model helper.Models
 }

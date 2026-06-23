@@ -11,5 +11,5 @@ type Exams struct {
 	TeacherId *uint 	  `json:"teacher_id,omitempty" gorm:"-"`
 	SubjectId *uint 	  `json:"subject_id,omitempty" gorm:"-"`
 
-	helper.Models
+	Model helper.Models
 }

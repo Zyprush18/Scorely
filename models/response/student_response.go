@@ -13,5 +13,5 @@ type Students struct {
 	ClassId   uint   `json:"class_id"`
 
 	Class     Class `json:"class"`
-	helper.Models
+	Model helper.Models
 }

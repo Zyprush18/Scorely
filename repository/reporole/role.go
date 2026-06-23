@@ -1,6 +1,7 @@
 package reporole
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -13,29 +14,29 @@ import (
 )
 
 type RoleService interface {
-	GetAllDataRole(search,sort string,page,perpage int) ([]response.Roles, int64,error)
-	CreateRole(data *request.Roles) error
-	ShowById(id int) (*response.Roles, error)
-	UpdateRole(id int, data *request.Roles) error
-	DeleteRole(id int) error
+	GetAllDataRole(ctx context.Context, search,sort string,page,perpage int) ([]response.Roles, int64,error)
+	CreateRole(ctx context.Context, data *request.Roles) error
+	ShowById(ctx context.Context, id int) (*response.Roles, error)
+	UpdateRole(ctx context.Context, id int, data *request.Roles) error
+	DeleteRole(ctx context.Context, id int) error
 }
 
 type RoleMysql struct {
 	db *gorm.DB
 }
 
-func RolesMysql(db *gorm.DB) RoleMysql {
-	return RoleMysql{db: db}
+func RolesMysql(db *gorm.DB) RoleService {
+	return &RoleMysql{db: db}
 }
 
 // GetAllData
-func (r RoleMysql) GetAllDataRole(search,sort string, page,perpage int) ([]response.Roles, int64 ,error) {
+func (r *RoleMysql) GetAllDataRole(ctx context.Context, search,sort string, page,perpage int) ([]response.Roles, int64 ,error) {
 	var RoleModel []response.Roles
 	var count int64
 	offset := (page - 1 ) * perpage
 	order := fmt.Sprintf("created_at %s", sort)
 
-	if  err := r.db.Table("roles").Where("name_role LIKE ?", "%"+search+"%").Count(&count).Order(order).Limit(perpage).Offset(offset).Find(&RoleModel).Error; err != nil {
+	if  err := r.db.WithContext(ctx).Model(&entity.Roles{}).Where("name_role LIKE ?", "%"+search+"%").Count(&count).Order(order).Limit(perpage).Offset(offset).Find(&RoleModel).Error; err != nil {
 		return nil, 0, err
 	}
 	
@@ -43,15 +44,15 @@ func (r RoleMysql) GetAllDataRole(search,sort string, page,perpage int) ([]respo
 }
 
 // create
-func (r RoleMysql) CreateRole(data *request.Roles) error {
+func (r *RoleMysql) CreateRole(ctx context.Context, data *request.Roles) error {
 	role:= &request.Roles{
 		NameRole: data.NameRole,
 		CodeRole: data.CodeRole,
-		Models: helper.Models{
+		Model: helper.Models{
 			CreatedAt: time.Now(),
 		},
 	}
-	if err := r.db.Table("roles").Create(&role).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entity.Roles{}).Create(role).Error; err != nil {
 		return err
 	}
 
@@ -59,10 +60,10 @@ func (r RoleMysql) CreateRole(data *request.Roles) error {
 }
 
 // show
-func (r RoleMysql) ShowById(id int) (*response.Roles, error) {
+func (r *RoleMysql) ShowById(ctx context.Context, id int) (*response.Roles, error) {
 	var rolemodel response.Roles
 
-	if err := r.db.Model(&rolemodel).Where("id_role = ?", id).First(&rolemodel).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entity.Roles{}).Where("id_role = ?", id).First(&rolemodel).Error; err != nil {
 		return nil, err
 	}
 
@@ -71,28 +72,24 @@ func (r RoleMysql) ShowById(id int) (*response.Roles, error) {
 
 }
 
-func (r RoleMysql) UpdateRole(id int, data *request.Roles) error  {
-	var rolemodel entity.Roles
-	if err := r.db.Model(&rolemodel).Where("id_role = ?", id).First(&rolemodel).Error; err != nil {
-		return  err
+func (r *RoleMysql) UpdateRole(ctx context.Context, id int, data *request.Roles) error  {
+	result := r.db.WithContext(ctx).Model(&entity.Roles{}).Where("id_role = ?", id).Updates(data)
+	if result.Error != nil {
+		return result.Error
 	}
-
-	if err:= r.db.Table("roles").Where("id_role = ?", id).Updates(data).Error;err != nil {
-		return err
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
 	}
-
 	return nil
 }
 
-func (r RoleMysql) DeleteRole(id int) error {
-	var modelrole entity.Roles
-	if err:= r.db.Model(&modelrole).Where("id_role = ?", id).First(&modelrole).Error;err != nil {
-		return err
+func (r *RoleMysql) DeleteRole(ctx context.Context, id int) error {
+	result := r.db.WithContext(ctx).Model(&entity.Roles{}).Delete(id)
+	if result.Error != nil {
+		return result.Error
 	}
-
-	if err:= r.db.Delete(&modelrole).Error;err != nil {
-		return err
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
 	}
-
 	return nil
 }

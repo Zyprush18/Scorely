@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/Zyprush18/Scorely/helper"
 	"github.com/Zyprush18/Scorely/models/request"
@@ -23,10 +24,9 @@ func ConnServc(s serviceexam.ServiceExams, l helper.Loggers) HandlerExam {
 }
 
 func (h *HandlerExam) GetALl(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	if r.Method != helper.Gets {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Get Method Is Allowed",
 			Errors:  "Method Not Allowed",
 		})
@@ -35,27 +35,30 @@ func (h *HandlerExam) GetALl(w http.ResponseWriter, r *http.Request) {
 
 	page, perpage, sort, search, err := helper.QueryParam(r, 10)
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Query Params Format",
 			Errors:  "Bad Request",
 		})
 		return
 	}
 
-	resp, count, err := h.service.GetAllExams(search, sort, page, perpage)
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	resp, count, err := h.service.GetAllExams(ctx, search, sort, page, perpage)
 	if err != nil {
 		h.logg.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "SOmething Went Wrong",
 			Errors:  "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message:    "Success",
 		Data:       resp,
 		Pagination: helper.Paginations(page, perpage, int(count)),
@@ -63,10 +66,9 @@ func (h *HandlerExam) GetALl(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HandlerExam) FindByIdTeacher(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	if r.Method != helper.Gets {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Get Method is Allowed",
 		})
 		return
@@ -76,19 +78,22 @@ func (h *HandlerExam) FindByIdTeacher(w http.ResponseWriter, r *http.Request) {
 	id_teacher := r.Context().Value(helper.KeyUserID).(int)
 	page, perpage, sort, search, err := helper.QueryParam(r, 10)
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Query Params Format",
 			Errors:  "Bad Request",
 		})
 		return
 	}
 
-	resp, count, err := h.service.FindExamsbyIdTeacher(search, sort, page, perpage, id_teacher)
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	resp, count, err := h.service.FindExamsbyIdTeacher(ctx, search, sort, page, perpage, id_teacher)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(helper.Notfound)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Notfound,
 				Message: fmt.Sprintf("Not Found user id teacher: %d", id_teacher),
 				Errors:  "Not Found",
 			})
@@ -96,16 +101,16 @@ func (h *HandlerExam) FindByIdTeacher(w http.ResponseWriter, r *http.Request) {
 		}
 
 		h.logg.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors:  "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message:    "Success",
 		Data:       resp,
 		Pagination: helper.Paginations(page, perpage, int(count)),
@@ -113,10 +118,9 @@ func (h *HandlerExam) FindByIdTeacher(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HandlerExam) Create(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	if r.Method != helper.Post {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Post Method Is Allowed",
 			Errors:  "Method Not Allowed",
 		})
@@ -125,8 +129,8 @@ func (h *HandlerExam) Create(w http.ResponseWriter, r *http.Request) {
 
 	subjectid, err := strconv.Atoi(r.PathValue("subject_id"))
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Id Format",
 			Errors: "Bad Request",
 		})
@@ -135,8 +139,8 @@ func (h *HandlerExam) Create(w http.ResponseWriter, r *http.Request) {
 
 	reqexams := new(request.Exams)
 	if json.NewDecoder(r.Body).Decode(reqexams) != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Body Request Is Missing",
 			Errors: "Bad Request",
 		})
@@ -144,8 +148,8 @@ func (h *HandlerExam) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := helper.ValidateForm(reqexams); err != nil {
-		w.WriteHeader(helper.UnprocessbleEntity)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.UnprocessbleEntity,
 			Message: "Failed Validation",
 			Errors: err.Error(),
 		})
@@ -156,10 +160,13 @@ func (h *HandlerExam) Create(w http.ResponseWriter, r *http.Request) {
 	role := r.Context().Value(helper.KeyCodeRole).(string)
 
 
-	if err := h.service.CreateExams(reqexams,role,user_id,subjectid);err != nil {
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	if err := h.service.CreateExams(ctx, reqexams,role,user_id,subjectid);err != nil {
 		if errors.Is(err , gorm.ErrRecordNotFound) || errors.Is(err, gorm.ErrCheckConstraintViolated) {
-			w.WriteHeader(helper.Notfound)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Notfound,
 				Message: "no relation found between teacher and subject",
 				Errors: "Not Found",
 			})
@@ -169,25 +176,24 @@ func (h *HandlerExam) Create(w http.ResponseWriter, r *http.Request) {
 
 
 		h.logg.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors: "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Created)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Created,
 		Message: "Success Created",
 	})
 }
 
 func (h *HandlerExam) Show(w http.ResponseWriter,r *http.Request)  {
-	w.Header().Set("Content-Type","application/json")
 	if r.Method != helper.Gets {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Get Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -196,8 +202,8 @@ func (h *HandlerExam) Show(w http.ResponseWriter,r *http.Request)  {
 
 	id,err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Format Param Id",
 			Errors: "Bad Request",
 		})
@@ -207,11 +213,14 @@ func (h *HandlerExam) Show(w http.ResponseWriter,r *http.Request)  {
 	user_id := r.Context().Value(helper.KeyUserID).(int)
 	role := r.Context().Value(helper.KeyCodeRole).(string)
 
-	resp,err := h.service.ShowExams(id,user_id,role)
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	resp,err := h.service.ShowExams(ctx, id,user_id,role)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(helper.Notfound)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Notfound,
 				Message: "Exam not found",
 				Errors: "Not Found",
 			})
@@ -219,8 +228,8 @@ func (h *HandlerExam) Show(w http.ResponseWriter,r *http.Request)  {
 		}
 
 		h.logg.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors: "Internal Server Error",
 		})
@@ -228,18 +237,17 @@ func (h *HandlerExam) Show(w http.ResponseWriter,r *http.Request)  {
 	}
 
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success",
 		Data: resp,
 	})
 }
 
 func (h *HandlerExam) Update(w http.ResponseWriter,r *http.Request)  {
-	w.Header().Set("Content-Type","application/json")
 	if r.Method != helper.Put {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Put Method Not Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -248,8 +256,8 @@ func (h *HandlerExam) Update(w http.ResponseWriter,r *http.Request)  {
 
 	id,err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Params Id Format",
 			Errors: "Bad Request",
 		})
@@ -259,8 +267,8 @@ func (h *HandlerExam) Update(w http.ResponseWriter,r *http.Request)  {
 	updatereq := new(request.Exams)
 
 	if json.NewDecoder(r.Body).Decode(updatereq) != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Request Body Is Missing",
 			Errors: "Bad Request",
 		})
@@ -271,10 +279,13 @@ func (h *HandlerExam) Update(w http.ResponseWriter,r *http.Request)  {
 	role := r.Context().Value(helper.KeyCodeRole).(string)
 
 
-	if err= h.service.UpdateExam(updatereq,role,id,userid);err != nil {
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	if err= h.service.UpdateExam(ctx, updatereq,role,id,userid);err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(helper.Notfound)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Notfound,
 				Message: "Exam Not Found Or No Relation Found Between Teacher and Subject",
 				Errors: "Not Found",
 			})
@@ -282,26 +293,25 @@ func (h *HandlerExam) Update(w http.ResponseWriter,r *http.Request)  {
 		}
 
 		h.logg.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors: "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success Update exams",
 	})
 
 }
 
 func (h *HandlerExam) Delete(w http.ResponseWriter, r *http.Request)  {
-	w.Header().Set("Content-Type","application/json")
 	if r.Method != helper.Delete {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Delete Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -310,8 +320,8 @@ func (h *HandlerExam) Delete(w http.ResponseWriter, r *http.Request)  {
 
 	id,err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Id Params Format",
 			Errors: "Bad Request",
 		})
@@ -321,10 +331,13 @@ func (h *HandlerExam) Delete(w http.ResponseWriter, r *http.Request)  {
 	userid := r.Context().Value(helper.KeyUserID).(int)
 	role := r.Context().Value(helper.KeyCodeRole).(string)
 
-	if err := h.service.DeleteExam(id, userid,role);err != nil {
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	if err := h.service.DeleteExam(ctx, id, userid,role);err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(helper.Notfound)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Notfound,
 				Message: "Exam Not Found Or No Relation Found Between Teacher and Subject",
 				Errors: "Not Found",
 			})
@@ -332,8 +345,8 @@ func (h *HandlerExam) Delete(w http.ResponseWriter, r *http.Request)  {
 		}
 
 		h.logg.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors: "Internal Server Error",
 		})
@@ -341,8 +354,8 @@ func (h *HandlerExam) Delete(w http.ResponseWriter, r *http.Request)  {
 	}
 
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success Delete",
 	})
 }

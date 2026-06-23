@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/Zyprush18/Scorely/helper"
 	"github.com/Zyprush18/Scorely/models/request"
@@ -23,10 +24,9 @@ func NewHandlerStudent(s servicestudent.ServiceStudent,l helper.Loggers) Handler
 }
 
 func (h *HandlerStudent) GetAll(w http.ResponseWriter,r *http.Request) {
-	w.Header().Set("Content-Type","application/json")
 	if r.Method != helper.Gets {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Get Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -35,27 +35,30 @@ func (h *HandlerStudent) GetAll(w http.ResponseWriter,r *http.Request) {
 
 	page,perpage,sort,search,err:=helper.QueryParam(r,10)
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Format Query Params",
 			Errors: "Bad Request",
 		})
 		return
 	}
 
-	resp, count, err:= h.service.GetAllStudent(search,sort,page,perpage)
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	resp, count, err:= h.service.GetAllStudent(ctx,search,sort,page,perpage)
 	if err != nil {
 		h.log.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors: "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success",
 		Data: resp,
 		Pagination: helper.Paginations(page,perpage,int(count)),
@@ -63,10 +66,9 @@ func (h *HandlerStudent) GetAll(w http.ResponseWriter,r *http.Request) {
 }
 
 func (h *HandlerStudent) Create(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type","application/json")
 	if r.Method != helper.Post {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Post Method Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -75,9 +77,9 @@ func (h *HandlerStudent) Create(w http.ResponseWriter, r *http.Request) {
 
 	studentreq := new(request.Students)
 	if err := json.NewDecoder(r.Body).Decode(&studentreq); err != nil {
-		w.WriteHeader(helper.BadRequest)
 		h.log.Logfile(err.Error())
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Body Request Is Missing",
 			Errors: "Bad Request",
 		})
@@ -85,8 +87,8 @@ func (h *HandlerStudent) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err:= helper.ValidateForm(studentreq); err != nil {
-		w.WriteHeader(helper.UnprocessbleEntity)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.UnprocessbleEntity,
 			Message: "Failed Validation",
 			Errors: err.Error(),
 		})
@@ -94,10 +96,13 @@ func (h *HandlerStudent) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 
-	if err := h.service.CreateStudent(studentreq); err != nil {
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	if err := h.service.CreateStudent(ctx, studentreq); err != nil {
 		if helper.IsDuplicateEntryError(err) {
-			w.WriteHeader(helper.Conflict)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Conflict,
 				Message: "Nisn Or Phone Is Exist",
 				Errors: "Conflict",
 			})
@@ -105,25 +110,24 @@ func (h *HandlerStudent) Create(w http.ResponseWriter, r *http.Request) {
 		}
 
 		h.log.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors: "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success Create New Student",
 	})
 }
 
 func (h *HandlerStudent) Show(w http.ResponseWriter, r *http.Request)  {
-	w.Header().Set("Content-Type","application/json")
 	if r.Method != helper.Gets {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Get Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -132,19 +136,22 @@ func (h *HandlerStudent) Show(w http.ResponseWriter, r *http.Request)  {
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Params Id Format",
 			Errors: "Bad Request",
 		})
 		return
 	}
 
-	resp, err := h.service.ShowStudent(id)
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	resp, err := h.service.ShowStudent(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(helper.Notfound)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Notfound,
 				Message: fmt.Sprintf("Not Found Data Id: %d", id),
 				Errors: "Not Found",
 			})
@@ -152,26 +159,25 @@ func (h *HandlerStudent) Show(w http.ResponseWriter, r *http.Request)  {
 		}
 
 		h.log.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors: "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success",
 		Data: resp,
 	})
 }
 
 func (h *HandlerStudent) Update(w http.ResponseWriter,r *http.Request) {
-	w.Header().Set("Content-Type","application/json")
 	if r.Method != helper.Put {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Put Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -180,8 +186,8 @@ func (h *HandlerStudent) Update(w http.ResponseWriter,r *http.Request) {
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Format Id Params",
 			Errors: "Bad Request",
 		})
@@ -190,8 +196,8 @@ func (h *HandlerStudent) Update(w http.ResponseWriter,r *http.Request) {
 
 	datareq := new(request.Students)
 	if err := json.NewDecoder(r.Body).Decode(&datareq); err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Body Request Is Missing",
 			Errors: "Bad Request",
 		})
@@ -199,10 +205,13 @@ func (h *HandlerStudent) Update(w http.ResponseWriter,r *http.Request) {
 		return
 	}
 
-	if err:= h.service.UpdateStudent(id, datareq);err != nil {
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	if err:= h.service.UpdateStudent(ctx, id, datareq);err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(helper.Notfound)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Notfound,
 				Message: fmt.Sprintf("Not Found Id: %d", id),
 				Errors: "Not Found",
 			})
@@ -210,8 +219,8 @@ func (h *HandlerStudent) Update(w http.ResponseWriter,r *http.Request) {
 		}
 
 		if helper.IsDuplicateEntryError(err) {
-			w.WriteHeader(helper.Conflict)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Conflict,
 				Message: "Nisn Or Phone Is Exists",
 				Errors: "Conflict",
 			})
@@ -219,8 +228,8 @@ func (h *HandlerStudent) Update(w http.ResponseWriter,r *http.Request) {
 		}
 
 		h.log.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors: "Internal Server Error",
 		})
@@ -228,17 +237,16 @@ func (h *HandlerStudent) Update(w http.ResponseWriter,r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success Update Students",
 	})
 }
 
 func (h *HandlerStudent) Delete(w http.ResponseWriter,r *http.Request)  {
-	w.Header().Set("Content-Type","application/json")
 	if r.Method != helper.Delete {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Delete Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -247,18 +255,21 @@ func (h *HandlerStudent) Delete(w http.ResponseWriter,r *http.Request)  {
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Format Id Params",
 			Errors: "Bad Request",
 		})
 		return
 	}
 
-	if err := h.service.DeleteStudent(id); err != nil {
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	if err := h.service.DeleteStudent(ctx, id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(helper.Notfound)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Notfound,
 				Message: fmt.Sprintf("Not Found Id: %d", id),
 				Errors: "Not Found",
 			})
@@ -266,8 +277,8 @@ func (h *HandlerStudent) Delete(w http.ResponseWriter,r *http.Request)  {
 		}
 
 		h.log.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors: "Internal Server Error",
 		})
@@ -275,9 +286,8 @@ func (h *HandlerStudent) Delete(w http.ResponseWriter,r *http.Request)  {
 		return
 	}
 
-
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success Delete Student",
 	})
 }

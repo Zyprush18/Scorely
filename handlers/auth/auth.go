@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -24,8 +25,8 @@ func ConnectService(s serviceauth.AuthService,l helper.Loggers) HandlerAuth  {
 func (h *HandlerAuth) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type","application/json")
 	if r.Method != helper.Post {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Post Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -34,8 +35,8 @@ func (h *HandlerAuth) Login(w http.ResponseWriter, r *http.Request) {
 
 	loginreq := new(request.Login)
 	if err := json.NewDecoder(r.Body).Decode(loginreq); err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Body Request Is Missing",
 			Errors: "Bad Request",
 		})
@@ -43,8 +44,8 @@ func (h *HandlerAuth) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err:= helper.ValidateForm(loginreq); err != nil{
-		w.WriteHeader(helper.UnprocessbleEntity)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.UnprocessbleEntity,
 			Message: "Failed Validation",
 			Errors: err.Error(),
 		})
@@ -57,34 +58,42 @@ func (h *HandlerAuth) Login(w http.ResponseWriter, r *http.Request) {
 	token,err := h.servc.Loginuser(ctx, loginreq);
 	if  err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(helper.Notfound)
-			json.NewEncoder(w).Encode(helper.Messages{
-				Message: "Email Not Found",
-				Errors: "Not Found",
-			})
-			return
-		}
-
-		if err.Error() == "invalid_pw" {
-			w.WriteHeader(helper.Unauthorized)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Unauthorized,
 				Message: "Incorrect Email or Password",
 				Errors: "Unauthorized",
 			})
 			return
 		}
 
+		if errors.Is(err, context.DeadlineExceeded) {
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Timeout,
+				Message: "Request Timeout",
+				Errors: "Timeout",
+			})
+		}
+
+
+		if errors.Is(err, context.Canceled) {
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Cancel,
+				Message: "Request Cancelled",
+				Errors: "Cancelled",
+			})
+		}
+
 		h.logg.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors: "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success Login",
 		Token: token,
 	})
@@ -93,8 +102,8 @@ func (h *HandlerAuth) Login(w http.ResponseWriter, r *http.Request) {
 func (h *HandlerAuth) Signup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if r.Method != helper.Post {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Post Method Is Allowed",
 			Errors:  "Method Not Allowed",
 		})
@@ -103,8 +112,8 @@ func (h *HandlerAuth) Signup(w http.ResponseWriter, r *http.Request) {
 
 	register := new(request.Register)
 	if err := json.NewDecoder(r.Body).Decode(register); err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Body Request Is Missing",
 			Errors:  "Bad Request",
 		})
@@ -112,8 +121,8 @@ func (h *HandlerAuth) Signup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := helper.ValidateForm(register); err != nil {
-		w.WriteHeader(helper.UnprocessbleEntity)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.UnprocessbleEntity,
 			Message: "Failed Validation",
 			Errors:  err.Error(),
 		})
@@ -125,8 +134,8 @@ func (h *HandlerAuth) Signup(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.servc.Signup(ctx, register); err != nil {
 		if helper.IsDuplicateEntryError(err) {
-			w.WriteHeader(helper.Conflict)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Conflict,
 				Message: "User Already Exists",
 				Errors:  "Conflict",
 			})
@@ -134,16 +143,16 @@ func (h *HandlerAuth) Signup(w http.ResponseWriter, r *http.Request) {
 		}
 
 		h.logg.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors:  "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Created)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Created,
 		Message: "Success Register",
 	})
 }
@@ -151,8 +160,8 @@ func (h *HandlerAuth) Signup(w http.ResponseWriter, r *http.Request) {
 func (h *HandlerAuth) Logout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if r.Method != helper.Post {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Post Method Is Allowed",
 			Errors:  "Method Not Allowed",
 		})
@@ -161,8 +170,8 @@ func (h *HandlerAuth) Logout(w http.ResponseWriter, r *http.Request) {
 
 	idteacher, ok := r.Context().Value(helper.KeyUserID).(int)
 	if !ok {
-		w.WriteHeader(helper.Unauthorized)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.Unauthorized,
 			Message: "Unauthorized",
 			Errors:  "Unauthorized",
 		})
@@ -171,8 +180,8 @@ func (h *HandlerAuth) Logout(w http.ResponseWriter, r *http.Request) {
 
 	tokenID, ok := r.Context().Value(helper.KeyTokenID).(string)
 	if !ok {
-		w.WriteHeader(helper.Unauthorized)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.Unauthorized,
 			Message: "Unauthorized",
 			Errors:  "Unauthorized",
 		})
@@ -184,16 +193,16 @@ func (h *HandlerAuth) Logout(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.servc.Logout(ctx, idteacher, tokenID); err != nil {
 		h.logg.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors:  "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success Logout",
 	})
 }

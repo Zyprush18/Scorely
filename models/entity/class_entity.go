@@ -15,5 +15,5 @@ type Class struct {
 	// belongs to level table
 	Major *Majors `gorm:"foreignKey:MajorId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
-	helper.Models
+	Model helper.Models
 }

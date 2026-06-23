@@ -35,7 +35,7 @@ func ConnectRepo(rds *redis.Client,r repoauth.RepoAuth)  AuthService {
 }
 
 func (s *ServiceRepoAuth) Loginuser(ctx context.Context,req *request.Login) (string,error) {
-	data, err := s.repo.Login(req.Email)
+	data, err := s.repo.Login(ctx, req.Email)
 	if err != nil {
 		return "", err
 	}
@@ -67,7 +67,7 @@ func (s *ServiceRepoAuth) Signup(ctx context.Context, data *request.Register) er
 	data.Password = helper.HashingPassword(data.Password)
 	data.Model.CreatedAt = time.Now().Local()
 
-	if err := s.repo.Register(data); err != nil {
+	if err := s.repo.Register(ctx, data); err != nil {
 		return err
 	}
 

@@ -46,9 +46,9 @@ import (
 
 func RunApp(redisClient *redis.Client) {
 	pathlog := "./log/app.log"
-	initlog:= helper.NewLogger(pathlog)
+	initlog := helper.NewLogger(pathlog)
 	// connect database
-	initDb,err := database.Connect()
+	initDb, err := database.Connect()
 	if err != nil {
 		initlog.Logfile(err.Error())
 		log.Fatalln("Connection Refused")
@@ -62,14 +62,14 @@ func RunApp(redisClient *redis.Client) {
 
 	// login
 	authrepo := repoauth.ConnectDb(initDb)
-	authservice:= serviceauth.ConnectRepo(redisClient, &authrepo)
-	handlerauth := auth.ConnectService(authservice,initlog)
+	authservice := serviceauth.ConnectRepo(redisClient, authrepo)
+	handlerauth := auth.ConnectService(authservice, initlog)
 
 	// route login
-	adminMux.HandleFunc("/api/login",handlerauth.Login)
+	adminMux.HandleFunc("/api/login", handlerauth.Login)
 
 	// route register
-	adminMux.HandleFunc("/api/register",handlerauth.Signup)
+	adminMux.HandleFunc("/api/register", handlerauth.Signup)
 
 	// route logout
 	adminMux.Handle("/api/logout", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerauth.Logout), adm, tch))
@@ -88,7 +88,7 @@ func RunApp(redisClient *redis.Client) {
 
 	// user
 	userRepo := repouser.NewUserDatabase(initDb)
-	userService := userservice.NewUserService(&userRepo)
+	userService := userservice.NewUserService(userRepo)
 	userhandler := user.NewHandlerUser(userService, initlog)
 
 	// user route
@@ -100,7 +100,7 @@ func RunApp(redisClient *redis.Client) {
 
 	// major
 	majorrepo := repomajor.ConnectDb(initDb)
-	majorservice := majorservice.RepoMajorConn(&majorrepo)
+	majorservice := majorservice.RepoMajorConn(majorrepo)
 	hanldermajor := major.Handlers(majorservice, initlog)
 
 	// major route
@@ -112,7 +112,7 @@ func RunApp(redisClient *redis.Client) {
 
 	// level
 	levelrepo := repolevel.ConnectDb(initDb)
-	levelservice := servicelevel.ConnectRepo(&levelrepo)
+	levelservice := servicelevel.ConnectRepo(levelrepo)
 	handlerlevel := level.ConnectService(levelservice, initlog)
 
 	// route level
@@ -124,7 +124,7 @@ func RunApp(redisClient *redis.Client) {
 
 	// class
 	classrepo := repoclass.ConnectDb(initDb)
-	serviceclass := classservice.NewClassService(&classrepo)
+	serviceclass := classservice.NewClassService(classrepo)
 	handlerclass := class.NewHandlerClass(serviceclass, initlog)
 
 	// route class
@@ -136,8 +136,8 @@ func RunApp(redisClient *redis.Client) {
 
 	// student
 	studentrepo := repostudent.ConnectDb(initDb)
-	servicestudent := servicestudent.NewServiceStudent(&studentrepo)
-	handlerstudent := student.NewHandlerStudent(servicestudent,initlog)
+	servicestudent := servicestudent.NewServiceStudent(studentrepo)
+	handlerstudent := student.NewHandlerStudent(servicestudent, initlog)
 
 	// route student
 	adminMux.Handle("/api/student", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerstudent.GetAll), adm))
@@ -148,8 +148,8 @@ func RunApp(redisClient *redis.Client) {
 
 	// teacher
 	teacherrepo := repoteacher.ConnectDb(initDb)
-	servicesteacher := serviceteacher.ConnectRepo(&teacherrepo)
-	handlerteacher := teacher.ConnectService(servicesteacher,initlog)
+	servicesteacher := serviceteacher.ConnectRepo(teacherrepo, initDb)
+	handlerteacher := teacher.ConnectService(servicesteacher, initlog)
 
 	// route teacher
 	adminMux.Handle("/api/teacher", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerteacher.GetAll), adm))
@@ -159,9 +159,9 @@ func RunApp(redisClient *redis.Client) {
 	adminMux.Handle("/api/teacher/{id}/delete", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerteacher.Delete), adm))
 
 	// subject
-	subjectrepo:= reposubject.ConnectDb(initDb)
-	servicesubjects:=subjectservice.ConnectRepo(&subjectrepo)
-	subjecthandler := subject.ConnectService(servicesubjects,initlog)
+	subjectrepo := reposubject.ConnectDb(initDb)
+	servicesubjects := subjectservice.ConnectRepo(subjectrepo)
+	subjecthandler := subject.ConnectService(servicesubjects, initlog)
 
 	// route subject
 	adminMux.Handle("/api/subject", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(subjecthandler.GetAll), adm))
@@ -172,27 +172,27 @@ func RunApp(redisClient *redis.Client) {
 
 	// exams
 	examrepo := repoexams.ConnectDb(initDb)
-	examservice := serviceexam.ConnectRepo(&examrepo)
-	handlerexam := exam.ConnServc(examservice,initlog)
+	examservice := serviceexam.ConnectRepo(examrepo)
+	handlerexam := exam.ConnServc(examservice, initlog)
 
 	// route exam
 	adminMux.Handle("/api/exam", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerexam.GetALl), adm))
 	adminMux.Handle("/api/teacher/exam", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerexam.FindByIdTeacher), tch))
 	adminMux.Handle("/api/exam/{subject_id}/add", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerexam.Create), adm, tch))
-	adminMux.Handle("/api/exam/{id}", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerexam.Show), adm,tch))
-	adminMux.Handle("/api/exam/{id}/update", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerexam.Update), adm,tch))
-	adminMux.Handle("/api/exam/{id}/delete", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerexam.Delete), adm,tch))
+	adminMux.Handle("/api/exam/{id}", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerexam.Show), adm, tch))
+	adminMux.Handle("/api/exam/{id}/update", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerexam.Update), adm, tch))
+	adminMux.Handle("/api/exam/{id}/delete", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerexam.Delete), adm, tch))
 
 	// exam question
 	examquestrepo := repoexamquestions.ConnectDB(initDb)
-	examquestservice := serviceexamquest.ConnectRepo(&examquestrepo)
-	handlerexamquest := examquestion.ConnectService(examquestservice,initlog)
+	examquestservice := serviceexamquest.ConnectRepo(examquestrepo)
+	handlerexamquest := examquestion.ConnectService(examquestservice, initlog)
 
 	// route exam question
-	adminMux.Handle("/api/exam/{id_exam}/examquestion", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerexamquest.GetAll), adm,tch))
-	adminMux.Handle("/api/exam/{id_exam}/examquestion/add", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerexamquest.Create), adm,tch))
-	adminMux.Handle("/api/exam/{id_exam}/examquestion/{id}", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerexamquest.Show), adm,tch))
-	
+	adminMux.Handle("/api/exam/{id_exam}/examquestion", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerexamquest.GetAll), adm, tch))
+	adminMux.Handle("/api/exam/{id_exam}/examquestion/add", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerexamquest.Create), adm, tch))
+	adminMux.Handle("/api/exam/{id_exam}/examquestion/{id}", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerexamquest.Show), adm, tch))
+
 	fmt.Println("🚀 running on: http://localhost:8000")
 	http.ListenAndServe(":8000", adminMux)
 }

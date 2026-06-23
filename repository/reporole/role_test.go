@@ -1,6 +1,7 @@
 package reporole
 
 import (
+	"context"
 	"errors"
 	"regexp"
 
@@ -91,7 +92,7 @@ func TestGetAllData(t *testing.T) {
 			v.Count(v.Search, v.ExpectedCount)
 			v.FindData(v.Search, v.Perpage, offset, v.DataRows)
 
-			resp, count, err := repo.GetAllDataRole(v.Search, v.Sort, v.Page, v.Perpage)
+			resp, count, err := repo.GetAllDataRole(context.Background(), v.Search, v.Sort, v.Page, v.Perpage)
 			if v.Err {
 				assert.Error(t, err)
 				assert.Nil(t, resp)
@@ -142,7 +143,7 @@ func TestCreateRole(t *testing.T) {
 	for _, v := range data {
 		t.Run(v.Name, func(t *testing.T) {
 			v.MockExec(v.RequestRole.NameRole)
-			err := repo.CreateRole(v.RequestRole)
+			err := repo.CreateRole(context.Background(), v.RequestRole)
 			if v.Err {
 				assert.Error(t, err)
 			} else {
@@ -192,7 +193,7 @@ func TestShowRole(t *testing.T) {
 	for _, v := range data {
 		t.Run(v.Name, func(t *testing.T) {
 			v.FindData("", 0, 0, v.DataRows)
-			resp, err := repo.ShowById(v.Id)
+			resp, err := repo.ShowById(context.Background(), v.Id)
 
 			if v.Err {
 				assert.Error(t, err)
@@ -289,7 +290,7 @@ func TestUpdateRole(t *testing.T) {
 				v.MockExec(v.RequestRole.NameRole)
 			}
 
-			err := repo.UpdateRole(v.Id, v.RequestRole)
+			err := repo.UpdateRole(context.Background(), v.Id, v.RequestRole)
 			if v.Err {
 				assert.Error(t, err)
 			} else {
@@ -351,7 +352,7 @@ func TestDeleteRole(t *testing.T) {
 				v.MockExec("")
 			}
 
-			err := repo.DeleteRole(v.Id)
+			err := repo.DeleteRole(context.Background(), v.Id)
 			if v.Err {
 				assert.Error(t, err)
 			}else{

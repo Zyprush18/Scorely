@@ -13,6 +13,7 @@ import (
 	"github.com/Zyprush18/Scorely/models/response"
 	"github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"gorm.io/gorm"
 )
 
@@ -95,7 +96,7 @@ func TestGetAll(t *testing.T)  {
 			req.Header.Set("Content-Type","application/json")
 			w := httptest.NewRecorder()
 			if v.UseMock {
-				mockuser.On("AllUser",v.Search,v.Sort,v.Page,v.Perpage).Return(v.ResponseAll,v.Count,v.ExpectedErr)
+				mockuser.On("AllUser", mock.Anything, v.Search,v.Sort,v.Page,v.Perpage).Return(v.ResponseAll,v.Count,v.ExpectedErr)
 			}
 
 			v.Mux.HandleFunc("/user", handleruser.GetAllUser)
@@ -205,7 +206,7 @@ func TestCreate(t *testing.T)  {
 			w := httptest.NewRecorder()
 
 			if v.UseMock {
-				mockuser.On("CreateUser", v.RequestUser).Return(v.ExpectedErr)
+				mockuser.On("CreateUser", mock.Anything, v.RequestUser).Return(v.ExpectedErr)
 			}
 
 			v.Mux.HandleFunc("/user/add", handleruser.Create)
@@ -279,7 +280,7 @@ func TestShow(t *testing.T)  {
 			w := httptest.NewRecorder()
 
 			if v.UseMock {
-				mockuser.On("ShowUser",v.Id).Return(v.Response,v.ExpectedErr)
+				mockuser.On("ShowUser", mock.Anything, v.Id).Return(v.Response,v.ExpectedErr)
 			}
 			v.Mux.HandleFunc("/user/{id}",handleruser.Show)
 			v.Mux.ServeHTTP(w, req)
@@ -395,7 +396,7 @@ func TestUpdate(t *testing.T)  {
 			w := httptest.NewRecorder()
 
 			if v.UseMock {
-				mockuser.On("UpdateUser", v.Id,v.RequestUser).Return(v.ExpectedErr)
+				mockuser.On("UpdateUser", mock.Anything, v.Id,v.RequestUser).Return(v.ExpectedErr)
 			}
 			v.Mux.HandleFunc("/user/{id}/update", handleruser.Update)
 			v.Mux.ServeHTTP(w, req)
@@ -468,7 +469,7 @@ func TestDelete(t *testing.T)  {
 			w := httptest.NewRecorder()
 
 			if v.UseMock {
-				mockuser.On("DeleteUser", v.Id).Return(v.ExpectedErr)
+				mockuser.On("DeleteUser", mock.Anything, v.Id).Return(v.ExpectedErr)
 			}
 			v.Mux.HandleFunc("/user/{id}/delete", handleruser.Delete)
 			v.Mux.ServeHTTP(w, req)

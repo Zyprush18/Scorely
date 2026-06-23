@@ -16,7 +16,7 @@ type Subjects struct {
 	// has many to exam table
 	// Exam []Exams 
 
-	helper.Models
+	Model helper.Models
 }
 
 func Subjectsresp(data []entity.Subjects) (resp []Subjects)  {
@@ -25,7 +25,7 @@ func Subjectsresp(data []entity.Subjects) (resp []Subjects)  {
 			IdSubject: v.IdSubject,
 			NameSubject: v.NameSubject,
 			Semester: v.Semester,
-			Models: v.Models,
+			Model: v.Model,
 		})
 	}
 	

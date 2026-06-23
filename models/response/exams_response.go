@@ -24,7 +24,7 @@ type Exams struct {
 	// has many to answer question table
 	// AnswerQuestion []Answer_Questions `gorm:"foreignKey:ExamId;references:IdExam;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
-	helper.Models
+	Model helper.Models
 }
 
 func ParseExams(data []entity.Exams) (resp []Exams) {
@@ -38,7 +38,7 @@ func ParseExams(data []entity.Exams) (resp []Exams) {
 			TeacherSubjectId:  v.TeacherSubjectId,
 			Subject: Subjects(v.TeacherSubject.Subject),
 			ExamQuestion: ParseExamsQuest(v.ExamQuestion),
-			Models: v.Models,
+			Model: v.Model,
 		})
 	}
 	return resp
