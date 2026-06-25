@@ -41,7 +41,7 @@ func (r *RepoExamQuest) CreateExamQuest(ctx context.Context, data *request.Exam_
 	ent := &entity.Exam_Questions{
 		Question: data.Question,
 		ExamId:   uint(id_exam),
-		Model: helper.Models{
+		Models: helper.Models{
 			CreatedAt: time.Now(),
 		},
 	}
@@ -71,9 +71,9 @@ func mapExamQuestToResponse(v *entity.Exam_Questions) *response.Exam_Questions {
 			StartLesson:       v.Exam.StartLesson,
 			EndLesson:         v.Exam.EndLesson,
 			TeacherSubjectId:  v.Exam.TeacherSubjectId,
-			Subject:           response.Subjects(v.Exam.TeacherSubject.Subject),
-			Model:            v.Exam.Model,
+			Subject:           response.Subjectmap(v.Exam.TeacherSubject.Subject),
+			Model:            v.Exam.Models,
 		},
-		Model: v.Model,
+		Model: v.Models,
 	}
 }

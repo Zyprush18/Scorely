@@ -38,7 +38,7 @@ func (r *Repolevels) GetAllLevel(ctx context.Context, search, sort string, page,
 func (r *Repolevels) CreateLevel(ctx context.Context, data *request.Levels) error {
 	ent := &entity.Levels{
 		Level: data.Level,
-		Model: helper.Models{
+		Models: helper.Models{
 			CreatedAt: time.Now(),
 		},
 	}
@@ -53,14 +53,14 @@ func (r *Repolevels) ShowLevel(ctx context.Context, id int) (*response.Levels, e
 	return &response.Levels{
 		IdLevel: ent.IdLevel,
 		Level:   ent.Level,
-		Model:  ent.Model,
+		Model:  ent.Models,
 	}, nil
 }
 
 func (r *Repolevels) UpdateLevel(ctx context.Context, id int, data *request.Levels) error {
 	ent := &entity.Levels{
 		Level: data.Level,
-		Model: helper.Models{
+		Models: helper.Models{
 			UpdatedAt: time.Now(),
 		},
 	}
@@ -77,7 +77,7 @@ func parseLevelResponse(entities []entity.Levels) []response.Levels {
 		result[i] = response.Levels{
 			IdLevel: v.IdLevel,
 			Level:   v.Level,
-			Model:  v.Model,
+			Model:  v.Models,
 		}
 	}
 	return result

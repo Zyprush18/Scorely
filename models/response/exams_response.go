@@ -36,9 +36,9 @@ func ParseExams(data []entity.Exams) (resp []Exams) {
 			StartLesson: v.StartLesson,
 			EndLesson: v.EndLesson,
 			TeacherSubjectId:  v.TeacherSubjectId,
-			Subject: Subjects(v.TeacherSubject.Subject),
+			Subject: Subjectmap(v.TeacherSubject.Subject),
 			ExamQuestion: ParseExamsQuest(v.ExamQuestion),
-			Model: v.Model,
+			Model: v.Models,
 		})
 	}
 	return resp

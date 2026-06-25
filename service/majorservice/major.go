@@ -77,7 +77,7 @@ func (m *MajorRepo) mapMajorResponse(ent *entity.Majors) response.Majors  {
 			IdMajor:           ent.IdMajor,
 			Major:             ent.Major,
 			MajorAbbreviation: ent.MajorAbbreviation,
-			Model:            ent.Model,
+			Model:            ent.Models,
 		}
 }
 

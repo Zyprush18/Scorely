@@ -55,15 +55,15 @@ func Connect() (*gorm.DB,error) {
 		&entity.Users{},
 		&entity.Subjects{},
 		&entity.Teachers{},
-		&entity.TeacherSubjects{},
 		&entity.Students{},
 		&entity.Class{},      
 		&entity.Levels{},
 		&entity.Majors{},
+		&entity.Exams{},
+		&entity.TeacherSubjects{},
 		&entity.Exam_Questions{},
 		&entity.Option_Questions{},
 		&entity.Answer_Questions{},
-		&entity.Exams{},
 	)
 	if ers != nil {
 		log.Println("Failed Migrate database")

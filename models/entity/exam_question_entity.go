@@ -14,5 +14,5 @@ type Exam_Questions struct {
 	OptionQuestion []Option_Questions `gorm:"foreignKey:ExamQuestionId;references:IdExamQuestion;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	// has many to answer question table
 	AnswerQuestion []Answer_Questions `gorm:"foreignKey:ExamQuestionId;references:IdExamQuestion;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Model helper.Models
+	helper.Models
 }

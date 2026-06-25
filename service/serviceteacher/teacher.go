@@ -51,7 +51,7 @@ func (r *RepoTeacherStruct) CreateTeacher(ctx context.Context, data *request.Tea
 		Phone:   data.Phone,
 		UserId:  data.UserId,
 		Subject: subjectfind,
-		Model: helper.Models{
+		Models: helper.Models{
 			CreatedAt: time.Now(),
 		},
 	}
@@ -72,7 +72,7 @@ func (r *RepoTeacherStruct) ShowTeacher(ctx context.Context, id int) (*response.
 		Phone:     ent.Phone,
 		UserId:    ent.UserId,
 		Subject:   response.Subjectsresp(ent.Subject),
-		Model:    ent.Model,
+		Model:    ent.Models,
 	}, nil
 }
 
@@ -90,7 +90,7 @@ func (r *RepoTeacherStruct) UpdateTeacher(ctx context.Context, id int, data *req
 		Phone:   data.Phone,
 		UserId:  data.UserId,
 		Subject: findsubject,
-		Model: helper.Models{
+		Models: helper.Models{
 			UpdatedAt: time.Now(),
 		},
 	}

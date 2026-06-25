@@ -63,7 +63,7 @@ func (r *RepoExams) CreateExams(ctx context.Context, data *request.Exams, role s
 			StartLesson:      data.StartLesson,
 			EndLesson:        data.EndLesson,
 			TeacherSubjectId: idts,
-			Model: helper.Models{
+			Models: helper.Models{
 				CreatedAt: time.Now(),
 			},
 		}
@@ -99,7 +99,7 @@ func (r *RepoExams) UpdateExam(ctx context.Context, data *request.Exams, role st
 			StartLesson:      data.StartLesson,
 			EndLesson:        data.EndLesson,
 			TeacherSubjectId: tsid,
-			Model: helper.Models{
+			Models: helper.Models{
 				UpdatedAt: time.Now(),
 			},
 		}
@@ -129,8 +129,8 @@ func (r *RepoExams) mapExamToResponse(v *entity.Exams) *response.Exams {
 			IdSubject:   v.TeacherSubject.Subject.IdSubject,
 			NameSubject: v.TeacherSubject.Subject.NameSubject,
 			Semester:    v.TeacherSubject.Subject.Semester,
-			Model:       v.TeacherSubject.Subject.Model,
+			Model:       v.TeacherSubject.Subject.Models,
 		},
-		Model: v.Model,
+		Model: v.Models,
 	}
 }

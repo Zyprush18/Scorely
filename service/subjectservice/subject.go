@@ -39,7 +39,7 @@ func (r *RepoStruct) CreateSubject(ctx context.Context, data *request.Subjects) 
 	ent := &entity.Subjects{
 		NameSubject: data.NameSubject,
 		Semester:    data.Semester,
-		Model: helper.Models{
+		Models: helper.Models{
 			CreatedAt: time.Now(),
 		},
 	}
@@ -55,7 +55,7 @@ func (r *RepoStruct) ShowSubject(ctx context.Context, id int) (*response.Subject
 		IdSubject:   ent.IdSubject,
 		NameSubject: ent.NameSubject,
 		Semester:    ent.Semester,
-		Model:      ent.Model,
+		Model:      ent.Models,
 	}, nil
 }
 
@@ -63,7 +63,7 @@ func (r *RepoStruct) UpdateSubject(ctx context.Context, id int, data *request.Su
 	ent := &entity.Subjects{
 		NameSubject: data.NameSubject,
 		Semester:    data.Semester,
-		Model: helper.Models{
+		Models: helper.Models{
 			UpdatedAt: time.Now(),
 		},
 	}

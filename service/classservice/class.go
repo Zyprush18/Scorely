@@ -40,7 +40,7 @@ func (c *ClassService) CreateClass(ctx context.Context, data *request.Class) err
 		Name:    data.Name,
 		LevelId: data.LevelId,
 		MajorId: data.MajorId,
-		Model: helper.Models{
+		Models: helper.Models{
 			CreatedAt: time.Now(),
 		},
 	}
@@ -60,7 +60,7 @@ func (c *ClassService) UpdateClass(ctx context.Context, id int, data *request.Cl
 		Name:    data.Name,
 		LevelId: data.LevelId,
 		MajorId: data.MajorId,
-		Model: helper.Models{
+		Models: helper.Models{
 			UpdatedAt: time.Now(),
 		},
 	}
@@ -94,14 +94,14 @@ func (c *ClassService) mapClassToResponse(v *entity.Class) *response.Class {
 		Level: response.Levels{
 			IdLevel: v.Level.IdLevel,
 			Level:   v.Level.Level,
-			Model:  v.Level.Model,
+			Model:  v.Level.Models,
 		},
 		Major: response.Majors{
 			IdMajor:           v.Major.IdMajor,
 			Major:             v.Major.Major,
 			MajorAbbreviation: v.Major.MajorAbbreviation,
-			Model:            v.Major.Model,
+			Model:            v.Major.Models,
 		},
-		Model: v.Model,
+		Model: v.Models,
 	}
 }

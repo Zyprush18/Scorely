@@ -45,7 +45,7 @@ func (r *RepoStudent) CreateStudent(ctx context.Context, data *request.Students)
 		Phone:   phone,
 		UserId:  data.UserId,
 		ClassId: data.ClassId,
-		Model: helper.Models{
+		Models: helper.Models{
 			CreatedAt: time.Now(),
 		},
 	}
@@ -70,7 +70,7 @@ func (r *RepoStudent) UpdateStudent(ctx context.Context, id int, data *request.S
 		Phone:   phone,
 		UserId:  data.UserId,
 		ClassId: data.ClassId,
-		Model: helper.Models{
+		Models: helper.Models{
 			UpdatedAt: time.Now(),
 		},
 	}
@@ -127,15 +127,15 @@ func mapStudentToResponse(v *entity.Students) *response.Students {
 			Level: response.Levels{
 				IdLevel: v.Class.Level.IdLevel,
 				Level:   v.Class.Level.Level,
-				Model:  v.Class.Level.Model,
+				Model:  v.Class.Level.Models,
 			},
 			Major: response.Majors{
 				IdMajor:           v.Class.Major.IdMajor,
 				Major:             v.Class.Major.Major,
 				MajorAbbreviation: v.Class.Major.MajorAbbreviation,
-				Model:            v.Class.Major.Model,
+				Model:            v.Class.Major.Models,
 			},
 		},
-		Model: v.Model,
+		Model: v.Models,
 	}
 }

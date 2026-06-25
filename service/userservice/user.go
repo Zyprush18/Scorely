@@ -40,7 +40,7 @@ func (u *UserRepo) CreateUser(ctx context.Context, data *request.User) error {
 		Email:    data.Email,
 		Password: helper.HashingPassword(data.Password),
 		RoleId:   data.RoleId,
-		Model: helper.Models{
+		Models: helper.Models{
 			CreatedAt: time.Now().Local(),
 		},
 	}
@@ -58,8 +58,8 @@ func (u *UserRepo) ShowUser(ctx context.Context, id int) (*response.Users, error
 		Password: ent.Password,
 		RoleId:   ent.RoleId,
 		Model: helper.Models{
-			CreatedAt: ent.Model.CreatedAt,
-			UpdatedAt: ent.Model.UpdatedAt,
+			CreatedAt: ent.Models.CreatedAt,
+			UpdatedAt: ent.Models.UpdatedAt,
 		},
 	}, nil
 }
@@ -69,7 +69,7 @@ func (u *UserRepo) UpdateUser(ctx context.Context, id int, data *request.User) e
 		Email:    data.Email,
 		Password: helper.HashingPassword(data.Password),
 		RoleId:   data.RoleId,
-		Model: helper.Models{
+		Models: helper.Models{
 			UpdatedAt: time.Now().Local(),
 		},
 	}
@@ -89,8 +89,8 @@ func parseUserResponse(entities []entity.Users) []response.Users {
 			Password: v.Password,
 			RoleId:   v.RoleId,
 			Model: helper.Models{
-				CreatedAt: v.Model.CreatedAt,
-				UpdatedAt: v.Model.UpdatedAt,
+				CreatedAt: v.Models.CreatedAt,
+				UpdatedAt: v.Models.UpdatedAt,
 			},
 		}
 	}

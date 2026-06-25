@@ -13,5 +13,5 @@ type Subjects struct {
 	// has many to exam table
 	// Exam []Exams `gorm:"foreignKey:SubjectId;references:IdSubject;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
-	Model helper.Models
+	helper.Models
 }

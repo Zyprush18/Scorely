@@ -9,5 +9,5 @@ type Roles struct {
 	CodeRole string `json:"code_role" gorm:"not null;unique"`
 	// has many to users table
 	Users []Users `gorm:"foreignKey:RoleId;references:IdRole;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Model helper.Models
+	helper.Models
 }

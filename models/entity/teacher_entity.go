@@ -19,5 +19,5 @@ type Teachers struct {
 
 	// has many to subjects table (many to many with subjects table)
 	Subject []Subjects `gorm:"many2many:teacher_subjects;joinForeignKey:IdTeachers;joinReferences:IdSubjects"`
-	Model helper.Models
+	helper.Models
 }

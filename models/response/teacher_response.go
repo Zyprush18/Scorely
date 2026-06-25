@@ -35,7 +35,7 @@ func RespGetALl(data []entity.Teachers) (resp []Teachers) {
 			Phone: v.Phone,
 			UserId: v.UserId,
 			Subject: Subjectsresp(v.Subject),
-			Model: v.Model,
+			Model: v.Models,
 		})
 	}
 

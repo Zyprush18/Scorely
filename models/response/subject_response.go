@@ -21,13 +21,18 @@ type Subjects struct {
 
 func Subjectsresp(data []entity.Subjects) (resp []Subjects)  {
 	for _, v := range data {
-		resp = append(resp, Subjects{
-			IdSubject: v.IdSubject,
-			NameSubject: v.NameSubject,
-			Semester: v.Semester,
-			Model: v.Model,
-		})
+		resp = append(resp, Subjectmap(v))
 	}
 	
 	return resp
+}
+
+
+func Subjectmap(data entity.Subjects) Subjects {
+	return Subjects{
+		IdSubject: data.IdSubject,
+			NameSubject: data.NameSubject,
+			Semester: data.Semester,
+			Model: data.Models,
+	}
 }

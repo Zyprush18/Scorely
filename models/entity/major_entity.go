@@ -9,5 +9,5 @@ type Majors struct {
 
 	// has many to class table
 	Class []Class `gorm:"foreignKey:MajorId;references:IdMajor;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Model helper.Models
+	helper.Models
 }

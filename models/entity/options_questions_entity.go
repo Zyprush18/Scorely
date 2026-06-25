@@ -12,5 +12,5 @@ type Option_Questions struct {
 	// belongs to exam table
 	ExamQuestion *Exam_Questions `gorm:"foreignKey:ExamQuestionId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
-	Model helper.Models
+	helper.Models
 }
