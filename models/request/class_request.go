@@ -7,5 +7,5 @@ type Class struct {
 	LevelId uint   `json:"level_id" validate:"required"`
 	MajorId uint   `json:"major_id" validate:"required"`
 
-	helper.Models
+	Model helper.Models
 }

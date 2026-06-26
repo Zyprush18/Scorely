@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/Zyprush18/Scorely/helper"
 	"github.com/Zyprush18/Scorely/models/request"
@@ -23,10 +24,9 @@ func Handlers(s majorservice.MajorService, l helper.Loggers) ServiceMajor {
 }
 
 func (s *ServiceMajor) GetAllData(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	if r.Method != helper.Gets {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Get Method is Allowed",
 			Errors:  "Method Not Allowed",
 		})
@@ -35,27 +35,31 @@ func (s *ServiceMajor) GetAllData(w http.ResponseWriter, r *http.Request) {
 
 	page, perpage, sort, search, err := helper.QueryParam(r, 10)
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Format Query Params",
 			Errors:  "Bad Request",
 		})
 		return
 	}
 
-	resp, count, err := s.service.GetAllMajor(search, sort, page, perpage)
+
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 5 * time.Second)
+	defer cancel()
+
+	resp, count, err := s.service.GetAllMajor(ctx,search, sort, page, perpage)
 	if err != nil {
 		s.log.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors:  "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message:    "Success",
 		Data:       resp,
 		Pagination: helper.Paginations(page, perpage, int(count)),
@@ -63,10 +67,9 @@ func (s *ServiceMajor) GetAllData(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *ServiceMajor) Create(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	if r.Method != helper.Post {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Post Method Is Allowed",
 			Errors:  "Method Not Allowed",
 		})
@@ -75,8 +78,8 @@ func (s *ServiceMajor) Create(w http.ResponseWriter, r *http.Request) {
 
 	majorreq := new(request.Majors)
 	if err := json.NewDecoder(r.Body).Decode(&majorreq); err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Request Body Is Missing",
 			Errors:  "Bad Request",
 		})
@@ -84,18 +87,21 @@ func (s *ServiceMajor) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := helper.ValidateForm(majorreq); err != nil {
-		w.WriteHeader(helper.UnprocessbleEntity)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.UnprocessbleEntity,
 			Message: "Validation Error",
 			Errors:  err.Error(),
 		})
 		return
 	}
 
-	if err := s.service.CreateMajor(majorreq); err != nil {
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 10 * time.Second)
+	defer cancel()
+
+	if err := s.service.CreateMajor(ctx,majorreq); err != nil {
 		if helper.IsDuplicateEntryError(err) {
-			w.WriteHeader(helper.Conflict)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Conflict,
 				Message: "Data is Exists",
 				Errors:  "conflict",
 			})
@@ -103,26 +109,25 @@ func (s *ServiceMajor) Create(w http.ResponseWriter, r *http.Request) {
 		}
 
 		s.log.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors:  "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Created)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Created,
 		Message: "Success Create a New Major",
 	})
 
 }
 
 func (s *ServiceMajor) Show(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	if r.Method != helper.Gets {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Get Method Is Allowed",
 			Errors:  "Method Not Found",
 		})
@@ -131,19 +136,22 @@ func (s *ServiceMajor) Show(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Major Id Format",
 			Errors:  "Bad Request",
 		})
 		return
 	}
 
-	data, err := s.service.ShowMajor(id)
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 5 * time.Second)
+	defer cancel()
+
+	data, err := s.service.ShowMajor(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(helper.Notfound)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Notfound,
 				Message: fmt.Sprintf("Not Found Major Id: %d", id),
 				Errors:  "Not Found",
 			})
@@ -151,26 +159,25 @@ func (s *ServiceMajor) Show(w http.ResponseWriter, r *http.Request) {
 		}
 
 		s.log.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors:  "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success",
 		Data:    data,
 	})
 }
 
 func (s *ServiceMajor) Updated(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	if r.Method != helper.Put {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Put Method Is Allowed",
 			Errors:  "Method Not Allowed",
 		})
@@ -178,8 +185,8 @@ func (s *ServiceMajor) Updated(w http.ResponseWriter, r *http.Request) {
 	}
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Inavalid Major Id Format",
 			Errors:  "Bad Request",
 		})
@@ -188,18 +195,21 @@ func (s *ServiceMajor) Updated(w http.ResponseWriter, r *http.Request) {
 
 	majorreq := &request.Majors{}
 	if err:= json.NewDecoder(r.Body).Decode(majorreq);err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Body Request Is Missing",
 			Errors: "Bad Request",
 		})
 		return
 	}
 
-	if err := s.service.UpdatedMajor(id, majorreq); err != nil {
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 10 * time.Second)
+	defer cancel()
+
+	if err := s.service.UpdatedMajor(ctx,id, majorreq); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(helper.Notfound)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Notfound,
 				Message: fmt.Sprintf("Not Found Major Id: %d", id),
 				Errors:  "Not Found",
 			})
@@ -207,8 +217,8 @@ func (s *ServiceMajor) Updated(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if helper.IsDuplicateEntryError(err) {
-			w.WriteHeader(helper.Conflict)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Conflict,
 				Message: "Data Is Exists",
 				Errors:  "Conflict",
 			})
@@ -216,16 +226,16 @@ func (s *ServiceMajor) Updated(w http.ResponseWriter, r *http.Request) {
 		}
 
 		s.log.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors:  "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success Update Data",
 	})
 
@@ -233,10 +243,9 @@ func (s *ServiceMajor) Updated(w http.ResponseWriter, r *http.Request) {
 
 
 func (s *ServiceMajor) Deleted(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	if r.Method != helper.Delete {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Delete Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -245,19 +254,21 @@ func (s *ServiceMajor) Deleted(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Major Id Format",
 			Errors: "Bad Request",
 		})
 		return
 	}
 
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 5 * time.Second)
+	defer cancel()
 
-	if err:= s.service.DeleteMajor(id);err != nil {
+	if err:= s.service.DeleteMajor(ctx, id);err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(helper.Notfound)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Notfound,
 				Message: fmt.Sprintf("Not Found Major Id: %d", id),
 				Errors: "Not Found",
 			})
@@ -265,16 +276,16 @@ func (s *ServiceMajor) Deleted(w http.ResponseWriter, r *http.Request) {
 		}
 
 		s.log.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-			json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 				Message: "Something Went Wrong",
 				Errors: "Internal Server Error",
 			})
 			return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success Delete Data",
 	})
 }

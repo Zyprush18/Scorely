@@ -7,5 +7,7 @@ import (
 
 func main(){
 	config.Configfunc()
-	routes.RunApp()
+	redisClient := config.ConnectRedis()
+	defer redisClient.Close()
+	routes.RunApp(redisClient)
 }

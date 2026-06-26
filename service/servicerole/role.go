@@ -1,6 +1,7 @@
 package servicerole
 
 import (
+	"context"
 
 	"github.com/Zyprush18/Scorely/models/request"
 	"github.com/Zyprush18/Scorely/models/response"
@@ -8,11 +9,11 @@ import (
 )
 
 type ServiceRole interface {
-	GetAllData(search,sort string,page,perpage int) ([]response.Roles, int64,error)
-	Create(data *request.Roles) error
-	ShowRoleById(id int) (*response.Roles, error)
-	UpdateRole(id int, data *request.Roles) error
-	DeleteRole(id int) error
+	GetAllData(ctx context.Context, search,sort string,page,perpage int) ([]response.Roles, int64,error)
+	Create(ctx context.Context, data *request.Roles) error
+	ShowRoleById(ctx context.Context, id int) (*response.Roles, error)
+	UpdateRole(ctx context.Context, id int, data *request.Roles) error
+	DeleteRole(ctx context.Context, id int) error
 }
 
 type RoleRepo struct {
@@ -23,23 +24,23 @@ func NewRoleService(r reporole.RoleService) ServiceRole  {
 	return &RoleRepo{Repo: r}
 }
 
-func (r *RoleRepo) GetAllData(search,sort string,page,perpage int) ([]response.Roles, int64,error){
-	return r.Repo.GetAllDataRole(search,sort,page,perpage)
+func (r *RoleRepo) GetAllData(ctx context.Context, search,sort string,page,perpage int) ([]response.Roles, int64,error){
+	return r.Repo.GetAllDataRole(ctx, search,sort,page,perpage)
 }
 
-func (r *RoleRepo) Create(data *request.Roles) error  {
-	return r.Repo.CreateRole(data)
+func (r *RoleRepo) Create(ctx context.Context, data *request.Roles) error  {
+	return r.Repo.CreateRole(ctx, data)
 }
 
 	
-func (r *RoleRepo) ShowRoleById(id int) (*response.Roles, error) {
-	return r.Repo.ShowById(id)
+func (r *RoleRepo) ShowRoleById(ctx context.Context, id int) (*response.Roles, error) {
+	return r.Repo.ShowById(ctx, id)
 }
 
-func (r *RoleRepo) UpdateRole(id int, data *request.Roles) error  {
-	return r.Repo.UpdateRole(id,data)
+func (r *RoleRepo) UpdateRole(ctx context.Context, id int, data *request.Roles) error  {
+	return r.Repo.UpdateRole(ctx, id,data)
 }
 
-func (r *RoleRepo) DeleteRole(id int) error {
-	return r.Repo.DeleteRole(id)
+func (r *RoleRepo) DeleteRole(ctx context.Context, id int) error {
+	return r.Repo.DeleteRole(ctx, id)
 }

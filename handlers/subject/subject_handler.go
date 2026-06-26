@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/Zyprush18/Scorely/helper"
 	"github.com/Zyprush18/Scorely/models/request"
@@ -23,10 +24,9 @@ func ConnectService(s subjectservice.ServiceSubject,l helper.Loggers) HandlerSub
 }
 
 func (h *HandlerSubject) GetAll(w http.ResponseWriter,r *http.Request)  {
-	w.Header().Set("Content-Type","application/json")
 	if r.Method != helper.Gets {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Get Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -35,27 +35,30 @@ func (h *HandlerSubject) GetAll(w http.ResponseWriter,r *http.Request)  {
 
 	page,perpage,sort,search,err:= helper.QueryParam(r,10)
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Query Params Format",
 			Errors: "Bad Request",
 		})
 		return
 	}
 
-	resp,count,err:= h.service.GetAllSubject(search,sort,page,perpage)
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	resp,count,err:= h.service.GetAllSubject(ctx,search,sort,page,perpage)
 	if err != nil {
 		h.logg.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors: "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success",
 		Data: resp,
 		Pagination: helper.Paginations(page,perpage,int(count)),
@@ -63,10 +66,9 @@ func (h *HandlerSubject) GetAll(w http.ResponseWriter,r *http.Request)  {
 }
 
 func (h *HandlerSubject) Create(w http.ResponseWriter,r *http.Request)  {
-	w.Header().Set("Content-Type","application/json")
 	if r.Method != helper.Post {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Post Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -75,8 +77,8 @@ func (h *HandlerSubject) Create(w http.ResponseWriter,r *http.Request)  {
 
 	subjectreq := new(request.Subjects)
 	if err := json.NewDecoder(r.Body).Decode(subjectreq); err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Request Body Is Missing",
 			Errors: "Bad Request",
 		})
@@ -84,35 +86,37 @@ func (h *HandlerSubject) Create(w http.ResponseWriter,r *http.Request)  {
 	}
 
 	if err:=helper.ValidateForm(subjectreq);err != nil {
-		w.WriteHeader(helper.UnprocessbleEntity)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.UnprocessbleEntity,
 			Message: "Failed Validation",
 			Errors: err.Error(),
 		})
 		return
 	}
 
-	if err := h.service.CreateSubject(subjectreq);err != nil {
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	if err := h.service.CreateSubject(ctx, subjectreq);err != nil {
 		h.logg.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors: "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Created)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Created,
 		Message: "Success Create Subject",
 	})
 }
 
 func (h *HandlerSubject) Show(w http.ResponseWriter,r *http.Request) {
-	w.Header().Set("Content-Type","application/json")
 	if r.Method != helper.Gets {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Get Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -121,19 +125,22 @@ func (h *HandlerSubject) Show(w http.ResponseWriter,r *http.Request) {
 
 	id,err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Id Params Format",
 			Errors: "Bad Request",
 		})
 		return
 	}
 
-	resp,err := h.service.ShowSubject(id)
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	resp,err := h.service.ShowSubject(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(helper.Notfound)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Notfound,
 				Message: fmt.Sprintf("Not Found id: %d", id),
 				Errors: "Not Found",
 			})
@@ -141,26 +148,25 @@ func (h *HandlerSubject) Show(w http.ResponseWriter,r *http.Request) {
 		}
 
 		h.logg.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Sonething Went Wrong",
 			Errors: "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success",
 		Data: resp,
 	})
 }
 
 func (h *HandlerSubject) Update(w http.ResponseWriter,r *http.Request) {
-	w.Header().Set("Content-Type","application/json")
 	if r.Method != helper.Put {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Put Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -169,8 +175,8 @@ func (h *HandlerSubject) Update(w http.ResponseWriter,r *http.Request) {
 
 	id,err:= strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Params Id Format",
 			Errors: "Bad Request",
 		})
@@ -179,18 +185,21 @@ func (h *HandlerSubject) Update(w http.ResponseWriter,r *http.Request) {
 
 	subjectreq := new(request.Subjects)
 	if err := json.NewDecoder(r.Body).Decode(subjectreq); err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Request Body Is Missing",
 			Errors: "Bad Request",
 		})
 		return
 	}
 
-	if err := h.service.UpdateSubject(id, subjectreq); err != nil {
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	if err := h.service.UpdateSubject(ctx, id, subjectreq); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(helper.Notfound)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Notfound,
 				Message: fmt.Sprintf("Not Found id: %d",id),
 				Errors: "Not Found",
 			})
@@ -198,25 +207,24 @@ func (h *HandlerSubject) Update(w http.ResponseWriter,r *http.Request) {
 		}
 
 		h.logg.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors: "Internal Server Error",
 		})
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success Update Subject",
 	})
 }
 
 func (h *HandlerSubject) Delete(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type","application/json")
 	if r.Method != helper.Delete {
-		w.WriteHeader(helper.MethodNotAllowed)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.MethodNotAllowed,
 			Message: "Only Delete Method Is Allowed",
 			Errors: "Method Not Allowed",
 		})
@@ -225,18 +233,21 @@ func (h *HandlerSubject) Delete(w http.ResponseWriter, r *http.Request) {
 
 	id,err:=strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		w.WriteHeader(helper.BadRequest)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.BadRequest,
 			Message: "Invalid Params Id Format",
 			Errors: "Bad Request",
 		})
 		return
 	}
 
-	if err := h.service.DeleteSubject(id); err != nil {
+	ctx, cancel := helper.Ctxtimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	if err := h.service.DeleteSubject(ctx, id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			w.WriteHeader(helper.Notfound)
-			json.NewEncoder(w).Encode(helper.Messages{
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Notfound,
 				Message: fmt.Sprintf("Not Found id:%d",id),
 				Errors: "Not Found",
 			})
@@ -244,8 +255,8 @@ func (h *HandlerSubject) Delete(w http.ResponseWriter, r *http.Request) {
 		}
 
 		h.logg.Logfile(err.Error())
-		w.WriteHeader(helper.InternalServError)
-		json.NewEncoder(w).Encode(helper.Messages{
+		helper.ReturnResponse(w, helper.Messages{
+			Http_code: helper.InternalServError,
 			Message: "Something Went Wrong",
 			Errors: "INternal Server Error",
 		})
@@ -253,8 +264,8 @@ func (h *HandlerSubject) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(helper.Success)
-	json.NewEncoder(w).Encode(helper.Messages{
+	helper.ReturnResponse(w, helper.Messages{
+		Http_code: helper.Success,
 		Message: "Success Delete Subject",
 	})
 }

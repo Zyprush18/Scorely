@@ -11,5 +11,5 @@ type Students struct {
 	UserId    uint   `json:"user_id" validate:"required"`
 	ClassId   uint   `json:"class_id" validate:"required"`
 
-	helper.Models
+	Model helper.Models
 }

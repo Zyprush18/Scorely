@@ -16,18 +16,23 @@ type Subjects struct {
 	// has many to exam table
 	// Exam []Exams 
 
-	helper.Models
+	Model helper.Models
 }
 
 func Subjectsresp(data []entity.Subjects) (resp []Subjects)  {
 	for _, v := range data {
-		resp = append(resp, Subjects{
-			IdSubject: v.IdSubject,
-			NameSubject: v.NameSubject,
-			Semester: v.Semester,
-			Models: v.Models,
-		})
+		resp = append(resp, Subjectmap(v))
 	}
 	
 	return resp
+}
+
+
+func Subjectmap(data entity.Subjects) Subjects {
+	return Subjects{
+		IdSubject: data.IdSubject,
+			NameSubject: data.NameSubject,
+			Semester: data.Semester,
+			Model: data.Models,
+	}
 }

@@ -7,5 +7,5 @@ type Users struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 	RoleId   uint   `json:"role_id"`
-	helper.Models
+	Model helper.Models
 }

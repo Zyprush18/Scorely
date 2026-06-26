@@ -1,6 +1,8 @@
 package helper
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -18,16 +20,18 @@ import (
 )
 
 const (
-	Success            = http.StatusOK
-	Created            = http.StatusCreated
-	BadRequest         = http.StatusBadRequest
-	Notfound           = http.StatusNotFound
-	Conflict           = http.StatusConflict
-	Forbidden          = http.StatusForbidden
-	UnprocessbleEntity = http.StatusUnprocessableEntity
-	Unauthorized       = http.StatusUnauthorized
-	MethodNotAllowed   = http.StatusMethodNotAllowed
-	InternalServError  = http.StatusInternalServerError
+	Success int = http.StatusOK
+	Created int    = http.StatusCreated
+	BadRequest int        = http.StatusBadRequest
+	Notfound      int     = http.StatusNotFound
+	Conflict         int  = http.StatusConflict
+	Forbidden          int= http.StatusForbidden
+	UnprocessbleEntity int= http.StatusUnprocessableEntity
+	Unauthorized       int= http.StatusUnauthorized
+	MethodNotAllowed   int= http.StatusMethodNotAllowed
+	Timeout			   int= http.StatusRequestTimeout
+	Cancel 			   int= http.StatusServiceUnavailable
+	InternalServError  int= http.StatusInternalServerError
 )
 
 const (
@@ -42,9 +46,11 @@ type ctxKey string
 
 const KeyUserID ctxKey = "id_teacher"
 const KeyCodeRole ctxKey = "role_code"
+const KeyTokenID ctxKey = "token_id"
 
 // struct message
 type Messages struct {
+	Http_code  int
 	Message    string `json:"message,omitempty"`
 	Data       any    `json:"data,omitempty"`
 	Token      string `json:"token,omitempty"`
@@ -185,4 +191,14 @@ func DecryptPassword(passhash, passreq string) error {
 	}
 
 	return nil
+}
+
+func Ctxtimeout(ctx context.Context, duration time.Duration) (context.Context, context.CancelFunc) {
+	return context.WithTimeout(ctx, duration)
+}
+
+func ReturnResponse(w http.ResponseWriter, Msg Messages) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(Msg.Http_code)
+	json.NewEncoder(w).Encode(Msg)
 }

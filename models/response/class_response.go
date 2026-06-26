@@ -9,6 +9,6 @@ type Class struct {
 	MajorId uint   `json:"major_id"`
 	Level 	Levels `json:"level"`
 	Major	Majors `json:"major"`
-	helper.Models
+	Model helper.Models
 }
 

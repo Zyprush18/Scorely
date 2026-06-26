@@ -9,5 +9,5 @@ type Roles struct {
 	NameRole string `json:"name_role"`
 	CodeRole string `json:"code_role"`
 	// Users []Users	`json:"user"`
-	helper.Models
+	Model helper.Models
 }

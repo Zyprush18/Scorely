@@ -1,6 +1,7 @@
 package servicerole
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -35,14 +36,14 @@ func TestGetAlldatasRole(t *testing.T) {
 				{
 					IdRole:   1,
 					NameRole: "Admin",
-					Models: helper.Models{
+					Model: helper.Models{
 						CreatedAt: time.Now(),
 					},
 				},
 				{
 					IdRole:   2,
 					NameRole: "User",
-					Models: helper.Models{
+					Model: helper.Models{
 						CreatedAt: time.Now(),
 					},
 				},
@@ -73,8 +74,8 @@ func TestGetAlldatasRole(t *testing.T) {
 			mock.ExpectedCalls = nil
 			mock.Calls = nil
 
-			mock.On("GetAllDataRole", v.Search, v.Sort, v.Page, v.Perpage).Return(val.Data, v.Counts, val.ExpectedErr)
-			resp, count, err := service.GetAllData(v.Search, v.Sort, v.Page, v.Perpage)
+			mock.On("GetAllDataRole", context.Background(), v.Search, v.Sort, v.Page, v.Perpage).Return(val.Data, v.Counts, val.ExpectedErr)
+			resp, count, err := service.GetAllData(context.Background(), v.Search, v.Sort, v.Page, v.Perpage)
 			if val.ExpectedErr != nil {
 				assert.Error(t, err)
 				assert.Nil(t, resp)
@@ -114,8 +115,8 @@ func TestCreateServiceRole(t *testing.T) {
 
 	for _, v := range data {
 		t.Run(v.Name, func(t *testing.T) {
-			mock.On("CreateRole", v.Request).Return(v.ExpectedErr)
-			err := service.Create(v.Request)
+			mock.On("CreateRole", context.Background(), v.Request).Return(v.ExpectedErr)
+			err := service.Create(context.Background(), v.Request)
 			if v.ExpectedErr != nil {
 				assert.Error(t, err)
 			} else {
@@ -151,8 +152,8 @@ func TestShowRoleById(t *testing.T) {
 
 	for _, v := range data {
 		t.Run(v.Name, func(t *testing.T) {
-			mock.On("ShowById", v.Id).Return(v.Response, v.ExpectedErr)
-			resp, err := servicerole.ShowRoleById(v.Id)
+			mock.On("ShowById", context.Background(), v.Id).Return(v.Response, v.ExpectedErr)
+			resp, err := servicerole.ShowRoleById(context.Background(), v.Id)
 			if v.ExpectedErr != nil {
 				assert.Error(t, err)
 				assert.Nil(t, resp)
@@ -189,8 +190,8 @@ func TestUpdateRole(t *testing.T) {
 
 	for _, v := range data {
 		t.Run(v.Name, func(t *testing.T) {
-			mock.On("UpdateRole", v.Id, v.Request).Return(v.ExpectedErr)
-			err := servicerole.UpdateRole(v.Id,v.Request)
+			mock.On("UpdateRole", context.Background(), v.Id, v.Request).Return(v.ExpectedErr)
+			err := servicerole.UpdateRole(context.Background(), v.Id,v.Request)
 			if v.ExpectedErr != nil {
 				assert.Error(t, err)
 			} else {
@@ -219,8 +220,8 @@ func TestDeleteRole(t *testing.T) {
 
 	for _, v := range data {
 		t.Run(v.Name,func(t *testing.T) {
-			mock.On("DeleteRole",v.Id).Return(v.ExpectedErr)
-			err := servicerepo.DeleteRole(v.Id)
+			mock.On("DeleteRole", context.Background(), v.Id).Return(v.ExpectedErr)
+			err := servicerepo.DeleteRole(context.Background(), v.Id)
 			if v.ExpectedErr != nil {
 				assert.Error(t, err)
 			}else{

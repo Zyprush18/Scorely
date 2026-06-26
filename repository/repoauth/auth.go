@@ -1,42 +1,39 @@
 package repoauth
 
 import (
-	"fmt"
+	"context"
 
-	"github.com/Zyprush18/Scorely/config"
-	"github.com/Zyprush18/Scorely/helper"
 	"github.com/Zyprush18/Scorely/models/entity"
 	"github.com/Zyprush18/Scorely/models/request"
 	"gorm.io/gorm"
 )
 
 type RepoAuth interface {
-	Login(loginreq *request.Login) (string,error)
+	Login(ctx context.Context, email string) (*entity.Users,error)
+	Register(ctx context.Context, data *request.Register) error
 }
 
 type MysqlStruct struct {
 	db *gorm.DB
 }
 
-func ConnectDb(d *gorm.DB) MysqlStruct {
-	return MysqlStruct{db: d}
+func ConnectDb(d *gorm.DB) RepoAuth {
+	return &MysqlStruct{db: d}
 }
 
-func (m *MysqlStruct) Login(loginreq *request.Login) (string,error) {
+func (m *MysqlStruct) Login(ctx context.Context, email string) (*entity.Users,error) {
 	var model_user entity.Users
-	if err := m.db.Model(&model_user).Preload("Role").Debug().Where("email = ?", loginreq.Email).First(&model_user).Error;err!= nil {
-		return "",err
+	if err := m.db.WithContext(ctx).Model(&model_user).Preload("Role").Debug().Where("email = ?", email).First(&model_user).Error;err!= nil {
+		return nil,err
 	}
 
-	if err := helper.DecryptPassword(model_user.Password,loginreq.Password);err != nil {
-		return "",err
+	return &model_user, nil
+}
+
+func (m *MysqlStruct) Register(ctx context.Context, data *request.Register) error {
+	if err := m.db.WithContext(ctx).Table("users").Create(data).Error; err != nil {
+		return err
 	}
 
-	
-	token, err:= config.GenerateToken(model_user.IdUser,model_user.Role.CodeRole)
-	if err != nil {
-		fmt.Println("ini errpr")
-		return "",err
-	}
-	return token,nil
+	return nil
 }

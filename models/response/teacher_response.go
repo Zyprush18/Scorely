@@ -21,7 +21,7 @@ type Teachers struct {
 
 	// has many to subjects table (many to many with subjects table)
 	Subject []Subjects 
-	helper.Models
+	Model helper.Models
 }
 
 func RespGetALl(data []entity.Teachers) (resp []Teachers) {
@@ -35,7 +35,7 @@ func RespGetALl(data []entity.Teachers) (resp []Teachers) {
 			Phone: v.Phone,
 			UserId: v.UserId,
 			Subject: Subjectsresp(v.Subject),
-			Models: v.Models,
+			Model: v.Models,
 		})
 	}
 
