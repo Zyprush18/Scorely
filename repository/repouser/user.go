@@ -30,7 +30,7 @@ func (u *UserMysql) GetAll(ctx context.Context, search, sort string, page, perpa
 	order := fmt.Sprintf("created_at %s", sort)
 	offset := (page - 1) * perpage
 
-	if err := u.db.WithContext(ctx).Model(&entity.Users{}).Where("email LIKE ?", "%"+search+"%").Count(&count).Order(order).Limit(perpage).Offset(offset).Find(&modeluser).Error; err != nil {
+	if err := u.db.WithContext(ctx).Model(&entity.Users{}).Preload("Role").Where("email LIKE ?", "%"+search+"%").Count(&count).Order(order).Limit(perpage).Offset(offset).Find(&modeluser).Error; err != nil {
 		return nil, 0, err
 	}
 
@@ -66,7 +66,7 @@ func (u *UserMysql) Update(ctx context.Context, id int, data *entity.Users) erro
 }
 
 func (u *UserMysql) Delete(ctx context.Context, id int) error {
-	result := u.db.WithContext(ctx).Model(&entity.Users{}).Delete(id)
+	result := u.db.WithContext(ctx).Delete(&entity.Users{},id)
 	if result.Error != nil {
 		return result.Error
 	}

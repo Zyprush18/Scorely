@@ -31,7 +31,7 @@ func (m *MysqlStruct) Login(ctx context.Context, email string) (*entity.Users,er
 }
 
 func (m *MysqlStruct) Register(ctx context.Context, data *request.Register) error {
-	if err := m.db.WithContext(ctx).Table("users").Create(data).Error; err != nil {
+	if err := m.db.WithContext(ctx).Debug().Table("users").Preload("Role").Where("Role.id_role = ?", data.RoleId).Create(data).Error; err != nil {
 		return err
 	}
 

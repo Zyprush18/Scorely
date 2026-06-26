@@ -45,7 +45,7 @@ import (
 )
 
 func RunApp(redisClient *redis.Client) {
-	pathlog := "./log/app.log"
+	pathlog := "./../log/app.log"
 	initlog := helper.NewLogger(pathlog)
 	// connect database
 	initDb, err := database.Connect()
@@ -58,7 +58,7 @@ func RunApp(redisClient *redis.Client) {
 	// daftar role
 	adm := "admin"
 	tch := "teacher"
-	// sdn := "student"
+	sdn := "student"
 
 	// login
 	authrepo := repoauth.ConnectDb(initDb)
@@ -72,7 +72,7 @@ func RunApp(redisClient *redis.Client) {
 	adminMux.HandleFunc("/api/register", handlerauth.Signup)
 
 	// route logout
-	adminMux.Handle("/api/logout", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerauth.Logout), adm, tch))
+	adminMux.Handle("/api/logout", middleware.MiddlewareAuth(redisClient, http.HandlerFunc(handlerauth.Logout), adm, tch, sdn))
 
 	// role
 	roleRepo := reporole.RolesMysql(initDb)

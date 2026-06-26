@@ -32,7 +32,7 @@ func (u *UserRepo) AllUser(ctx context.Context, search, sort string, page, perpa
 	if err != nil {
 		return nil, 0, err
 	}
-	return parseUserResponse(entities), count, nil
+	return response.ParseUserResponse(entities), count, nil
 }
 
 func (u *UserRepo) CreateUser(ctx context.Context, data *request.User) error {
@@ -52,27 +52,22 @@ func (u *UserRepo) ShowUser(ctx context.Context, id int) (*response.Users, error
 	if err != nil {
 		return nil, err
 	}
-	return &response.Users{
-		IdUser:   ent.IdUser,
-		Email:    ent.Email,
-		Password: ent.Password,
-		RoleId:   ent.RoleId,
-		Model: helper.Models{
-			CreatedAt: ent.Models.CreatedAt,
-			UpdatedAt: ent.Models.UpdatedAt,
-		},
-	}, nil
+	return response.MapUserResp(ent), nil
 }
 
 func (u *UserRepo) UpdateUser(ctx context.Context, id int, data *request.User) error {
 	ent := &entity.Users{
 		Email:    data.Email,
-		Password: helper.HashingPassword(data.Password),
 		RoleId:   data.RoleId,
 		Models: helper.Models{
 			UpdatedAt: time.Now().Local(),
 		},
 	}
+
+	if data.Password != "" {
+		ent.Password = helper.HashingPassword(data.Password)
+	}
+
 	return u.repo.Update(ctx, id, ent)
 }
 
@@ -80,19 +75,4 @@ func (u *UserRepo) DeleteUser(ctx context.Context, id int) error {
 	return u.repo.Delete(ctx, id)
 }
 
-func parseUserResponse(entities []entity.Users) []response.Users {
-	result := make([]response.Users, len(entities))
-	for i, v := range entities {
-		result[i] = response.Users{
-			IdUser:   v.IdUser,
-			Email:    v.Email,
-			Password: v.Password,
-			RoleId:   v.RoleId,
-			Model: helper.Models{
-				CreatedAt: v.Models.CreatedAt,
-				UpdatedAt: v.Models.UpdatedAt,
-			},
-		}
-	}
-	return result
-}
+
