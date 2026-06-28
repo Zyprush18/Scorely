@@ -65,7 +65,7 @@ func (s *ServiceRepoAuth) Loginuser(ctx context.Context,req *request.Login) (str
 
 func (s *ServiceRepoAuth) Signup(ctx context.Context, data *request.Register) error {
 	data.Password = helper.HashingPassword(data.Password)
-	data.Model.CreatedAt = time.Now().Local()
+	data.Models.CreatedAt = time.Now().Local()
 
 	if err := s.repo.Register(ctx, data); err != nil {
 		return err

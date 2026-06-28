@@ -20,10 +20,10 @@ func MiddlewareAuth(rdb *redis.Client, next http.Handler, roles ...string) http.
 		auth := strings.Split(r.Header.Get("Authorization"), " ")
 
 		if len(auth) != 2 || strings.TrimSpace(auth[1]) == "" {
-			w.WriteHeader(helper.Unauthorized)
-			json.NewEncoder(w).Encode(helper.Messages{
-				Message: "Token Is Missing",
-				Errors:  "Unauthorized",
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Unauthorized,
+				Message:   "Token Is Missing",
+				Errors:    "Unauthorized",
 			})
 			return
 		}
@@ -35,20 +35,20 @@ func MiddlewareAuth(rdb *redis.Client, next http.Handler, roles ...string) http.
 
 				refreshToken, rerr := rdb.Get(r.Context(), "refresh_token:"+subject).Result()
 				if rerr != nil {
-					w.WriteHeader(helper.Unauthorized)
-					json.NewEncoder(w).Encode(helper.Messages{
-						Message: "Token Is Expired",
-						Errors:  "Unauthorized",
+					helper.ReturnResponse(w, helper.Messages{
+						Http_code: helper.Unauthorized,
+						Message:   "Token Is Expired",
+						Errors:    "Unauthorized",
 					})
 					return
 				}
 
 				refreshClaims, rerr := helper.ParseTokenJwt(os.Getenv("REFRESH_SECRET_KEY"), refreshToken)
 				if rerr != nil {
-					w.WriteHeader(helper.Unauthorized)
-					json.NewEncoder(w).Encode(helper.Messages{
-						Message: "Token Is Expired",
-						Errors:  "Unauthorized",
+					helper.ReturnResponse(w, helper.Messages{
+						Http_code: helper.Unauthorized,
+						Message:   "Token Is Expired",
+						Errors:    "Unauthorized",
 					})
 					return
 				}
@@ -56,10 +56,10 @@ func MiddlewareAuth(rdb *redis.Client, next http.Handler, roles ...string) http.
 				userID, _ := strconv.Atoi(refreshClaims.Subject)
 				newToken, terr := helper.GenerateToken(os.Getenv("JWT_SECRET_KEY"), uint(userID), refreshClaims.CodeRole)
 				if terr != nil {
-					w.WriteHeader(helper.InternalServError)
-					json.NewEncoder(w).Encode(helper.Messages{
-						Message: "Something Went Wrong",
-						Errors:  "Internal Server Error",
+					helper.ReturnResponse(w, helper.Messages{
+						Http_code: helper.InternalServError,
+						Message:   "Something Went Wrong",
+						Errors:    "Internal Server Error",
 					})
 					return
 				}
@@ -68,10 +68,10 @@ func MiddlewareAuth(rdb *redis.Client, next http.Handler, roles ...string) http.
 
 				idteacher, aerr := strconv.Atoi(refreshClaims.Subject)
 				if aerr != nil {
-					w.WriteHeader(helper.Unauthorized)
-					json.NewEncoder(w).Encode(helper.Messages{
-						Message: "Invalid Token Subject",
-						Errors:  "Token subject must be numeric",
+					helper.ReturnResponse(w, helper.Messages{
+						Http_code: helper.Unauthorized,
+						Message:   "Invalid Token Subject",
+						Errors:    "Token subject must be numeric",
 					})
 					return
 				}
@@ -84,10 +84,10 @@ func MiddlewareAuth(rdb *redis.Client, next http.Handler, roles ...string) http.
 				return
 			}
 
-			w.WriteHeader(helper.Unauthorized)
-			json.NewEncoder(w).Encode(helper.Messages{
-				Message: "Invalid Auth Token",
-				Errors:  "Unauthorization",
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Unauthorized,
+				Message:   "Invalid Auth Token",
+				Errors:    "Unauthorization",
 			})
 			return
 		}
@@ -102,7 +102,7 @@ func MiddlewareAuth(rdb *redis.Client, next http.Handler, roles ...string) http.
 			return
 		}
 
-		if !checkRole(token.CodeRole, roles...) {
+		if !checkRole(strings.ToLower(token.CodeRole), roles...) {
 			w.WriteHeader(helper.Forbidden)
 			json.NewEncoder(w).Encode(helper.Messages{
 				Message: "Your role does not have access to this endpoint.",
@@ -113,10 +113,10 @@ func MiddlewareAuth(rdb *redis.Client, next http.Handler, roles ...string) http.
 
 		idteacher, err := strconv.Atoi(token.Subject)
 		if err != nil {
-			w.WriteHeader(helper.Unauthorized)
-			json.NewEncoder(w).Encode(helper.Messages{
-				Message: "Invalid Token Subject",
-				Errors:  "Token subject must be numeric",
+			helper.ReturnResponse(w, helper.Messages{
+				Http_code: helper.Unauthorized,
+				Message:   "Invalid Token Subject",
+				Errors:    "Token subject must be numeric",
 			})
 			return
 		}
@@ -129,8 +129,7 @@ func MiddlewareAuth(rdb *redis.Client, next http.Handler, roles ...string) http.
 	})
 }
 
-
-func checkRole(coderole string, role ...string) bool  {
+func checkRole(coderole string, role ...string) bool {
 	for _, v := range role {
 		if coderole != "" && coderole == v {
 			return true
